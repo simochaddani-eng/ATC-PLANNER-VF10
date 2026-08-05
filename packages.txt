@@ -1,5 +1,0 @@
-gcc
-g++
-make
-python3-dev
-build-essential

@@ -13,9 +13,15 @@ from io import BytesIO
 import html as html_lib
 import hashlib
 import secrets
-from sqlalchemy import text
+import sqlite3  # ⚠️ NOUVEAU : AJOUTÉ POUR SQLITE
 import warnings
 warnings.filterwarnings("ignore")
+
+# ============================================
+# ⚠️ NOUVEAU : CONFIGURATION SQLITE
+# ============================================
+DB_PATH = "data/planning.db"
+os.makedirs("data", exist_ok=True)
 
 # ============================================
 # CONFIGURATION DE LA PAGE
@@ -386,66 +392,71 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# DATABASE
+# ⚠️ NOUVEAU : CLASSE DATABASE SQLITE (REMPLACE POSTGRESQL)
 # ============================================
-# NOTE PERSISTANCE : les données vivent dans une base PostgreSQL
-# externe (ex. Supabase), configurée via st.secrets["connections"]
-# ["postgresql"]. Elles survivent aux redémarrages, redéploiements
-# et mises en veille de l'application — contrairement à un fichier
-# local, qui serait effacé à chaque redémarrage du conteneur.
 
 class Database:
-    """Couche d'accès aux données — PostgreSQL (via st.connection), pour un
-    déploiement permanent sur Streamlit Community Cloud. Toute la logique
-    métier du reste de l'application est inchangée ; seule cette classe a
-    été réécrite (SQLite -> PostgreSQL)."""
+    """Couche d'accès aux données — SQLite pour Streamlit Cloud."""
 
     def __init__(self):
-        # Priorité à la variable d'environnement DATABASE_URL (standard Docker/AWS,
-        # ex. injectée via ECS task definition, App Runner env vars, ou docker run -e).
-        # Repli sur st.secrets (Streamlit Community Cloud) si la variable est absente.
-        database_url = os.environ.get("DATABASE_URL")
-        if database_url:
-            self.conn = st.connection("postgresql", type="sql", url=database_url)
-        else:
-            self.conn = st.connection("postgresql", type="sql")
+        self.db_path = DB_PATH
         self._ensure_schema()
-        self._sync_admin_code()
 
-    # ---------- Primitives internes ----------
+    def get_connection(self):
+        """Retourne une connexion SQLite."""
+        return sqlite3.connect(self.db_path)
 
     def _query(self, sql, params=None):
-        """SELECT -> DataFrame. ttl=0 : jamais de cache (les données changent en continu)."""
-        return self.conn.query(sql, params=params or {}, ttl=0)
+        """SELECT -> DataFrame."""
+        conn = self.get_connection()
+        if params:
+            df = pd.read_sql_query(sql, conn, params=params)
+        else:
+            df = pd.read_sql_query(sql, conn)
+        conn.close()
+        return df
 
     def _exec(self, sql, params=None):
-        """INSERT / UPDATE / DELETE simple, sans valeur de retour."""
-        with self.conn.session as s:
-            s.execute(text(sql), params or {})
-            s.commit()
+        """INSERT / UPDATE / DELETE simple."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        if params:
+            cursor.execute(sql, params)
+        else:
+            cursor.execute(sql)
+        conn.commit()
+        conn.close()
 
     def _exec_many(self, sql, list_of_params):
-        """Plusieurs lignes en une seule transaction (équivalent executemany)."""
+        """Plusieurs lignes en une seule transaction."""
         if not list_of_params:
             return
-        with self.conn.session as s:
-            s.execute(text(sql), list_of_params)
-            s.commit()
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.executemany(sql, list_of_params)
+        conn.commit()
+        conn.close()
 
     def _exec_returning_id(self, sql, params=None):
         """INSERT ... RETURNING id -> renvoie le nouvel id."""
-        with self.conn.session as s:
-            result = s.execute(text(sql), params or {})
-            new_id = result.scalar()
-            s.commit()
-            return new_id
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        if params:
+            cursor.execute(sql, params)
+        else:
+            cursor.execute(sql)
+        conn.commit()
+        new_id = cursor.lastrowid
+        conn.close()
+        return new_id
 
     # ---------- Schéma ----------
 
     def _ensure_schema(self):
+        """Crée les tables si elles n'existent pas."""
         ddl_statements = [
             """CREATE TABLE IF NOT EXISTS config (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date_debut DATE NOT NULL,
                 date_fin_souhaitee DATE NOT NULL,
                 nb_eleves INTEGER NOT NULL,
@@ -463,29 +474,29 @@ class Database:
                 pause_am_fin TEXT DEFAULT '16:00'
             )""",
             """CREATE TABLE IF NOT EXISTS eleves (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL, prenom TEXT NOT NULL, email TEXT, groupe_id INTEGER,
                 password_hash TEXT, password_salt TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS instructeurs (
-                id SERIAL PRIMARY KEY,
-                nom TEXT NOT NULL, prenom TEXT NOT NULL, actif BOOLEAN DEFAULT TRUE,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nom TEXT NOT NULL, prenom TEXT NOT NULL, actif BOOLEAN DEFAULT 1,
                 password_hash TEXT, password_salt TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS groupes (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL, instructeur_id INTEGER, simulateur_id INTEGER
             )""",
             """CREATE TABLE IF NOT EXISTS groupe_eleves (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 groupe_id INTEGER, eleve_id INTEGER
             )""",
             """CREATE TABLE IF NOT EXISTS simulations (
-                id SERIAL PRIMARY KEY,
-                nom TEXT NOT NULL, duree INTEGER DEFAULT 65, est_test BOOLEAN DEFAULT FALSE, ordre INTEGER
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nom TEXT NOT NULL, duree INTEGER DEFAULT 65, est_test BOOLEAN DEFAULT 0, ordre INTEGER
             )""",
             """CREATE TABLE IF NOT EXISTS seances (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date DATE NOT NULL, heure_debut TEXT NOT NULL, duree INTEGER NOT NULL,
                 type TEXT CHECK(type IN ('briefing', 'simulation', 'debriefing')),
                 simulation_id INTEGER, groupe_id INTEGER, instructeur_id INTEGER,
@@ -494,34 +505,34 @@ class Database:
                 observateurs TEXT, statut TEXT DEFAULT 'planifiee', notes TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS cours (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 titre TEXT NOT NULL, description TEXT,
                 type TEXT CHECK(type IN ('pdf', 'video', 'document', 'lien')),
                 contenu TEXT, date_upload DATE, instructeur_id INTEGER,
                 groupe_cible_id INTEGER, tags TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS scenarios (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 titre TEXT NOT NULL, description TEXT, objectifs TEXT, duree_estimee INTEGER,
                 niveau TEXT CHECK(niveau IN ('debutant', 'intermediaire', 'avance')),
-                simulateur_requis BOOLEAN DEFAULT FALSE, instructions TEXT, contenu TEXT,
+                simulateur_requis BOOLEAN DEFAULT 0, instructions TEXT, contenu TEXT,
                 type TEXT CHECK(type IN ('pdf', 'video', 'document', 'lien')),
                 date_creation DATE, instructeur_id INTEGER, groupe_cible_id INTEGER, tags TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS td (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 titre TEXT NOT NULL, description TEXT,
                 type TEXT CHECK(type IN ('exercice', 'corrige', 'serie', 'devoir')),
                 contenu TEXT, date_upload DATE, instructeur_id INTEGER,
                 groupe_cible_id INTEGER, tags TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS grilles_evaluation (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL, description TEXT, criteres TEXT, bareme TEXT,
                 instructeur_id INTEGER, date_creation DATE
             )""",
             """CREATE TABLE IF NOT EXISTS notes (
-                id SERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 eleve_id INTEGER, instructeur_id INTEGER, grille_id INTEGER,
                 simulation_id INTEGER, seance_id INTEGER, date_note DATE, note DECIMAL(5,2),
                 appreciation TEXT, scores_criteres TEXT, commentaires TEXT
@@ -531,23 +542,21 @@ class Database:
                 code_hash TEXT, code_salt TEXT
             )""",
         ]
-        with self.conn.session as s:
-            for ddl in ddl_statements:
-                s.execute(text(ddl))
-            s.commit()
+        for ddl in ddl_statements:
+            self._exec(ddl)
 
         # --- Seed simulations (une seule fois) ---
         nb_sims = self._query("SELECT COUNT(*) AS n FROM simulations").iloc[0]["n"]
         if nb_sims == 0:
             sims = [
-                {"nom": "Synthese Dynamique", "duree": 65, "est_test": False, "ordre": 1},
-                {"nom": "Simulation 1", "duree": 65, "est_test": False, "ordre": 2},
-                {"nom": "Simulation 2", "duree": 65, "est_test": False, "ordre": 3},
-                {"nom": "Simulation 3", "duree": 65, "est_test": False, "ordre": 4},
-                {"nom": "Simulation 4", "duree": 65, "est_test": False, "ordre": 5},
-                {"nom": "Simulation 5", "duree": 65, "est_test": False, "ordre": 6},
-                {"nom": "Simulation 6", "duree": 65, "est_test": False, "ordre": 7},
-                {"nom": "Simulation Test", "duree": 65, "est_test": True, "ordre": 8},
+                {"nom": "Synthese Dynamique", "duree": 65, "est_test": 0, "ordre": 1},
+                {"nom": "Simulation 1", "duree": 65, "est_test": 0, "ordre": 2},
+                {"nom": "Simulation 2", "duree": 65, "est_test": 0, "ordre": 3},
+                {"nom": "Simulation 3", "duree": 65, "est_test": 0, "ordre": 4},
+                {"nom": "Simulation 4", "duree": 65, "est_test": 0, "ordre": 5},
+                {"nom": "Simulation 5", "duree": 65, "est_test": 0, "ordre": 6},
+                {"nom": "Simulation 6", "duree": 65, "est_test": 0, "ordre": 7},
+                {"nom": "Simulation Test", "duree": 65, "est_test": 1, "ordre": 8},
             ]
             self._exec_many(
                 "INSERT INTO simulations (nom, duree, est_test, ordre) VALUES (:nom, :duree, :est_test, :ordre)",
@@ -561,14 +570,15 @@ class Database:
                 "INSERT INTO grilles_evaluation (nom, description, criteres, bareme, date_creation) "
                 "VALUES (:nom, :description, :criteres, :bareme, :date_creation)",
                 {
-                    "nom": "Grille ATC Standard", "description": "Grille d'évaluation standard",
+                    "nom": "Grille ATC Standard",
+                    "description": "Grille d'évaluation standard",
                     "criteres": json.dumps(["Phraséologie", "Anticipation", "Gestion du trafic", "Communication", "Réactivité"]),
                     "bareme": json.dumps([4, 4, 4, 4, 4]),
                     "date_creation": date.today().strftime("%Y-%m-%d"),
                 }
             )
 
-        # --- Seed démo (3 instructeurs + 9 élèves), une seule fois, si base totalement vide ---
+        # --- Seed démo (3 instructeurs + 9 élèves) ---
         nb_instr = self._query("SELECT COUNT(*) AS n FROM instructeurs").iloc[0]["n"]
         nb_eleves = self._query("SELECT COUNT(*) AS n FROM eleves").iloc[0]["n"]
         if nb_instr == 0 and nb_eleves == 0:
@@ -590,28 +600,6 @@ class Database:
                     f"UPDATE {table} SET password_hash = :h, password_salt = :s WHERE id = :id",
                     {"h": pwd_hash, "s": salt, "id": int(row_id)}
                 )
-
-    def _sync_admin_code(self):
-        """Synchronise le code administrateur de secours depuis la variable d'environnement
-        ADMIN_RESET_CODE (Docker/AWS) ou, à défaut, st.secrets['ADMIN_RESET_CODE'] (Streamlit
-        Cloud). Rotation automatique : changer la valeur puis redéployer suffit à changer le
-        code actif. Si absent des deux sources, la fonction reste désactivée (aucune ligne en base)."""
-        admin_code = os.environ.get("ADMIN_RESET_CODE")
-        if not admin_code:
-            try:
-                admin_code = st.secrets.get("ADMIN_RESET_CODE", None)
-            except Exception:
-                admin_code = None
-
-        if admin_code:
-            pwd_hash, salt = hash_password(admin_code)
-            self._exec(
-                "INSERT INTO admin_config (id, code_hash, code_salt) VALUES (1, :h, :s) "
-                "ON CONFLICT (id) DO UPDATE SET code_hash = EXCLUDED.code_hash, code_salt = EXCLUDED.code_salt",
-                {"h": pwd_hash, "s": salt}
-            )
-        else:
-            self._exec("DELETE FROM admin_config WHERE id = 1")
 
     # ---------- Mots de passe ----------
 
@@ -684,7 +672,7 @@ class Database:
     # ---------- Instructeurs ----------
 
     def get_instructeurs(self):
-        return self._query("SELECT * FROM instructeurs WHERE actif = TRUE ORDER BY nom, prenom")
+        return self._query("SELECT * FROM instructeurs WHERE actif = 1 ORDER BY nom, prenom")
 
     def get_instructeur_by_id(self, instr_id):
         df = self._query("SELECT id, nom, prenom, actif FROM instructeurs WHERE id = :id", {"id": instr_id})
@@ -701,7 +689,7 @@ class Database:
         pwd_hash, salt = hash_password(password)
         new_id = self._exec_returning_id(
             "INSERT INTO instructeurs (nom, prenom, actif, password_hash, password_salt) "
-            "VALUES (:nom, :prenom, TRUE, :h, :s) RETURNING id",
+            "VALUES (:nom, :prenom, 1, :h, :s) RETURNING id",
             {"nom": nom, "prenom": prenom, "h": pwd_hash, "s": salt}
         )
         return new_id, temp_password
@@ -736,21 +724,18 @@ class Database:
 
     def save_groupes(self, groupes):
         id_map = {}
-        with self.conn.session as s:
-            for g in groupes:
-                result = s.execute(
-                    text("INSERT INTO groupes (nom, instructeur_id, simulateur_id) "
-                         "VALUES (:nom, :instr, :sim) RETURNING id"),
-                    {"nom": g["nom"], "instr": g["instructeur_id"], "sim": g["simulateur_id"]}
-                )
-                gid = result.scalar()
-                id_map[g["id"]] = gid
-                for eid in g["eleves"]:
-                    s.execute(text("INSERT INTO groupe_eleves (groupe_id, eleve_id) VALUES (:gid, :eid)"),
-                              {"gid": gid, "eid": eid})
-                    s.execute(text("UPDATE eleves SET groupe_id = :gid WHERE id = :eid"),
-                              {"gid": gid, "eid": eid})
-            s.commit()
+        for g in groupes:
+            new_id = self._exec_returning_id(
+                "INSERT INTO groupes (nom, instructeur_id, simulateur_id) "
+                "VALUES (:nom, :instr, :sim) RETURNING id",
+                {"nom": g["nom"], "instr": g["instructeur_id"], "sim": g["simulateur_id"]}
+            )
+            id_map[g["id"]] = new_id
+            for eid in g["eleves"]:
+                self._exec("INSERT INTO groupe_eleves (groupe_id, eleve_id) VALUES (:gid, :eid)",
+                          {"gid": new_id, "eid": eid})
+                self._exec("UPDATE eleves SET groupe_id = :gid WHERE id = :eid",
+                          {"gid": new_id, "eid": eid})
         return id_map
 
     # ---------- Séances ----------
@@ -808,11 +793,9 @@ class Database:
         """, rows)
 
     def reset_planning(self):
-        with self.conn.session as s:
-            for table in ("seances", "groupe_eleves", "groupes"):
-                s.execute(text(f"DELETE FROM {table}"))
-            s.execute(text("UPDATE eleves SET groupe_id = NULL"))
-            s.commit()
+        for table in ("seances", "groupe_eleves", "groupes"):
+            self._exec(f"DELETE FROM {table}")
+        self._exec("UPDATE eleves SET groupe_id = NULL")
 
     # ---------- Cours / Scénarios / TD ----------
 
@@ -857,7 +840,8 @@ class Database:
         """, {
             "titre": scenario["titre"], "description": scenario["description"], "objectifs": scenario["objectifs"],
             "duree_estimee": scenario["duree_estimee"], "niveau": scenario["niveau"],
-            "simulateur_requis": bool(scenario["simulateur_requis"]), "instructions": scenario["instructions"],
+            "simulateur_requis": int(bool(scenario["simulateur_requis"])),
+            "instructions": scenario["instructions"],
             "contenu": scenario.get("contenu", ""), "type": scenario.get("type", "document"),
             "date_creation": scenario["date_creation"], "instructeur_id": scenario.get("instructeur_id"),
             "groupe_cible_id": scenario.get("groupe_cible_id"), "tags": scenario.get("tags", ""),
@@ -893,8 +877,9 @@ class Database:
             INSERT INTO grilles_evaluation (nom, description, criteres, bareme, instructeur_id, date_creation)
             VALUES (:nom, :description, :criteres, :bareme, :instructeur_id, :date_creation)
         """, {
-            "nom": grille["nom"], "description": grille["description"], "criteres": grille["criteres"],
-            "bareme": grille["bareme"], "instructeur_id": grille.get("instructeur_id"),
+            "nom": grille["nom"], "description": grille["description"],
+            "criteres": grille["criteres"], "bareme": grille["bareme"],
+            "instructeur_id": grille.get("instructeur_id"),
             "date_creation": grille["date_creation"],
         })
 
@@ -936,22 +921,20 @@ class Database:
     # ---------- Configuration ----------
 
     def save_config(self, config):
-        with self.conn.session as s:
-            s.execute(text("DELETE FROM config"))
-            s.execute(text("""
-                INSERT INTO config (
-                    date_debut, date_fin_souhaitee, nb_eleves, nb_instructeurs,
-                    nb_simulateurs, duree_briefing, duree_debriefing,
-                    heure_debut_matin, heure_fin_matin, heure_debut_apres_midi, heure_fin_apres_midi,
-                    pause_matin_debut, pause_matin_fin, pause_am_debut, pause_am_fin
-                ) VALUES (
-                    :date_debut, :date_fin_souhaitee, :nb_eleves, :nb_instructeurs,
-                    :nb_simulateurs, :duree_briefing, :duree_debriefing,
-                    :heure_debut_matin, :heure_fin_matin, :heure_debut_apres_midi, :heure_fin_apres_midi,
-                    :pause_matin_debut, :pause_matin_fin, :pause_am_debut, :pause_am_fin
-                )
-            """), config)
-            s.commit()
+        self._exec("DELETE FROM config")
+        self._exec("""
+            INSERT INTO config (
+                date_debut, date_fin_souhaitee, nb_eleves, nb_instructeurs,
+                nb_simulateurs, duree_briefing, duree_debriefing,
+                heure_debut_matin, heure_fin_matin, heure_debut_apres_midi, heure_fin_apres_midi,
+                pause_matin_debut, pause_matin_fin, pause_am_debut, pause_am_fin
+            ) VALUES (
+                :date_debut, :date_fin_souhaitee, :nb_eleves, :nb_instructeurs,
+                :nb_simulateurs, :duree_briefing, :duree_debriefing,
+                :heure_debut_matin, :heure_fin_matin, :heure_debut_apres_midi, :heure_fin_apres_midi,
+                :pause_matin_debut, :pause_matin_fin, :pause_am_debut, :pause_am_fin
+            )
+        """, config)
 
     def get_config(self):
         df = self._query("SELECT * FROM config ORDER BY id DESC LIMIT 1")
@@ -964,12 +947,14 @@ class Database:
         self._exec("UPDATE simulations SET duree = :duree WHERE id = :id", {"duree": duree, "id": sim_id})
 
     def delete_all_data(self):
-        with self.conn.session as s:
-            for table in ("seances", "groupe_eleves", "groupes", "eleves", "instructeurs",
-                          "cours", "scenarios", "td", "notes", "grilles_evaluation"):
-                s.execute(text(f"DELETE FROM {table}"))
-            s.commit()
+        for table in ("seances", "groupe_eleves", "groupes", "eleves", "instructeurs",
+                      "cours", "scenarios", "td", "notes", "grilles_evaluation"):
+            self._exec(f"DELETE FROM {table}")
 
+
+# ============================================
+# ⚠️ FIN DE LA CLASSE DATABASE SQLITE
+# ============================================
 
 # ============================================
 # VISUALISATION DE DOCUMENTS (CORRIGÉE)

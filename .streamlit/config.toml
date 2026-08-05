@@ -1,14 +1,12 @@
-# ============================================
-# ATC PLANNER - SECRETS
-# ============================================
+[server]
+maxUploadSize = 50
+enableCORS = false
 
-# Mot de passe par défaut pour tous les comptes
-DEFAULT_PASSWORD = "ATC2026"
+[theme]
+primaryColor = "#7affb0"
+backgroundColor = "#0a0e17"
+secondaryBackgroundColor = "#0d1a2b"
+textColor = "#b0c8e0"
 
-# Code administrateur de secours
-# ⚠️ CHANGEZ CETTE VALEUR PAR UNE VALEUR UNIQUE !
-ADMIN_RESET_CODE = "adm1n_k3y_2026_s3cur3!"
-
-# Optionnel : Configuration email (si vous activez l'envoi d'emails)
-# EMAIL_SENDER = "votre.email@gmail.com"
-# EMAIL_PASSWORD = "mot_de_passe_application"
+[browser]
+gatherUsageStats = false

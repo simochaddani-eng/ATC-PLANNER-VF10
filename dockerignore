@@ -1,8 +1,28 @@
-__pycache__/
+cat > .dockerignore << 'EOF'
+# Fichiers exclus du build Docker
+__pycache__
 *.pyc
-.git/
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.git
 .gitignore
-.streamlit/secrets.toml
-*.md
+README.md
 .env
+*.db
+*.sqlite3
+data/
+logs/
 .DS_Store
+node_modules
+venv/
+.venv/
+*.log
+*.pid
+*.pid.lock
+EOF

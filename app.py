@@ -1755,15 +1755,17 @@ def render_flight_strip(seance, eleve_id):
     </div>
     """
 
-def _type_label(t):
+def _type_label(type_value):
+    """Traduit le type de séance pour l'export."""
     type_map = {
-        "briefing": t("briefing"),
-        "simulation": t("simulation"),
-        "debriefing": t("debriefing")
+        "briefing": "Briefing",
+        "simulation": "Simulation",
+        "debriefing": "Débriefing"
     }
-    return type_map.get(t, t)
+    return type_map.get(type_value, type_value)
 
 def build_export_dataframe(seances_df, eleves_df=None):
+    """Transforme le DataFrame interne des séances en tableau propre et lisible pour l'export."""
     colonnes = ["Date", "Heure", "Durée (min)", "Type", "Simulation", "Groupe",
                 "Instructeur", "Contrôleur", "Pseudo-pilote", "Observateurs", "Notes"]
     if seances_df is None or seances_df.empty:
@@ -1786,7 +1788,7 @@ def build_export_dataframe(seances_df, eleves_df=None):
         "Date": seances_df["date"],
         "Heure": seances_df["heure_debut"],
         "Durée (min)": seances_df["duree"],
-        "Type": seances_df["type"].apply(_type_label),
+        "Type": seances_df["type"].apply(_type_label),  # ← Utilise _type_label corrigé
         "Simulation": seances_df["simulation_nom"] if "simulation_nom" in seances_df.columns else "",
         "Groupe": seances_df["groupe_nom"] if "groupe_nom" in seances_df.columns else "",
         "Instructeur": seances_df["instructeur_nom"] if "instructeur_nom" in seances_df.columns else "",

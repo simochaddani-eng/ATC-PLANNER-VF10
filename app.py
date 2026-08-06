@@ -1050,45 +1050,30 @@ def render_document_view(contenu, type_doc, titre):
     </div>
     """, unsafe_allow_html=True)
 
-    # === AFFICHAGE DES PDF DIRECTEMENT DANS LA PLATEFORME ===
+    # === AFFICHAGE DIRECT DES PDF ===
     if mime_type == "application/pdf":
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
         data_url = f"data:application/pdf;base64,{pdf_b64}"
         
-        # ✅ AFFICHAGE DIRECT AVEC <embed>
+        # MÉTHODE 1: embed (le plus compatible)
         st.markdown(f"""
         <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                    background:#0d1a2b;padding:4px;margin-top:8px;">
+                    background:#0d1a2b;padding:4px;margin-top:8px;height:720px;">
             <embed src="{data_url}" type="application/pdf"
-                   style="width:100%;height:700px;border-radius:4px;background:#0d1a2b;">
+                   style="width:100%;height:100%;border-radius:4px;background:#0d1a2b;">
         </div>
         """, unsafe_allow_html=True)
         
-        # ✅ AFFICHAGE DIRECT AVEC <object> (fallback)
-        st.markdown(f"""
-        <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                    background:#0d1a2b;padding:4px;margin-top:8px;">
-            <object data="{data_url}" type="application/pdf"
-                    style="width:100%;height:700px;border-radius:4px;background:#0d1a2b;">
-                <p style="color:rgba(180,200,220,0.5);padding:20px;text-align:center;">
-                    Votre navigateur ne peut pas afficher ce PDF.<br>
-                    <a href="{data_url}" target="_blank" style="color:#7affb0;">
-                        Cliquez ici pour ouvrir le PDF
-                    </a>
-                </p>
-            </object>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # ✅ AFFICHAGE DIRECT AVEC iframe
-        st.markdown(f"""
-        <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                    background:#0d1a2b;padding:4px;margin-top:8px;">
-            <iframe src="{data_url}" 
-                    style="width:100%;height:700px;border:none;border-radius:4px;">
-            </iframe>
-        </div>
-        """, unsafe_allow_html=True)
+        # MÉTHODE 2: iframe (pour les navigateurs qui ne supportent pas embed)
+        with st.expander("📄 Aperçu alternatif"):
+            st.markdown(f"""
+            <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
+                        background:#0d1a2b;padding:4px;margin-top:8px;height:720px;">
+                <iframe src="{data_url}" 
+                        style="width:100%;height:100%;border:none;border-radius:4px;">
+                </iframe>
+            </div>
+            """, unsafe_allow_html=True)
 
     elif mime_type.startswith("image/"):
         st.image(decoded, caption=titre, use_container_width=True)

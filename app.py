@@ -15,6 +15,7 @@ from io import BytesIO
 import html as html_lib
 import hashlib
 import secrets
+import time
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -980,7 +981,7 @@ class Database:
         conn.close()
 
 # ============================================
-# VISUALISATION DE DOCUMENTS - ZÉRO DÉPENDANCE EXTERNE
+# VISUALISATION DE DOCUMENTS - VERSION CORRIGÉE
 # ============================================
 
 def detect_file_type(decoded):
@@ -1050,7 +1051,6 @@ def render_document_view(contenu, type_doc, titre):
     try:
         decoded = base64.b64decode(contenu)
     except Exception:
-        # Pas du base64 valide : on affiche le texte brut échappé
         st.markdown('<div class="doc-viewer">', unsafe_allow_html=True)
         st.write(contenu[:2000] + ("..." if len(contenu) > 2000 else ""))
         st.markdown('</div>', unsafe_allow_html=True)
@@ -1074,12 +1074,14 @@ def render_document_view(contenu, type_doc, titre):
     """, unsafe_allow_html=True)
 
     # --- 4. Affichage selon le type ---
-    # 4.1 PDF — affichage intégré + lien de secours garanti
     if mime_type == "application/pdf":
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
         data_url = f"data:application/pdf;base64,{pdf_b64}"
+        
+        # ✅ Générer un ID unique pour forcer le rechargement
+        unique_id = f"pdf_{int(time.time())}_{random.randint(1000, 9999)}"
 
-        # Lien de secours (toujours visible, marche même si l'aperçu échoue)
+        # Lien de secours (toujours visible)
         st.markdown(f"""
         <div style="margin:10px 0;text-align:center;">
             <a href="{data_url}" target="_blank" 
@@ -1091,27 +1093,33 @@ def render_document_view(contenu, type_doc, titre):
         </div>
         """, unsafe_allow_html=True)
 
-        # Aperçu intégré (protégé)
-        try:
-            pdf_html = f"""
-            <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                        background:#0d1a2b;padding:4px;margin-top:8px;">
-                <embed src="{data_url}" type="application/pdf"
-                       style="width:100%;height:700px;border-radius:4px;background:#0d1a2b;">
-            </div>
-            """
-            st.components.v1.html(pdf_html, height=720)
-        except Exception as e:
-            st.warning("⚠️ L'aperçu intégré n'a pas pu être chargé. Utilisez le lien ci-dessus pour ouvrir le PDF.")
+        # ✅ AFFICHAGE AVEC IFRAME ET ID UNIQUE
+        pdf_html = f"""
+        <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
+                    background:#0d1a2b;padding:4px;margin-top:8px;">
+            <iframe id="{unique_id}" 
+                    src="{data_url}" 
+                    style="width:100%;height:700px;border:none;border-radius:4px;background:#0d1a2b;">
+            </iframe>
+        </div>
+        <script>
+            // Force le rechargement de l'iframe après un court délai
+            setTimeout(function() {{
+                var iframe = document.getElementById('{unique_id}');
+                if (iframe) {{
+                    iframe.src = iframe.src;
+                }}
+            }}, 100);
+        </script>
+        """
+        st.components.v1.html(pdf_html, height=720)
 
-    # 4.2 Images
     elif mime_type.startswith("image/"):
         try:
             st.image(decoded, caption=titre, use_container_width=True)
         except Exception as e:
             st.error(f"Impossible d'afficher l'image : {e}")
 
-    # 4.3 Texte
     elif mime_type == "text/plain":
         try:
             text_content = decoded.decode("utf-8")
@@ -1120,7 +1128,6 @@ def render_document_view(contenu, type_doc, titre):
         except Exception as e:
             st.error(f"Erreur d'affichage texte : {e}")
 
-    # 4.4 Formats Office / autres
     elif mime_type in (
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1428,6 +1435,10 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
     st.markdown('<div class="section-title" style="font-size:1em;">📤 Exporter</div>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     horodatage = date.today().strftime("%Y-%m-%d")
+    
+    # Générer un ID unique pour cette instance
+    unique_id = random.randint(1000, 9999)
+    
     with col1:
         st.download_button(
             "📥 Exporter en Excel (.xlsx)",
@@ -1435,7 +1446,7 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
             file_name=f"{filename_prefix}_{horodatage}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True,
-            key=f"{key_prefix}_xlsx_{random.randint(1000,9999)}",
+            key=f"export_xlsx_{key_prefix}_{unique_id}"
         )
     with col2:
         st.download_button(
@@ -1444,7 +1455,7 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
             file_name=f"{filename_prefix}_{horodatage}.csv",
             mime="text/csv",
             use_container_width=True,
-            key=f"{key_prefix}_csv_{random.randint(1000,9999)}",
+            key=f"export_csv_{key_prefix}_{unique_id}"
         )
 
 # ============================================

@@ -65,17 +65,14 @@ def generate_temp_password() -> str:
     return secrets.token_urlsafe(6)
 
 # ============================================
-# STYLE CSS
+# STYLE CSS (RACCOURCI POUR GAIN DE PLACE)
 # ============================================
 
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@300;400;600;700&display=swap');
-
     * { font-family: 'Inter', 'JetBrains Mono', sans-serif; }
-
     .stApp { background: #0a0e17; }
-
     .radar-container {
         position: relative;
         display: flex;
@@ -85,7 +82,6 @@ st.markdown("""
         background: radial-gradient(ellipse at center, #0d1a2b 0%, #060a12 100%);
         overflow: hidden;
     }
-
     .radar-screen {
         position: relative;
         width: 480px;
@@ -95,7 +91,6 @@ st.markdown("""
         border: 3px solid #1a4a2a;
         box-shadow: 0 0 60px rgba(0, 255, 100, 0.08), inset 0 0 80px rgba(0, 255, 100, 0.05);
     }
-
     .radar-ring {
         position: absolute;
         top: 50%;
@@ -108,7 +103,6 @@ st.markdown("""
     .radar-ring:nth-child(2) { width: 45%; height: 45%; }
     .radar-ring:nth-child(3) { width: 65%; height: 65%; }
     .radar-ring:nth-child(4) { width: 85%; height: 85%; }
-
     .radar-crosshair::before {
         content: '';
         position: absolute;
@@ -127,7 +121,6 @@ st.markdown("""
         width: 1px;
         background: rgba(0, 255, 100, 0.08);
     }
-
     .radar-sweep {
         position: absolute;
         top: 50%;
@@ -140,12 +133,10 @@ st.markdown("""
         border-radius: 0 2px 2px 0;
         filter: drop-shadow(0 0 12px rgba(0, 255, 100, 0.2));
     }
-
     @keyframes sweep {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-
     .radar-blip {
         position: absolute;
         width: 6px;
@@ -160,12 +151,10 @@ st.markdown("""
     .radar-blip:nth-child(3) { top: 72%; left: 42%; animation-delay: 1s; }
     .radar-blip:nth-child(4) { top: 40%; left: 72%; animation-delay: 1.5s; }
     .radar-blip:nth-child(5) { top: 65%; left: 25%; animation-delay: 2s; }
-
     @keyframes blip-pulse {
         0%, 100% { opacity: 0.3; transform: scale(0.8); }
         50% { opacity: 1; transform: scale(1.2); }
     }
-
     .radar-center {
         position: absolute;
         top: 50%;
@@ -178,7 +167,6 @@ st.markdown("""
         box-shadow: 0 0 30px rgba(0, 255, 100, 0.4);
         z-index: 10;
     }
-
     .radar-title {
         position: absolute;
         top: -50px;
@@ -193,7 +181,6 @@ st.markdown("""
         white-space: nowrap;
     }
     .radar-title span { color: rgba(255, 200, 50, 0.5); font-weight: 300; }
-
     .radar-label {
         position: absolute;
         bottom: -50px;
@@ -206,7 +193,6 @@ st.markdown("""
         text-transform: uppercase;
         white-space: nowrap;
     }
-
     .login-card {
         position: absolute;
         bottom: 80px;
@@ -230,7 +216,6 @@ st.markdown("""
         margin-bottom: 16px;
         text-transform: uppercase;
     }
-
     .flight-strip {
         background: linear-gradient(135deg, #0d1a2b 0%, #162a3f 100%);
         border-left: 4px solid #2a7a4a;
@@ -249,11 +234,9 @@ st.markdown("""
     .flight-strip .strip-callsign { color: #7affb0; font-weight: 700; font-size: 1em; letter-spacing: 0.5px; }
     .flight-strip .strip-info { color: rgba(180, 200, 220, 0.5); font-size: 0.75em; letter-spacing: 0.3px; }
     .flight-strip .strip-time { color: #ffcc44; font-weight: 600; font-size: 0.85em; }
-
     .strip-role-controller { background: rgba(0, 255, 100, 0.12); color: #7affb0; border: 1px solid rgba(0, 255, 100, 0.1); }
     .strip-role-pseudo { background: rgba(255, 200, 50, 0.1); color: #ffcc44; border: 1px solid rgba(255, 200, 50, 0.08); }
     .strip-role-observer { background: rgba(100, 150, 200, 0.06); color: #88bbdd; border: 1px solid rgba(100, 150, 200, 0.06); }
-
     .stat-card {
         background: linear-gradient(145deg, #0d1a2b 0%, #162a3f 100%);
         border-radius: 12px;
@@ -265,13 +248,11 @@ st.markdown("""
     .stat-number { font-size: 2.2em; font-weight: 800; color: #7affb0; font-family: 'JetBrains Mono', monospace; }
     .stat-label { font-size: 0.7em; color: rgba(180, 200, 220, 0.4); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; }
     .stat-icon { font-size: 1.5em; display: block; margin-bottom: 4px; }
-
     .badge-success { background: rgba(0, 255, 100, 0.1); color: #7affb0; padding: 2px 10px; border-radius: 10px; font-size: 0.65em; font-weight: 600; border: 1px solid rgba(0, 255, 100, 0.06); }
     .badge-warning { background: rgba(255, 200, 50, 0.08); color: #ffcc44; padding: 2px 10px; border-radius: 10px; font-size: 0.65em; font-weight: 600; border: 1px solid rgba(255, 200, 50, 0.06); }
     .badge-info { background: rgba(50, 200, 255, 0.06); color: #66ddff; padding: 2px 10px; border-radius: 10px; font-size: 0.65em; font-weight: 600; border: 1px solid rgba(50, 200, 255, 0.04); }
     .badge-danger { background: rgba(255, 80, 80, 0.06); color: #ff7777; padding: 2px 10px; border-radius: 10px; font-size: 0.65em; font-weight: 600; border: 1px solid rgba(255, 80, 80, 0.04); }
     .badge-td { background: rgba(255, 150, 50, 0.08); color: #ff9944; padding: 2px 10px; border-radius: 10px; font-size: 0.65em; font-weight: 600; border: 1px solid rgba(255, 150, 50, 0.06); }
-
     .scenario-card {
         background: linear-gradient(145deg, #0d1a2b 0%, #162a3f 100%);
         border-radius: 10px;
@@ -281,7 +262,6 @@ st.markdown("""
     }
     .scenario-title { font-weight: 600; color: #8888ff; font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
     .scenario-meta { font-size: 0.75em; color: rgba(180, 200, 220, 0.4); font-family: 'JetBrains Mono', monospace; }
-
     .groupe-card {
         background: linear-gradient(145deg, #0d1a2b 0%, #162a3f 100%);
         border-radius: 12px;
@@ -312,7 +292,6 @@ st.markdown("""
         color: #ffcc44;
         font-family: 'JetBrains Mono', monospace;
     }
-
     .doc-viewer {
         background: rgba(10, 20, 30, 0.6);
         border-radius: 8px;
@@ -333,13 +312,11 @@ st.markdown("""
         border: 1px solid rgba(50, 200, 255, 0.1);
         color: #66ddff;
     }
-
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #060a12 0%, #0d1a2b 100%);
         border-right: 1px solid rgba(0, 255, 100, 0.04);
     }
     [data-testid="stSidebar"] * { color: rgba(200, 220, 240, 0.7); }
-
     .stButton > button {
         border-radius: 8px !important;
         font-weight: 600 !important;
@@ -354,7 +331,6 @@ st.markdown("""
         background: rgba(0, 255, 100, 0.06) !important;
         border-color: rgba(0, 255, 100, 0.2) !important;
     }
-
     .section-title {
         font-size: 1.2em;
         font-weight: 700;
@@ -364,7 +340,6 @@ st.markdown("""
         letter-spacing: 0.5px;
         text-transform: uppercase;
     }
-
     .stTextInput input, .stTextArea textarea, .stSelectbox select, .stNumberInput input {
         background: rgba(10, 20, 30, 0.6) !important;
         border: 1px solid rgba(0, 255, 100, 0.06) !important;
@@ -377,9 +352,7 @@ st.markdown("""
         border: 1px solid rgba(0, 255, 100, 0.06) !important;
         border-radius: 8px !important;
     }
-
     hr { border-color: rgba(0, 255, 100, 0.04) !important; margin: 16px 0 !important; }
-
     ::-webkit-scrollbar { width: 4px; background: rgba(10, 20, 30, 0.5); }
     ::-webkit-scrollbar-thumb { background: rgba(0, 255, 100, 0.1); border-radius: 2px; }
 </style>
@@ -971,7 +944,7 @@ class Database:
             self._exec(f"DELETE FROM {table}")
 
 # ============================================
-# FONCTIONS DE VISUALISATION DE DOCUMENTS
+# FONCTIONS DE VISUALISATION DE DOCUMENTS - VERSION CORRIGÉE
 # ============================================
 
 def detect_file_type(decoded):
@@ -1003,20 +976,19 @@ def detect_file_type(decoded):
     except Exception:
         return "bin", "📎", "Fichier", "application/octet-stream"
 
-# ✅ CORRIGÉ : Ajout de doc_index pour clé unique
+# ✅ VERSION CORRIGÉE avec gestion des erreurs améliorée
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document dans l'interface avec une clé unique pour download_button."""
+    """Affiche un document dans l'interface avec gestion robuste des erreurs."""
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
         return
 
     titre_safe = esc(titre)
 
-    # Générer un index unique si non fourni
     if doc_index is None:
         doc_index = random.randint(1000, 9999)
 
-    # Lien externe
+    # --- Gestion des liens externes ---
     if contenu.startswith(("http://", "https://")):
         st.markdown(f"""
         <div class="doc-viewer">
@@ -1034,24 +1006,29 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         """, unsafe_allow_html=True)
         return
 
-    # Décoder le base64
+    # --- Décodage du contenu ---
     try:
         decoded = base64.b64decode(contenu)
     except Exception as e:
         st.error(f"❌ Erreur de décodage base64 : {e}")
-        try:
-            if contenu.startswith('%PDF'):
+        # Tentative de récupération : si le contenu commence par %PDF, c'est du texte brut
+        if contenu.startswith('%PDF'):
+            try:
                 decoded = contenu.encode('utf-8')
-            else:
+                st.warning("⚠️ Le contenu a été traité comme du texte brut (non encodé en base64)")
+            except:
                 st.error("❌ Impossible de décoder le document")
                 return
-        except:
+        else:
+            st.code(f"Début du contenu : {contenu[:200]}")
             return
 
-    # Détecter le type
+    # --- Détection du type ---
     file_ext, icon, label, mime_type = detect_file_type(decoded)
     taille_kb = len(decoded) // 1024
+    taille_mo = len(decoded) / (1024 * 1024)
 
+    # --- Affichage des infos ---
     st.markdown(f"""
     <div class="doc-viewer">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -1059,29 +1036,74 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
             <div>
                 <div style="color:#7affb0;font-weight:600;">{titre_safe}</div>
                 <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">{esc(label)}</div>
-                <div style="color:rgba(180,200,220,0.3);font-size:0.7em;">📦 {taille_kb} KB</div>
+                <div style="color:rgba(180,200,220,0.3);font-size:0.7em;">📦 {taille_kb} KB ({taille_mo:.2f} Mo)</div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Afficher selon le type
+    # --- Afficher selon le type ---
     if mime_type == "application/pdf":
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
         data_url = f"data:application/pdf;base64,{pdf_b64}"
         
         st.markdown("### 📄 Aperçu du document")
         
-        # Utiliser PDF.js Viewer
-        viewer_url = f"https://mozilla.github.io/pdf.js/web/viewer.html?file={data_url}"
-        st.markdown(f"""
-        <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                    background:#0d1a2b;padding:4px;margin-top:8px;">
-            <iframe src="{viewer_url}" 
-                    style="width:100%;height:700px;border:none;border-radius:4px;">
-            </iframe>
-        </div>
-        """, unsafe_allow_html=True)
+        # Si le PDF est trop grand, proposer des alternatives
+        if taille_mo > 2:
+            st.warning(f"⚠️ Le PDF fait {taille_mo:.2f} Mo. L'affichage intégré peut être limité ou échouer.")
+            
+            # Proposer un téléchargement direct
+            st.download_button(
+                label=f"📥 Télécharger {titre}.pdf",
+                data=decoded,
+                file_name=f"{titre}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                key=f"download_pdf_{doc_index}"
+            )
+            
+            # Proposer d'ouvrir dans un nouvel onglet
+            st.markdown(f"""
+            <div style="margin-top:12px;">
+                <a href="{data_url}" target="_blank" 
+                   style="display:inline-block;padding:10px 20px;background:rgba(0,255,100,0.05);
+                          border:1px solid rgba(0,255,100,0.1);border-radius:8px;color:#66ddff;
+                          text-decoration:none;font-family:'JetBrains Mono',monospace;text-align:center;">
+                    🔗 Ouvrir le PDF dans un nouvel onglet
+                </a>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Tenter l'affichage avec PDF.js quand même (parfois ça fonctionne)
+            with st.expander("📖 Tenter l'affichage intégré (peut échouer)", expanded=False):
+                viewer_url = f"https://mozilla.github.io/pdf.js/web/viewer.html?file={data_url}"
+                st.markdown(f"""
+                <iframe src="{viewer_url}" 
+                        style="width:100%;height:600px;border:none;border-radius:4px;">
+                </iframe>
+                """, unsafe_allow_html=True)
+        else:
+            # Affichage normal pour les petits PDF
+            viewer_url = f"https://mozilla.github.io/pdf.js/web/viewer.html?file={data_url}"
+            st.markdown(f"""
+            <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
+                        background:#0d1a2b;padding:4px;margin-top:8px;">
+                <iframe src="{viewer_url}" 
+                        style="width:100%;height:700px;border:none;border-radius:4px;">
+                </iframe>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Bouton de téléchargement
+            st.download_button(
+                label=f"📥 Télécharger {titre}.pdf",
+                data=decoded,
+                file_name=f"{titre}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                key=f"download_pdf_{doc_index}"
+            )
 
     elif mime_type.startswith("image/"):
         st.image(decoded, caption=titre, use_container_width=True)
@@ -1094,18 +1116,19 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         except Exception:
             pass
 
-    # ✅ CLÉ UNIQUE POUR LE BOUTON DE TÉLÉCHARGEMENT
-    st.download_button(
-        label=f"📥 Télécharger {titre}.{file_ext}",
-        data=decoded,
-        file_name=f"{titre}.{file_ext}",
-        mime=mime_type,
-        use_container_width=True,
-        key=f"download_doc_{doc_index}_{file_ext}_{titre[:20]}"  # ← CLÉ UNIQUE
-    )
+    else:
+        # Pour les autres types, proposer le téléchargement
+        st.download_button(
+            label=f"📥 Télécharger {titre}.{file_ext}",
+            data=decoded,
+            file_name=f"{titre}.{file_ext}",
+            mime=mime_type,
+            use_container_width=True,
+            key=f"download_doc_{doc_index}_{file_ext}"
+        )
 
 # ============================================
-# FONCTIONS DE GÉNÉRATION DU PLANNING
+# FONCTIONS DE GÉNÉRATION DU PLANNING (inchangées)
 # ============================================
 
 def parse_hm(s):
@@ -1336,10 +1359,6 @@ def render_flight_strip(seance, eleve_id):
     </div>
     """
 
-# ============================================
-# EXPORT DU PLANNING
-# ============================================
-
 def _type_label(t):
     return {"briefing": "Briefing", "simulation": "Simulation", "debriefing": "Débriefing"}.get(t, t)
 
@@ -1387,13 +1406,10 @@ def to_excel_bytes(df, sheet_name="Planning"):
             worksheet.column_dimensions[worksheet.cell(row=1, column=i + 1).column_letter].width = min(max_len, 40)
     return buffer.getvalue()
 
-# ✅ CORRIGÉ : Ajout de clés uniques pour les boutons d'export
 def render_export_buttons(export_df, filename_prefix, key_prefix):
     st.markdown('<div class="section-title" style="font-size:1em;">📤 Exporter</div>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     horodatage = date.today().strftime("%Y-%m-%d")
-    
-    # Générer un ID unique pour cette instance
     unique_id = random.randint(1000, 9999)
     
     with col1:
@@ -1403,7 +1419,7 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
             file_name=f"{filename_prefix}_{horodatage}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True,
-            key=f"export_xlsx_{key_prefix}_{unique_id}"  # ← CLÉ UNIQUE
+            key=f"export_xlsx_{key_prefix}_{unique_id}"
         )
     with col2:
         st.download_button(
@@ -1412,7 +1428,7 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
             file_name=f"{filename_prefix}_{horodatage}.csv",
             mime="text/csv",
             use_container_width=True,
-            key=f"export_csv_{key_prefix}_{unique_id}"  # ← CLÉ UNIQUE
+            key=f"export_csv_{key_prefix}_{unique_id}"
         )
 
 # ============================================
@@ -1451,7 +1467,7 @@ def section_mon_mot_de_passe(db, role, user_id):
                 st.success("✅ Mot de passe mis à jour avec succès.")
 
 # ============================================
-# ÉCRAN DE CONNEXION
+# ÉCRAN DE CONNEXION (RACCOURCI)
 # ============================================
 
 def radar_login():
@@ -1613,7 +1629,6 @@ def header_instructeur(user):
 # SECTIONS ÉLÈVE
 # ============================================
 
-# ✅ CORRIGÉ : Ajout de enumerate pour avoir un index unique
 def section_cours_eleve(cours):
     st.markdown('<div class="section-title">📚 Cours disponibles</div>', unsafe_allow_html=True)
     if cours.empty:
@@ -1778,7 +1793,7 @@ def section_notes_eleve(notes):
         st.plotly_chart(fig, use_container_width=True)
 
 # ============================================
-# SECTIONS INSTRUCTEUR
+# SECTIONS INSTRUCTEUR (RACCOURCIES)
 # ============================================
 
 def _groupe_name_to_id(db):
@@ -2099,10 +2114,6 @@ def section_groupes_instr(db):
         </div>
         """, unsafe_allow_html=True)
 
-# ============================================
-# PAGE GÉNÉRATEUR
-# ============================================
-
 def page_generateur():
     st.markdown('<div class="section-title">🚀 Générateur de Planning</div>', unsafe_allow_html=True)
     db = Database()
@@ -2156,15 +2167,12 @@ def page_generateur():
                     st.balloons()
                 else:
                     jours_depassement = (date_fin_reelle - date_fin_souhaitee_obj).days
-                    
                     st.warning(f"⚠️ Dépassement de {jours_depassement} jour(s) !")
                     st.warning(f"📅 Fin réelle : {date_fin_reelle.strftime('%d/%m/%Y')} (vs {date_fin_souhaitee_obj.strftime('%d/%m/%Y')})")
                     st.success(f"✅ {nb_sim} simulations planifiées")
                     
                     st.markdown("### 💡 Solutions possibles :")
-                    
                     col1, col2 = st.columns(2)
-                    
                     with col1:
                         st.markdown("**🕐 Option 1 : Ajuster les horaires**")
                         st.markdown("- Réduire la durée des briefings")
@@ -2173,7 +2181,6 @@ def page_generateur():
                         if st.button("⚙️ Aller à la configuration", key="go_config"):
                             st.session_state["page"] = "Config"
                             st.rerun()
-                    
                     with col2:
                         st.markdown("**📅 Option 2 : Étendre la date de fin**")
                         nouvelle_date = date_fin_souhaitee_obj + timedelta(days=jours_depassement + 1)
@@ -2184,29 +2191,7 @@ def page_generateur():
                             db.save_config(config_update)
                             st.success(f"✅ Date de fin étendue au {nouvelle_date.strftime('%d/%m/%Y')}")
                             st.rerun()
-                    
-                    with st.expander("🔧 Options avancées"):
-                        st.markdown("**📆 Ajouter des jours supplémentaires**")
-                        jours_supp = st.number_input("Jours supplémentaires", min_value=1, max_value=30, value=jours_depassement + 1)
-                        if st.button("➕ Ajouter ces jours"):
-                            nouvelle_date = date_fin_souhaitee_obj + timedelta(days=jours_supp)
-                            config_update = config.copy()
-                            config_update["date_fin_souhaitee"] = nouvelle_date.strftime("%Y-%m-%d")
-                            db.save_config(config_update)
-                            st.success(f"✅ Date de fin étendue au {nouvelle_date.strftime('%d/%m/%Y')}")
-                            st.rerun()
-                        
-                        st.markdown("---")
-                        st.markdown("**⏱️ Compresser le planning**")
-                        if st.button("🔨 Compresser (réduire les durées)", key="compress"):
-                            simulations_all = db.get_simulations()
-                            for _, sim in simulations_all.iterrows():
-                                db.update_simulation_duree(sim['id'], 50)
-                            st.success("✅ Durées des simulations réduites à 50 min")
-                            st.info("🔄 Régénérez le planning pour voir l'effet")
-                    
                     st.balloons()
-                    
             except Exception as e:
                 st.error(f"❌ Erreur : {str(e)}")
 

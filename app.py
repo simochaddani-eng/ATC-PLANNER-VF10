@@ -1041,13 +1041,14 @@ def detect_file_type(decoded):
 
 
 def render_document_view(contenu, type_doc, titre):
+    """Affiche un document dans l'interface."""
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
         return
 
     titre_safe = esc(titre)
 
-    # Lien externe : toujours dans un iframe classique (pas de souci de taille)
+    # Lien externe
     if contenu.startswith(("http://", "https://")):
         st.markdown(f"""
         <div class="doc-viewer">
@@ -1070,15 +1071,17 @@ def render_document_view(contenu, type_doc, titre):
         )
         return
 
+    # Décoder le contenu base64
     try:
         decoded = base64.b64decode(contenu)
     except Exception:
-        # Pas du base64 valide : on affiche le texte brut échappé, JAMAIS interpolé sans échappement
+        # Pas du base64 valide : afficher le texte brut
         st.markdown('<div class="doc-viewer">', unsafe_allow_html=True)
-        st.write(contenu[:2000] + ("..." if len(contenu) > 2000 else ""))
+        st.text(contenu[:2000] + ("..." if len(contenu) > 2000 else ""))
         st.markdown('</div>', unsafe_allow_html=True)
         return
 
+    # Détecter le type de fichier
     file_ext, icon, label, mime_type = detect_file_type(decoded)
     taille_kb = len(decoded) // 1024
 
@@ -1095,12 +1098,12 @@ def render_document_view(contenu, type_doc, titre):
     </div>
     """, unsafe_allow_html=True)
 
+    # Afficher selon le type
     if mime_type.startswith("image/"):
         st.image(decoded, caption=titre, use_container_width=True)
 
     elif mime_type == "application/pdf":
-        # Aperçu natif du navigateur via <embed>, data-URI directement en src
-        # (PAS de passage par un service externe -> aucune limite de taille pratique)
+        # Aperçu PDF
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
         st.markdown(f"""
         <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
@@ -1118,16 +1121,7 @@ def render_document_view(contenu, type_doc, titre):
         except Exception:
             pass
 
-    elif mime_type in (
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    ):
-        st.info(
-            "📌 L'aperçu intégré n'est pas disponible pour ce format (Word/Excel/PowerPoint) "
-            "directement dans le navigateur. Téléchargez le fichier ci-dessous pour l'ouvrir."
-        )
-
+    # Bouton de téléchargement
     st.download_button(
         label=f"📥 Télécharger {titre}.{file_ext}",
         data=decoded,
@@ -1135,7 +1129,6 @@ def render_document_view(contenu, type_doc, titre):
         mime=mime_type,
         use_container_width=True
     )
-
 
 # ============================================
 # FONCTIONS DE GÉNÉRATION DU PLANNING (inchangées)
@@ -2165,8 +2158,13 @@ def page_generateur():
         st.warning("⚠️ Il faut au moins 2 instructeurs (substitut requis pour la Simulation Test)")
         return
 
-    st.info(f"👨‍🎓 {len(eleves)} élèves | 👨‍🏫 {len(instructeurs)} instructeurs | 📅 {config['date_debut']} → {config['date_fin_souhaitee']}")
+    # Afficher les informations
+    date_debut = config['date_debut']
+    date_fin_souhaitee = config['date_fin_souhaitee']
+    
+    st.info(f"👨‍🎓 {len(eleves)} élèves | 👨‍🏫 {len(instructeurs)} instructeurs | 📅 {date_debut} → {date_fin_souhaitee}")
 
+    # Bouton de génération
     if st.button("🚀 Générer le planning", type="primary"):
         with st.spinner("🔄 Génération..."):
             try:
@@ -2185,14 +2183,72 @@ def page_generateur():
                     if s["groupe_id"] is not None:
                         s["groupe_id"] = id_map.get(s["groupe_id"], s["groupe_id"])
                 db.save_seances(seances)
-                date_fin_souhaitee = datetime.strptime(config["date_fin_souhaitee"], "%Y-%m-%d").date()
-                if date_fin_reelle <= date_fin_souhaitee:
-                    st.success(f"✅ Planning généré ! Fin: {date_fin_reelle.strftime('%d/%m/%Y')}")
-                else:
-                    st.warning(f"⚠️ Dépassement: {date_fin_reelle.strftime('%d/%m/%Y')}")
+                
+                date_fin_souhaitee_obj = datetime.strptime(config["date_fin_souhaitee"], "%Y-%m-%d").date()
                 nb_sim = len([s for s in seances if s["type"] == "simulation"])
-                st.success(f"✅ {nb_sim} simulations planifiées")
-                st.balloons()
+                
+                # ✅ VÉRIFICATION DU DÉPASSEMENT
+                if date_fin_reelle <= date_fin_souhaitee_obj:
+                    st.success(f"✅ Planning généré ! Fin: {date_fin_reelle.strftime('%d/%m/%Y')}")
+                    st.success(f"✅ {nb_sim} simulations planifiées")
+                    st.balloons()
+                else:
+                    # ⚠️ DÉPASSEMENT - PROPOSER DES SOLUTIONS
+                    jours_depassement = (date_fin_reelle - date_fin_souhaitee_obj).days
+                    
+                    st.warning(f"⚠️ Dépassement de {jours_depassement} jour(s) !")
+                    st.warning(f"📅 Fin réelle : {date_fin_reelle.strftime('%d/%m/%Y')} (vs {date_fin_souhaitee_obj.strftime('%d/%m/%Y')})")
+                    st.success(f"✅ {nb_sim} simulations planifiées")
+                    
+                    # 💡 PROPOSER DES SOLUTIONS
+                    st.markdown("### 💡 Solutions possibles :")
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown("**🕐 Option 1 : Ajuster les horaires**")
+                        st.markdown("- Réduire la durée des briefings")
+                        st.markdown("- Réduire la durée des débriefings")
+                        st.markdown("- Réduire la durée des simulations")
+                        if st.button("⚙️ Aller à la configuration", key="go_config"):
+                            st.session_state["page"] = "Config"
+                            st.rerun()
+                    
+                    with col2:
+                        st.markdown("**📅 Option 2 : Étendre la date de fin**")
+                        nouvelle_date = date_fin_souhaitee_obj + timedelta(days=jours_depassement + 1)
+                        st.markdown(f"- Proposer : **{nouvelle_date.strftime('%d/%m/%Y')}**")
+                        if st.button("📅 Proposer cette date", key="extend_date"):
+                            # Mettre à jour la configuration
+                            config_update = config.copy()
+                            config_update["date_fin_souhaitee"] = nouvelle_date.strftime("%Y-%m-%d")
+                            db.save_config(config_update)
+                            st.success(f"✅ Date de fin étendue au {nouvelle_date.strftime('%d/%m/%Y')}")
+                            st.rerun()
+                    
+                    # Option 3 : Ajouter des jours de travail
+                    with st.expander("🔧 Options avancées"):
+                        st.markdown("**📆 Ajouter des jours supplémentaires**")
+                        jours_supp = st.number_input("Jours supplémentaires à ajouter", min_value=1, max_value=30, value=jours_depassement + 1)
+                        if st.button("➕ Ajouter ces jours"):
+                            nouvelle_date = date_fin_souhaitee_obj + timedelta(days=jours_supp)
+                            config_update = config.copy()
+                            config_update["date_fin_souhaitee"] = nouvelle_date.strftime("%Y-%m-%d")
+                            db.save_config(config_update)
+                            st.success(f"✅ Date de fin étendue au {nouvelle_date.strftime('%d/%m/%Y')}")
+                            st.rerun()
+                        
+                        st.markdown("---")
+                        st.markdown("**⏱️ Compresser le planning**")
+                        if st.button("🔨 Compresser (réduire les durées)", key="compress"):
+                            # Réduire les durées des simulations
+                            for sim_id in durees_input.keys():
+                                db.update_simulation_duree(sim_id, 50)  # 50 min au lieu de 65
+                            st.success("✅ Durées des simulations réduites à 50 min")
+                            st.info("🔄 Régénérez le planning pour voir l'effet")
+                    
+                    st.balloons()
+                    
             except Exception as e:
                 st.error(f"❌ Erreur : {str(e)}")
 

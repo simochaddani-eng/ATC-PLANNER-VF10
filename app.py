@@ -953,8 +953,10 @@ from streamlit_pdf_viewer import pdf_viewer
 
 from streamlit_pdf_viewer import pdf_viewer
 
+from streamlit_pdf_viewer import pdf_viewer
+
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document - Version avec streamlit-pdf-viewer optimisé"""
+    """Affiche un document - Version avec streamlit-pdf-viewer"""
     
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
@@ -1037,13 +1039,13 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     if mime_type == "application/pdf":
         st.markdown("### 📄 Aperçu du document")
         
-        # Utiliser le composant streamlit-pdf-viewer avec une largeur adaptée
+        # Utiliser le composant streamlit-pdf-viewer
+        # Arguments valides : input, width, height, annotations
         try:
             pdf_viewer(
-                input=decoded, 
-                width=1200,        # Largeur fixe pour éviter le débordement
-                height=800,        # Hauteur adaptée
-                rendering="unwrap" # Dérouler le contenu
+                input=decoded,
+                width=1200,    # Largeur en pixels
+                height=800     # Hauteur en pixels
             )
         except Exception as e:
             st.error(f"❌ Erreur d'affichage du PDF : {str(e)}")

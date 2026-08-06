@@ -920,7 +920,6 @@ class Database:
 # ============================================
 # FONCTION DE VISUALISATION DE DOCUMENTS - VERSION CORRIGÉE
 # ============================================
-
 def detect_file_type(decoded):
     """Renvoie (extension, icone, label, mime_type) à partir des octets."""
     if decoded[:4] == b'%PDF':
@@ -951,7 +950,7 @@ def detect_file_type(decoded):
         return "bin", "📎", "Fichier", "application/octet-stream"
 
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document dans l'interface - Version Colab (fonctionnelle)"""
+    """Affiche un document - Version qui fonctionne sur GitHub"""
     
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
@@ -959,7 +958,7 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
 
     titre_safe = esc(titre)
 
-    # Lien externe
+    # --- Gestion des liens externes ---
     if contenu.startswith(("http://", "https://")):
         st.markdown(f"""
         <div class="doc-viewer">
@@ -975,18 +974,17 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
             </div>
         </div>
         """, unsafe_allow_html=True)
-        st.markdown(
-            f'<iframe src="{contenu}" style="width:100%;height:700px;border-radius:8px;'
-            f'border:1px solid rgba(0,255,100,0.06);background:#0d1a2b;"></iframe>',
-            unsafe_allow_html=True
-        )
         return
 
     # --- DÉCODAGE BASE64 ---
     try:
+        # Ajouter du padding si nécessaire
+        padding = len(contenu) % 4
+        if padding:
+            contenu += '=' * (4 - padding)
         decoded = base64.b64decode(contenu)
-    except Exception:
-        # Pas du base64 valide : on affiche le texte brut
+    except Exception as e:
+        st.warning(f"⚠️ Erreur de décodage: {str(e)[:50]}...")
         st.markdown('<div class="doc-viewer">', unsafe_allow_html=True)
         st.write(contenu[:2000] + ("..." if len(contenu) > 2000 else ""))
         st.markdown('</div>', unsafe_allow_html=True)
@@ -1009,20 +1007,34 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     </div>
     """, unsafe_allow_html=True)
 
-    # --- AFFICHAGE SELON LE TYPE ---
-    if mime_type.startswith("image/"):
-        st.image(decoded, caption=titre, use_container_width=True)
-
-    # ✅ PDF AVEC <embed> (comme dans Colab)
-    elif mime_type == "application/pdf":
+    # --- AFFICHAGE DU PDF ---
+    if mime_type == "application/pdf":
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
+        data_url = f"data:application/pdf;base64,{pdf_b64}"
+        
+        st.markdown("### 📄 Aperçu du document")
+        
+        # Afficher avec embed
         st.markdown(f"""
         <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
                     background:#ffffff;padding:4px;margin-top:8px;">
-            <embed src="data:application/pdf;base64,{pdf_b64}" type="application/pdf"
+            <embed src="{data_url}" type="application/pdf"
                    style="width:100%;height:700px;border-radius:4px;background:#ffffff;">
         </div>
         """, unsafe_allow_html=True)
+        
+        # Lien de secours
+        st.markdown(f"""
+        <div style="margin-top:10px;text-align:center;">
+            <a href="{data_url}" target="_blank" 
+               style="color:#66ddff;text-decoration:none;font-family:'JetBrains Mono',monospace;">
+               🔗 Ouvrir dans un nouvel onglet
+            </a>
+        </div>
+        """, unsafe_allow_html=True)
+
+    elif mime_type.startswith("image/"):
+        st.image(decoded, caption=titre, use_container_width=True)
 
     elif mime_type == "text/plain":
         try:
@@ -1032,24 +1044,14 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         except Exception:
             pass
 
-    elif mime_type in (
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    ):
-        st.info(
-            "📌 L'aperçu intégré n'est pas disponible pour ce format (Word/Excel/PowerPoint) "
-            "directement dans le navigateur. Téléchargez le fichier ci-dessous pour l'ouvrir."
-        )
-
-    # ✅ Bouton de téléchargement avec clé unique
+    # --- BOUTON DE TÉLÉCHARGEMENT ---
     st.download_button(
         label=f"📥 Télécharger {titre}.{file_ext}",
         data=decoded,
         file_name=f"{titre}.{file_ext}",
         mime=mime_type,
         use_container_width=True,
-        key=f"download_doc_{doc_index or random.randint(1000, 9999)}_{file_ext}"
+        key=f"download_doc_{doc_index or random.randint(1000, 9999)}"
     )
 # ============================================
 # FONCTIONS DE GÉNÉRATION DU PLANNING

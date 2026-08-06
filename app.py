@@ -31,7 +31,7 @@ st.set_page_config(
     page_title="ATC Planner - ICNA AIAC",
     page_icon="📡",
     layout="wide",
-    initial_sidebar_state="collapsed",  # 👈 Sidebar repliée par défaut sur mobile
+    initial_sidebar_state="collapsed",
     menu_items={
         'Get Help': None,
         'Report a bug': None,
@@ -143,6 +143,23 @@ LANGUAGES = {
         "your_group": "Mon Groupe",
         "your_planning": "Mon Planning",
         "your_notes": "Mes Notes",
+        "extension_scenarios": "💡 Scénarios d'extension horaire",
+        "extension_desc": "Voici des propositions pour faire tenir le planning dans la période souhaitée.",
+        "no_extension": "❌ Aucun scénario d'extension ne permet de faire tenir le planning.",
+        "comparative_calendar": "📅 Calendrier comparatif",
+        "scenario_detail": "🔍 Détail des scénarios",
+        "apply_scenario": "✅ Appliquer ce scénario",
+        "best_scenario": "💡 Le meilleur scénario est",
+        "apply_best": "🚀 Appliquer le meilleur scénario",
+        "new_schedule": "📋 Nouveaux horaires",
+        "new_end_date": "📅 Nouvelle date de fin",
+        "time_gain": "⏱️ Gain total",
+        "days_gain": "📊 Gain en jours",
+        "planning_preview": "📈 Aperçu du planning",
+        "manual_solutions": "💡 Solutions manuelles",
+        "option_adjust_hours": "🕐 Option 1 : Ajuster les horaires",
+        "option_extend_date": "📅 Option 2 : Étendre la date de fin",
+        "propose_date": "Proposer cette date",
     },
     "🇬🇧 English": {
         "code": "en",
@@ -243,6 +260,23 @@ LANGUAGES = {
         "your_group": "My Group",
         "your_planning": "My Planning",
         "your_notes": "My Notes",
+        "extension_scenarios": "💡 Extension scenarios",
+        "extension_desc": "Here are proposals to fit the planning within the desired period.",
+        "no_extension": "❌ No extension scenario allows the planning to fit.",
+        "comparative_calendar": "📅 Comparative calendar",
+        "scenario_detail": "🔍 Scenario details",
+        "apply_scenario": "✅ Apply this scenario",
+        "best_scenario": "💡 The best scenario is",
+        "apply_best": "🚀 Apply the best scenario",
+        "new_schedule": "📋 New schedule",
+        "new_end_date": "📅 New end date",
+        "time_gain": "⏱️ Total gain",
+        "days_gain": "📊 Days gained",
+        "planning_preview": "📈 Planning preview",
+        "manual_solutions": "💡 Manual solutions",
+        "option_adjust_hours": "🕐 Option 1: Adjust hours",
+        "option_extend_date": "📅 Option 2: Extend end date",
+        "propose_date": "Propose this date",
     },
     "🇸🇦 العربية": {
         "code": "ar",
@@ -343,6 +377,23 @@ LANGUAGES = {
         "your_group": "مجموعتي",
         "your_planning": "جدولي",
         "your_notes": "درجاتي",
+        "extension_scenarios": "💡 سيناريوهات التمديد",
+        "extension_desc": "هذه اقتراحات لتتناسب الجدولة مع الفترة المطلوبة.",
+        "no_extension": "❌ لا يوجد سيناريو تمديد يسمح بتناسب الجدولة.",
+        "comparative_calendar": "📅 تقويم مقارن",
+        "scenario_detail": "🔍 تفاصيل السيناريو",
+        "apply_scenario": "✅ تطبيق هذا السيناريو",
+        "best_scenario": "💡 أفضل سيناريو هو",
+        "apply_best": "🚀 تطبيق أفضل سيناريو",
+        "new_schedule": "📋 الجدول الجديد",
+        "new_end_date": "📅 تاريخ الانتهاء الجديد",
+        "time_gain": "⏱️ الربح الإجمالي",
+        "days_gain": "📊 الأيام المربحة",
+        "planning_preview": "📈 معاينة الجدول",
+        "manual_solutions": "💡 حلول يدوية",
+        "option_adjust_hours": "🕐 الخيار 1: تعديل الساعات",
+        "option_extend_date": "📅 الخيار 2: تمديد تاريخ الانتهاء",
+        "propose_date": "اقتراح هذا التاريخ",
     }
 }
 
@@ -405,7 +456,6 @@ st.markdown("""
        STYLES RESPONSIVE POUR MOBILE
     ============================================ */
     
-    /* Ajustements pour écrans mobiles */
     @media only screen and (max-width: 768px) {
         .section-title {
             font-size: 0.9em !important;
@@ -1330,7 +1380,7 @@ class Database:
             self._exec(f"DELETE FROM {table}")
 
 # ============================================
-# FONCTION DE VISUALISATION DE DOCUMENTS - AVEC STREAMLIT-PDF-VIEWER
+# FONCTION DE VISUALISATION DE DOCUMENTS
 # ============================================
 
 def detect_file_type(decoded):
@@ -1711,56 +1761,189 @@ def generer_planning_complet(groupes, instructeurs_df, simulations_df, config):
     return toutes_seances, date_fin
 
 # ============================================
-# FONCTIONS UTILITAIRES
+# SCÉNARIOS D'EXTENSION HORAIRE
 # ============================================
 
-def get_avatar(nom, prenom):
-    initials = (prenom[0] + nom[0]).upper() if prenom and nom else "E"
-    return f"""
-    <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0d1a2b,#2a5298);
-                display:flex;align-items:center;justify-content:center;color:#7affb0;font-size:1.1em;
-                font-weight:700;font-family:'JetBrains Mono',monospace;border:1px solid rgba(0,255,100,0.1);">
-        {esc(initials)}
-    </div>
+def generer_scenarios_extension(config, eleves_df, instructeurs_df, simulations_df, jours_depassement):
     """
-
-def render_flight_strip(seance, eleve_id):
-    role_text = t("observer")
-    role_class = "strip-role-observer"
-    if seance.get("controle_eleve_id") == eleve_id:
-        role_text = t("controller")
-        role_class = "strip-role-controller"
-    elif seance.get("pseudo_eleve_id") == eleve_id:
-        role_text = t("pseudopilot")
-        role_class = "strip-role-pseudo"
-
-    return f"""
-    <div class="flight-strip">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-            <div>
-                <span class="strip-callsign">📡 {esc(seance.get('simulation_nom', t('simulation')))}</span>
-                <span style="margin-left:10px;">
-                    <span class="{role_class}" style="padding:2px 10px;border-radius:10px;font-size:0.7em;font-weight:600;">{role_text}</span>
-                </span>
-            </div>
-            <div>
-                <span class="strip-time">🕐 {esc(seance.get('heure_debut', ''))}</span>
-                <span style="margin-left:10px;color:rgba(180,200,220,0.3);font-size:0.75em;">⏱️ {seance.get('duree', 0)}min</span>
-            </div>
-        </div>
-        <div class="strip-info">
-            🏷️ {esc(seance.get('groupe_nom', ''))}
-            {f" | 👤 {esc(seance.get('instructeur_nom',''))}" if seance.get("instructeur_nom") else ''}
-        </div>
-    </div>
+    Génère des scénarios d'extension horaire pour compenser le dépassement.
     """
+    scenarios = []
+    
+    # Scénarios d'extension
+    extensions = [
+        {"nom": "Matin +30min (début)", "modif": {"heure_debut_matin": "08:30"}, "gain": 30},
+        {"nom": "Matin +30min (fin)", "modif": {"heure_fin_matin": "12:45"}, "gain": 30},
+        {"nom": "Après-midi +30min (début)", "modif": {"heure_debut_apres_midi": "13:45"}, "gain": 30},
+        {"nom": "Après-midi +30min (fin)", "modif": {"heure_fin_apres_midi": "18:00"}, "gain": 30},
+    ]
+    
+    # Combinaisons de deux extensions
+    combinaisons = []
+    for i in range(len(extensions)):
+        for j in range(i+1, len(extensions)):
+            combinaisons.append({
+                "nom": f"{extensions[i]['nom']} + {extensions[j]['nom']}",
+                "modif": {**extensions[i]['modif'], **extensions[j]['modif']},
+                "gain": extensions[i]['gain'] + extensions[j]['gain']
+            })
+    
+    # Scénario : extension complète (4 extensions)
+    combinaisons.append({
+        "nom": "Extension complète (4x +30min)",
+        "modif": {
+            "heure_debut_matin": "08:30",
+            "heure_fin_matin": "12:45",
+            "heure_debut_apres_midi": "13:45",
+            "heure_fin_apres_midi": "18:00"
+        },
+        "gain": 120
+    })
+    
+    # Tous les scénarios
+    tous_scenarios = extensions + combinaisons
+    
+    for sc in tous_scenarios:
+        # Appliquer les modifications à la configuration
+        config_test = config.copy()
+        for key, value in sc['modif'].items():
+            config_test[key] = value
+        
+        try:
+            # Tester le planning avec cette configuration
+            config_test["_date_debut_obj"] = datetime.strptime(config["date_debut"], "%Y-%m-%d").date()
+            groupes_raw = generer_groupes(eleves_df, instructeurs_df)
+            for i, g in enumerate(groupes_raw):
+                g["local_id"] = i + 1
+            
+            seances, date_fin_reelle = generer_planning_complet(
+                groupes_raw, 
+                instructeurs_df, 
+                simulations_df, 
+                config_test
+            )
+            
+            date_fin_souhaitee = datetime.strptime(config["date_fin_souhaitee"], "%Y-%m-%d").date()
+            
+            # Calculer les horaires modifiés
+            nouveaux_horaires = {}
+            for key, value in sc['modif'].items():
+                if key == "heure_debut_matin":
+                    nouveaux_horaires["Début matin"] = value
+                elif key == "heure_fin_matin":
+                    nouveaux_horaires["Fin matin"] = value
+                elif key == "heure_debut_apres_midi":
+                    nouveaux_horaires["Début après-midi"] = value
+                elif key == "heure_fin_apres_midi":
+                    nouveaux_horaires["Fin après-midi"] = value
+            
+            # Calcul du gain
+            gain_jours = (date_fin_souhaitee - date_fin_reelle).days if date_fin_reelle <= date_fin_souhaitee else 0
+            
+            # Si le planning tient, on garde le scénario
+            if date_fin_reelle <= date_fin_souhaitee or gain_jours > 0:
+                scenarios.append({
+                    "nom": sc['nom'],
+                    "horaires": nouveaux_horaires,
+                    "date_fin": date_fin_reelle.strftime("%d/%m/%Y"),
+                    "gain_jours": gain_jours,
+                    "gain_minutes": sc['gain'],
+                    "config": config_test,
+                    "seances": seances
+                })
+        except Exception as e:
+            # Ignorer les scénarios qui échouent
+            continue
+    
+    # Trier les scénarios par gain (du meilleur au moins bon)
+    scenarios.sort(key=lambda x: x['gain_minutes'], reverse=True)
+    
+    return scenarios
+
+def afficher_scenarios_extension(scenarios, config_originale):
+    """Affiche les scénarios d'extension dans une interface comparative."""
+    st.markdown(f"### {t('extension_scenarios')}")
+    st.caption(t('extension_desc'))
+    
+    if not scenarios:
+        st.warning(t('no_extension'))
+        return
+    
+    # Afficher le calendrier comparatif
+    st.markdown(f"#### {t('comparative_calendar')}")
+    
+    # Créer un DataFrame pour l'affichage
+    data = []
+    for i, sc in enumerate(scenarios[:10]):
+        data.append({
+            "Scénario": sc['nom'],
+            t('new_end_date'): sc['date_fin'],
+            t('days_gain'): sc['gain_jours'],
+            t('time_gain'): f"+{sc['gain_minutes']} min",
+            t('new_schedule'): ", ".join([f"{k}: {v}" for k, v in sc['horaires'].items()])
+        })
+    
+    df_scenarios = pd.DataFrame(data)
+    st.dataframe(df_scenarios, use_container_width=True, hide_index=True)
+    
+    # Affichage détaillé des scénarios
+    st.markdown(f"#### {t('scenario_detail')}")
+    
+    for i, sc in enumerate(scenarios[:5]):
+        with st.expander(f"📌 Scénario {i+1}: {sc['nom']} ({t('time_gain')}: {sc['gain_minutes']} min)", expanded=i==0):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown(f"**{t('new_schedule')}:**")
+                for horaire, valeur in sc['horaires'].items():
+                    st.write(f"- {horaire}: **{valeur}**")
+                
+                st.markdown(f"**{t('new_end_date')}:** {sc['date_fin']}")
+                st.markdown(f"**{t('time_gain')}:** +{sc['gain_minutes']} minutes")
+                st.markdown(f"**{t('days_gain')}:** {sc['gain_jours']} jour(s)")
+            
+            with col2:
+                st.markdown(f"**{t('planning_preview')}:**")
+                nb_sim = len([s for s in sc['seances'] if s['type'] == 'simulation'])
+                nb_brief = len([s for s in sc['seances'] if s['type'] == 'briefing'])
+                nb_debrief = len([s for s in sc['seances'] if s['type'] == 'debriefing'])
+                st.write(f"- {nb_sim} {t('simulation').lower()}s")
+                st.write(f"- {nb_brief} {t('briefing').lower()}s")
+                st.write(f"- {nb_debrief} {t('debriefing').lower()}s")
+            
+            # Bouton pour appliquer ce scénario
+            if st.button(f"{t('apply_scenario')}", key=f"apply_scenario_{i}"):
+                db = Database()
+                db.save_config(sc['config'])
+                st.session_state["page"] = "Generateur"
+                st.success(f"✅ {t('apply_scenario')} '{sc['nom']}' !")
+                st.rerun()
+    
+    # Option pour appliquer automatiquement le meilleur scénario
+    if len(scenarios) > 0:
+        st.markdown("---")
+        st.markdown("#### ⚡ Action rapide")
+        
+        meilleur = scenarios[0]
+        st.info(f"💡 {t('best_scenario')} **'{meilleur['nom']}'** ({t('time_gain')}: {meilleur['gain_minutes']} min).")
+        
+        if st.button(f"{t('apply_best')}", use_container_width=True):
+            db = Database()
+            db.save_config(meilleur['config'])
+            st.session_state["page"] = "Generateur"
+            st.success(f"✅ {t('apply_best')} !")
+            st.rerun()
+
+# ============================================
+# FONCTIONS DE GÉNÉRATION DU PLANNING (suite)
+# ============================================
 
 def _type_label(type_value):
     """Traduit le type de séance pour l'export."""
     type_map = {
-        "briefing": "Briefing",
-        "simulation": "Simulation",
-        "debriefing": "Débriefing"
+        "briefing": t("briefing"),
+        "simulation": t("simulation"),
+        "debriefing": t("debriefing")
     }
     return type_map.get(type_value, type_value)
 
@@ -1788,7 +1971,7 @@ def build_export_dataframe(seances_df, eleves_df=None):
         "Date": seances_df["date"],
         "Heure": seances_df["heure_debut"],
         "Durée (min)": seances_df["duree"],
-        "Type": seances_df["type"].apply(_type_label),  # ← Utilise _type_label corrigé
+        "Type": seances_df["type"].apply(_type_label),
         "Simulation": seances_df["simulation_nom"] if "simulation_nom" in seances_df.columns else "",
         "Groupe": seances_df["groupe_nom"] if "groupe_nom" in seances_df.columns else "",
         "Instructeur": seances_df["instructeur_nom"] if "instructeur_nom" in seances_df.columns else "",
@@ -2029,6 +2212,51 @@ def header_instructeur(user):
     """, unsafe_allow_html=True)
 
 # ============================================
+# FONCTIONS UTILITAIRES
+# ============================================
+
+def get_avatar(nom, prenom):
+    initials = (prenom[0] + nom[0]).upper() if prenom and nom else "E"
+    return f"""
+    <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0d1a2b,#2a5298);
+                display:flex;align-items:center;justify-content:center;color:#7affb0;font-size:1.1em;
+                font-weight:700;font-family:'JetBrains Mono',monospace;border:1px solid rgba(0,255,100,0.1);">
+        {esc(initials)}
+    </div>
+    """
+
+def render_flight_strip(seance, eleve_id):
+    role_text = t("observer")
+    role_class = "strip-role-observer"
+    if seance.get("controle_eleve_id") == eleve_id:
+        role_text = t("controller")
+        role_class = "strip-role-controller"
+    elif seance.get("pseudo_eleve_id") == eleve_id:
+        role_text = t("pseudopilot")
+        role_class = "strip-role-pseudo"
+
+    return f"""
+    <div class="flight-strip">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+            <div>
+                <span class="strip-callsign">📡 {esc(seance.get('simulation_nom', t('simulation')))}</span>
+                <span style="margin-left:10px;">
+                    <span class="{role_class}" style="padding:2px 10px;border-radius:10px;font-size:0.7em;font-weight:600;">{role_text}</span>
+                </span>
+            </div>
+            <div>
+                <span class="strip-time">🕐 {esc(seance.get('heure_debut', ''))}</span>
+                <span style="margin-left:10px;color:rgba(180,200,220,0.3);font-size:0.75em;">⏱️ {seance.get('duree', 0)}min</span>
+            </div>
+        </div>
+        <div class="strip-info">
+            🏷️ {esc(seance.get('groupe_nom', ''))}
+            {f" | 👤 {esc(seance.get('instructeur_nom',''))}" if seance.get("instructeur_nom") else ''}
+        </div>
+    </div>
+    """
+
+# ============================================
 # SECTIONS ÉLÈVE
 # ============================================
 
@@ -2196,7 +2424,7 @@ def section_notes_eleve(notes):
         st.plotly_chart(fig, use_container_width=True)
 
 # ============================================
-# SECTIONS INSTRUCTEUR (RACCOURCIES)
+# SECTIONS INSTRUCTEUR
 # ============================================
 
 def _groupe_name_to_id(db):
@@ -2574,26 +2802,47 @@ def page_generateur():
                     st.warning(f"📅 Fin réelle : {date_fin_reelle.strftime('%d/%m/%Y')} (vs {date_fin_souhaitee_obj.strftime('%d/%m/%Y')})")
                     st.success(f"✅ {nb_sim} simulations planifiées")
                     
-                    st.markdown("### 💡 Solutions possibles :")
+                    # === SCÉNARIOS D'EXTENSION ===
+                    st.markdown("---")
+                    
+                    with st.spinner("🔄 Analyse des scénarios d'extension..."):
+                        scenarios = generer_scenarios_extension(
+                            config, 
+                            eleves, 
+                            instructeurs, 
+                            simulations, 
+                            jours_depassement
+                        )
+                    
+                    if scenarios:
+                        afficher_scenarios_extension(scenarios, config)
+                    else:
+                        st.info("💡 Aucun scénario d'extension n'est nécessaire. Le planning peut être ajusté manuellement.")
+                    
+                    st.markdown("---")
+                    st.markdown(f"### {t('manual_solutions')}")
+                    
                     col1, col2 = st.columns(2)
                     with col1:
-                        st.markdown("**🕐 Option 1 : Ajuster les horaires**")
+                        st.markdown(f"**{t('option_adjust_hours')}**")
                         st.markdown("- Réduire la durée des briefings")
                         st.markdown("- Réduire la durée des débriefings")
                         st.markdown("- Réduire la durée des simulations")
                         if st.button("⚙️ Aller à la configuration", key="go_config"):
                             st.session_state["page"] = "Config"
                             st.rerun()
+                    
                     with col2:
-                        st.markdown("**📅 Option 2 : Étendre la date de fin**")
+                        st.markdown(f"**{t('option_extend_date')}**")
                         nouvelle_date = date_fin_souhaitee_obj + timedelta(days=jours_depassement + 1)
-                        st.markdown(f"- Proposer : **{nouvelle_date.strftime('%d/%m/%Y')}**")
-                        if st.button("📅 Proposer cette date", key="extend_date"):
+                        st.markdown(f"- {t('propose_date')} : **{nouvelle_date.strftime('%d/%m/%Y')}**")
+                        if st.button(f"📅 {t('propose_date')}", key="extend_date"):
                             config_update = config.copy()
                             config_update["date_fin_souhaitee"] = nouvelle_date.strftime("%Y-%m-%d")
                             db.save_config(config_update)
                             st.success(f"✅ Date de fin étendue au {nouvelle_date.strftime('%d/%m/%Y')}")
                             st.rerun()
+                    
                     st.balloons()
             except Exception as e:
                 st.error(f"❌ Erreur : {str(e)}")
@@ -2663,7 +2912,7 @@ def main():
                 t("my_password"): "MotDePasse_Instr"
             }
 
-        selection = st.radio(t("menu", lang=st.session_state["language"]) if "menu" in LANGUAGES[st.session_state["language"]] else "Navigation", list(pages.keys()))
+        selection = st.radio("Navigation", list(pages.keys()))
         page = pages[selection]
 
         st.markdown("---")
@@ -2687,7 +2936,6 @@ def main():
         header_eleve(user)
         
         if st.session_state.get("mobile_mode", False):
-            # Mode mobile : utiliser des onglets
             tabs = st.tabs(list(pages.keys()))
             tab_pages = list(pages.values())
             for tab, page_name in zip(tabs, tab_pages):
@@ -2707,7 +2955,6 @@ def main():
                     elif page_name == "MotDePasse":
                         section_mon_mot_de_passe(db, "eleve", eleve_id)
         else:
-            # Mode desktop normal
             if page == "Groupe":
                 section_groupe_eleve(db, eleve_id)
             elif page == "Cours":
@@ -2727,14 +2974,12 @@ def main():
     # ---- Instructeur ----
     instr_id = user.get("id")
 
-    # Mode mobile pour instructeur
     if st.session_state.get("mobile_mode", False):
         tabs = st.tabs(list(pages.keys()))
         tab_pages = list(pages.values())
         for tab, page_name in zip(tabs, tab_pages):
             with tab:
                 if page_name == "Personnes":
-                    # Fonction personnes simplifiée pour mobile
                     st.markdown(f'<div class="section-title">{t("people")}</div>', unsafe_allow_html=True)
                     st.info("📱 Version mobile - Gestion des personnes")
                 elif page_name == "Config":

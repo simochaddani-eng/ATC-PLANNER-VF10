@@ -1,7 +1,5 @@
-streamlit>=1.37
+streamlit
 pandas
 plotly
-sqlalchemy>=2.0
-psycopg2-binary
 openpyxl
-numpy
+streamlit-pdf-viewer

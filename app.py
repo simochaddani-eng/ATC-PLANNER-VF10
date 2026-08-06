@@ -1067,15 +1067,42 @@ def render_document_view(contenu, type_doc, titre):
         
         st.markdown("### 📄 Aperçu du document")
         
-        # Méthode 1: iframe (la plus fiable)
-        st.markdown(f"""
-        <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                    background:#0d1a2b;padding:4px;margin-top:8px;">
-            <iframe src="{data_url}" 
-                    style="width:100%;height:700px;border:none;border-radius:4px;">
-            </iframe>
-        </div>
-        """, unsafe_allow_html=True)
+        # CRÉER UNE SECTION AVEC PLUSIEURS OPTIONS
+        tab1, tab2, tab3 = st.tabs(["📖 Viewer PDF.js", "📖 Google Docs", "📥 Télécharger"])
+        
+        with tab1:
+            # PDF.js Viewer (le plus fiable)
+            viewer_url = f"https://mozilla.github.io/pdf.js/web/viewer.html?file={data_url}"
+            st.markdown(f"""
+            <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
+                        background:#0d1a2b;padding:4px;margin-top:8px;">
+                <iframe src="{viewer_url}" 
+                        style="width:100%;height:700px;border:none;border-radius:4px;">
+                </iframe>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with tab2:
+            # Google Docs Viewer
+            google_url = f"https://docs.google.com/viewer?url={data_url}&embedded=true"
+            st.markdown(f"""
+            <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
+                        background:#0d1a2b;padding:4px;margin-top:8px;">
+                <iframe src="{google_url}" 
+                        style="width:100%;height:700px;border:none;border-radius:4px;">
+                </iframe>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with tab3:
+            # Téléchargement
+            st.download_button(
+                label=f"📥 Télécharger {titre}.pdf",
+                data=decoded,
+                file_name=f"{titre}.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
 
     elif mime_type.startswith("image/"):
         st.image(decoded, caption=titre, use_container_width=True)

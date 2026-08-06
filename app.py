@@ -676,8 +676,7 @@ class Database:
     def get_groupes(self):
         return self._query("""
             SELECT g.*, i.nom || ' ' || i.prenom as instructeur_nom
-            FROM groupes g LEFT JOIN instructeurs i ON g.instructeur_id = i.id
-            ORDER BY g.id
+            FROM groupes g LEFT JOIN instructeurs i ON g.instructeur_id = i.id            ORDER BY g.id
         """)
 
     def get_groupe_eleves(self, groupe_id):
@@ -918,8 +917,9 @@ class Database:
             self._exec(f"DELETE FROM {table}")
 
 # ============================================
-# FONCTION DE VISUALISATION DE DOCUMENTS - VERSION CORRIGÉE
+# FONCTION DE VISUALISATION DE DOCUMENTS - VERSION STREAMLIT CLOUD
 # ============================================
+
 def detect_file_type(decoded):
     """Renvoie (extension, icone, label, mime_type) à partir des octets."""
     if decoded[:4] == b'%PDF':
@@ -950,13 +950,13 @@ def detect_file_type(decoded):
         return "bin", "📎", "Fichier", "application/octet-stream"
 
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document dans l'interface - Version Streamlit Cloud"""
+    """Affiche un document - Version Streamlit Cloud (compatible CSP)"""
     
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
         return
 
-    titre_safe = html_lib.escape(str(titre))
+    titre_safe = esc(titre)
 
     if doc_index is None:
         doc_index = random.randint(1000, 9999)
@@ -1010,6 +1010,7 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     
     if decoded is None:
         st.error("❌ Impossible de décoder le document")
+        st.code(contenu[:200])
         return
 
     # --- DÉTECTION DU TYPE ---
@@ -1024,14 +1025,14 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
             <span style="font-size:1.2em;">{icon}</span>
             <div>
                 <div style="color:#7affb0;font-weight:600;">{titre_safe}</div>
-                <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">{html_lib.escape(label)}</div>
+                <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">{esc(label)}</div>
                 <div style="color:rgba(180,200,220,0.3);font-size:0.7em;">📦 {taille_kb} KB ({taille_mo:.2f} Mo)</div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # --- AFFICHAGE DU PDF AVEC ST.COMPONENTS ---
+    # --- AFFICHAGE DU PDF ---
     if mime_type == "application/pdf":
         st.markdown("### 📄 Aperçu du document")
         

@@ -982,7 +982,7 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         )
         return
 
-    # --- DÉCODAGE BASE64 (tolérant) ---
+    # --- DÉCODAGE BASE64 ---
     try:
         decoded = base64.b64decode(contenu)
     except Exception:
@@ -1018,9 +1018,9 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
         st.markdown(f"""
         <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                    background:#0d1a2b;padding:4px;margin-top:8px;">
+                    background:#ffffff;padding:4px;margin-top:8px;">
             <embed src="data:application/pdf;base64,{pdf_b64}" type="application/pdf"
-                   style="width:100%;height:700px;border-radius:4px;background:#0d1a2b;">
+                   style="width:100%;height:700px;border-radius:4px;background:#ffffff;">
         </div>
         """, unsafe_allow_html=True)
 

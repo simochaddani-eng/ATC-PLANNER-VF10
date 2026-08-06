@@ -1,3 +1,8 @@
+# ============================================================
+# ATC PRACTICAL PHASE PLANNER - ICNA AIAC
+# VERSION STREAMLIT CLOUD / GITHUB
+# ============================================================
+
 import streamlit as st
 import sqlite3
 import pandas as pd
@@ -14,24 +19,14 @@ from io import BytesIO
 import html as html_lib
 import hashlib
 import secrets
-import time
 import warnings
 warnings.filterwarnings("ignore")
 
 # ============================================
 # CONFIGURATION DE LA BASE DE DONNÉES
 # ============================================
-IS_STREAMLIT_CLOUD = os.environ.get("STREAMLIT_CLOUD") is not None
-IS_COLAB = os.environ.get("COLAB_GPU") is not None
-
-if IS_COLAB:
-    DB_PATH = "/content/drive/MyDrive/ATC_Planner/planning.db"
-    os.makedirs("/content/drive/MyDrive/ATC_Planner", exist_ok=True)
-else:
-    DB_PATH = "data/planning.db"
-    os.makedirs("data", exist_ok=True)
-
-print(f"📂 Base de données : {DB_PATH}")
+DB_PATH = "data/planning.db"
+os.makedirs("data", exist_ok=True)
 
 # ============================================
 # CONFIGURATION DE LA PAGE
@@ -45,7 +40,6 @@ st.set_page_config(
 )
 
 def esc(x):
-    """Échappe le texte libre avant de l'insérer dans un bloc HTML brut."""
     if x is None:
         return ""
     return html_lib.escape(str(x))
@@ -396,22 +390,71 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# DATABASE
+# DATABASE SQLITE
 # ============================================
 
 class Database:
-    def __init__(self, db_path=None):
-        self.db_path = db_path or DB_PATH
-        self.init_tables()
+    def __init__(self):
+        self.db_path = DB_PATH
+        self._ensure_schema()
 
     def get_connection(self):
         return sqlite3.connect(self.db_path)
 
-    def init_tables(self):
+    def _query(self, sql, params=None):
+        conn = self.get_connection()
+        try:
+            if params:
+                df = pd.read_sql_query(sql, conn, params=params)
+            else:
+                df = pd.read_sql_query(sql, conn)
+        finally:
+            conn.close()
+        return df
+
+    def _exec(self, sql, params=None):
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.executescript("""
-            CREATE TABLE IF NOT EXISTS config (
+        try:
+            if params:
+                cursor.execute(sql, params)
+            else:
+                cursor.execute(sql)
+        except Exception as e:
+            raise e
+        finally:
+            conn.close()
+
+    def _exec_many(self, sql, list_of_params):
+        if not list_of_params:
+            return
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.executemany(sql, list_of_params)
+        except Exception as e:
+            raise e
+        finally:
+            conn.close()
+
+    def _exec_returning_id(self, sql, params=None):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            if params:
+                cursor.execute(sql, params)
+            else:
+                cursor.execute(sql)
+            new_id = cursor.lastrowid
+        except Exception as e:
+            raise e
+        finally:
+            conn.close()
+        return new_id
+
+    def _ensure_schema(self):
+        ddl_statements = [
+            """CREATE TABLE IF NOT EXISTS config (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date_debut DATE NOT NULL,
                 date_fin_souhaitee DATE NOT NULL,
@@ -420,196 +463,208 @@ class Database:
                 nb_simulateurs INTEGER NOT NULL,
                 duree_briefing INTEGER DEFAULT 20,
                 duree_debriefing INTEGER DEFAULT 30,
-                heure_debut_matin TEXT DEFAULT "09:00",
-                heure_fin_matin TEXT DEFAULT "12:15",
-                heure_debut_apres_midi TEXT DEFAULT "14:15",
-                heure_fin_apres_midi TEXT DEFAULT "17:30",
-                pause_matin_debut TEXT DEFAULT "10:30",
-                pause_matin_fin TEXT DEFAULT "10:45",
-                pause_am_debut TEXT DEFAULT "15:45",
-                pause_am_fin TEXT DEFAULT "16:00"
-            );
-            CREATE TABLE IF NOT EXISTS eleves (
+                heure_debut_matin TEXT DEFAULT '09:00',
+                heure_fin_matin TEXT DEFAULT '12:15',
+                heure_debut_apres_midi TEXT DEFAULT '14:15',
+                heure_fin_apres_midi TEXT DEFAULT '17:30',
+                pause_matin_debut TEXT DEFAULT '10:30',
+                pause_matin_fin TEXT DEFAULT '10:45',
+                pause_am_debut TEXT DEFAULT '15:45',
+                pause_am_fin TEXT DEFAULT '16:00'
+            )""",
+            """CREATE TABLE IF NOT EXISTS eleves (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL, prenom TEXT NOT NULL, email TEXT, groupe_id INTEGER,
                 password_hash TEXT, password_salt TEXT
-            );
-            CREATE TABLE IF NOT EXISTS instructeurs (
+            )""",
+            """CREATE TABLE IF NOT EXISTS instructeurs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL, prenom TEXT NOT NULL, actif BOOLEAN DEFAULT 1,
                 password_hash TEXT, password_salt TEXT
-            );
-            CREATE TABLE IF NOT EXISTS groupes (
+            )""",
+            """CREATE TABLE IF NOT EXISTS groupes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL, instructeur_id INTEGER, simulateur_id INTEGER
-            );
-            CREATE TABLE IF NOT EXISTS groupe_eleves (
+            )""",
+            """CREATE TABLE IF NOT EXISTS groupe_eleves (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 groupe_id INTEGER, eleve_id INTEGER
-            );
-            CREATE TABLE IF NOT EXISTS simulations (
+            )""",
+            """CREATE TABLE IF NOT EXISTS simulations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL, duree INTEGER DEFAULT 65, est_test BOOLEAN DEFAULT 0, ordre INTEGER
-            );
-            CREATE TABLE IF NOT EXISTS seances (
+            )""",
+            """CREATE TABLE IF NOT EXISTS seances (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date DATE NOT NULL, heure_debut TEXT NOT NULL, duree INTEGER NOT NULL,
-                type TEXT CHECK(type IN ("briefing", "simulation", "debriefing")),
+                type TEXT CHECK(type IN ('briefing', 'simulation', 'debriefing')),
                 simulation_id INTEGER, groupe_id INTEGER, instructeur_id INTEGER,
                 instructeur_evaluateur_id INTEGER, simulateur_id INTEGER,
                 controle_eleve_id INTEGER, pseudo_eleve_id INTEGER,
-                observateurs TEXT, statut TEXT DEFAULT "planifiee", notes TEXT
-            );
-            CREATE TABLE IF NOT EXISTS cours (
+                observateurs TEXT, statut TEXT DEFAULT 'planifiee', notes TEXT
+            )""",
+            """CREATE TABLE IF NOT EXISTS cours (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 titre TEXT NOT NULL, description TEXT,
-                type TEXT CHECK(type IN ("pdf", "video", "document", "lien")),
+                type TEXT CHECK(type IN ('pdf', 'video', 'document', 'lien')),
                 contenu TEXT, date_upload DATE, instructeur_id INTEGER,
                 groupe_cible_id INTEGER, tags TEXT
-            );
-            CREATE TABLE IF NOT EXISTS scenarios (
+            )""",
+            """CREATE TABLE IF NOT EXISTS scenarios (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 titre TEXT NOT NULL, description TEXT, objectifs TEXT, duree_estimee INTEGER,
-                niveau TEXT CHECK(niveau IN ("debutant", "intermediaire", "avance")),
+                niveau TEXT CHECK(niveau IN ('debutant', 'intermediaire', 'avance')),
                 simulateur_requis BOOLEAN DEFAULT 0, instructions TEXT, contenu TEXT,
-                type TEXT CHECK(type IN ("pdf", "video", "document", "lien")),
+                type TEXT CHECK(type IN ('pdf', 'video', 'document', 'lien')),
                 date_creation DATE, instructeur_id INTEGER, groupe_cible_id INTEGER, tags TEXT
-            );
-            CREATE TABLE IF NOT EXISTS td (
+            )""",
+            """CREATE TABLE IF NOT EXISTS td (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 titre TEXT NOT NULL, description TEXT,
-                type TEXT CHECK(type IN ("exercice", "corrige", "serie", "devoir")),
+                type TEXT CHECK(type IN ('exercice', 'corrige', 'serie', 'devoir')),
                 contenu TEXT, date_upload DATE, instructeur_id INTEGER,
                 groupe_cible_id INTEGER, tags TEXT
-            );
-            CREATE TABLE IF NOT EXISTS grilles_evaluation (
+            )""",
+            """CREATE TABLE IF NOT EXISTS grilles_evaluation (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL, description TEXT, criteres TEXT, bareme TEXT,
                 instructeur_id INTEGER, date_creation DATE
-            );
-            CREATE TABLE IF NOT EXISTS notes (
+            )""",
+            """CREATE TABLE IF NOT EXISTS notes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 eleve_id INTEGER, instructeur_id INTEGER, grille_id INTEGER,
                 simulation_id INTEGER, seance_id INTEGER, date_note DATE, note DECIMAL(5,2),
                 appreciation TEXT, scores_criteres TEXT, commentaires TEXT
-            );
-            CREATE TABLE IF NOT EXISTS admin_config (
+            )""",
+            """CREATE TABLE IF NOT EXISTS admin_config (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
                 code_hash TEXT, code_salt TEXT
-            );
-        """)
-        cursor.execute("SELECT COUNT(*) FROM simulations")
-        if cursor.fetchone()[0] == 0:
-            sims = [
-                ("Synthese Dynamique", 65, 0, 1), ("Simulation 1", 65, 0, 2),
-                ("Simulation 2", 65, 0, 3), ("Simulation 3", 65, 0, 4),
-                ("Simulation 4", 65, 0, 5), ("Simulation 5", 65, 0, 6),
-                ("Simulation 6", 65, 0, 7), ("Simulation Test", 65, 1, 8)
-            ]
-            cursor.executemany("INSERT INTO simulations (nom, duree, est_test, ordre) VALUES (?, ?, ?, ?)", sims)
-        cursor.execute("SELECT COUNT(*) FROM grilles_evaluation")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("""
-                INSERT INTO grilles_evaluation (nom, description, criteres, bareme, date_creation)
-                VALUES (?, ?, ?, ?, ?)
-            """, ("Grille ATC Standard", "Grille d'évaluation standard",
-                  json.dumps(["Phraséologie", "Anticipation", "Gestion du trafic", "Communication", "Réactivité"]),
-                  json.dumps([4, 4, 4, 4, 4]), date.today().strftime("%Y-%m-%d")))
-        conn.commit()
-        self._ensure_password_columns(cursor)
-        conn.commit()
-        conn.close()
+            )""",
+        ]
+        for ddl in ddl_statements:
+            self._exec(ddl)
 
-    def _ensure_password_columns(self, cursor):
+        # Seed simulations
+        try:
+            nb_sims = self._query("SELECT COUNT(*) AS n FROM simulations").iloc[0]["n"]
+        except:
+            nb_sims = 0
+            
+        if nb_sims == 0:
+            sims = [
+                {"nom": "Synthese Dynamique", "duree": 65, "est_test": 0, "ordre": 1},
+                {"nom": "Simulation 1", "duree": 65, "est_test": 0, "ordre": 2},
+                {"nom": "Simulation 2", "duree": 65, "est_test": 0, "ordre": 3},
+                {"nom": "Simulation 3", "duree": 65, "est_test": 0, "ordre": 4},
+                {"nom": "Simulation 4", "duree": 65, "est_test": 0, "ordre": 5},
+                {"nom": "Simulation 5", "duree": 65, "est_test": 0, "ordre": 6},
+                {"nom": "Simulation 6", "duree": 65, "est_test": 0, "ordre": 7},
+                {"nom": "Simulation Test", "duree": 65, "est_test": 1, "ordre": 8},
+            ]
+            self._exec_many(
+                "INSERT INTO simulations (nom, duree, est_test, ordre) VALUES (:nom, :duree, :est_test, :ordre)",
+                sims
+            )
+
+        # Seed grille
+        try:
+            nb_grilles = self._query("SELECT COUNT(*) AS n FROM grilles_evaluation").iloc[0]["n"]
+        except:
+            nb_grilles = 0
+            
+        if nb_grilles == 0:
+            self._exec(
+                "INSERT INTO grilles_evaluation (nom, description, criteres, bareme, date_creation) "
+                "VALUES (:nom, :description, :criteres, :bareme, :date_creation)",
+                {
+                    "nom": "Grille ATC Standard",
+                    "description": "Grille d'évaluation standard",
+                    "criteres": json.dumps(["Phraséologie", "Anticipation", "Gestion du trafic", "Communication", "Réactivité"]),
+                    "bareme": json.dumps([4, 4, 4, 4, 4]),
+                    "date_creation": date.today().strftime("%Y-%m-%d"),
+                }
+            )
+
+        # Seed démo
+        try:
+            nb_instr = self._query("SELECT COUNT(*) AS n FROM instructeurs").iloc[0]["n"]
+            nb_eleves = self._query("SELECT COUNT(*) AS n FROM eleves").iloc[0]["n"]
+        except:
+            nb_instr = 0
+            nb_eleves = 0
+            
+        if nb_instr == 0 and nb_eleves == 0:
+            for nom, prenom in [("RIFAI", "Mr"), ("TAHERI", "Mr"), ("JBARA", "Mr")]:
+                self.add_instructeur(nom, prenom, password=DEFAULT_PASSWORD)
+            for nom, prenom in [
+                ("KOUBAA", "AYOUB"), ("BAMIDA", "AYMANE"), ("CHADDANI", "MOHAMED"),
+                ("KHOULANE", "ILYAS"), ("AKNOUZE", "RACHID"), ("MIFDAL", "IMANE"),
+                ("KOUMI", "KHADIJA"), ("GUENNOUN", "CHAIMAE"), ("ICHOU", "ABDELLATIF"),
+            ]:
+                self.add_eleve(nom, prenom, password=DEFAULT_PASSWORD)
+
+        # Backfill
         for table in ("eleves", "instructeurs"):
-            cursor.execute(f"PRAGMA table_info({table})")
-            colonnes = {row[1] for row in cursor.fetchall()}
-            if "password_hash" not in colonnes:
-                cursor.execute(f"ALTER TABLE {table} ADD COLUMN password_hash TEXT")
-            if "password_salt" not in colonnes:
-                cursor.execute(f"ALTER TABLE {table} ADD COLUMN password_salt TEXT")
-            cursor.execute(f"SELECT id FROM {table} WHERE password_hash IS NULL OR password_salt IS NULL")
-            ids_sans_mdp = [row[0] for row in cursor.fetchall()]
-            for row_id in ids_sans_mdp:
-                pwd_hash, salt = hash_password(DEFAULT_PASSWORD)
-                cursor.execute(
-                    f"UPDATE {table} SET password_hash = ?, password_salt = ? WHERE id = ?",
-                    (pwd_hash, salt, row_id)
-                )
+            try:
+                sans_mdp = self._query(f"SELECT id FROM {table} WHERE password_hash IS NULL OR password_salt IS NULL")
+                for row_id in sans_mdp["id"].tolist():
+                    pwd_hash, salt = hash_password(DEFAULT_PASSWORD)
+                    self._exec(
+                        f"UPDATE {table} SET password_hash = :h, password_salt = :s WHERE id = :id",
+                        {"h": pwd_hash, "s": salt, "id": int(row_id)}
+                    )
+            except:
+                pass
+
+    # ---------- Mots de passe ----------
 
     def verify_password_eleve(self, eleve_id, password):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT password_hash, password_salt FROM eleves WHERE id = ?", (eleve_id,))
-        row = cursor.fetchone()
-        conn.close()
-        if not row:
+        df = self._query("SELECT password_hash, password_salt FROM eleves WHERE id = :id", {"id": eleve_id})
+        if df.empty:
             return False
-        pwd_hash, salt = row
-        return verify_password(password, salt, pwd_hash)
+        return verify_password(password, df.iloc[0]["password_salt"], df.iloc[0]["password_hash"])
 
     def verify_password_instructeur(self, instr_id, password):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT password_hash, password_salt FROM instructeurs WHERE id = ?", (instr_id,))
-        row = cursor.fetchone()
-        conn.close()
-        if not row:
+        df = self._query("SELECT password_hash, password_salt FROM instructeurs WHERE id = :id", {"id": instr_id})
+        if df.empty:
             return False
-        pwd_hash, salt = row
-        return verify_password(password, salt, pwd_hash)
+        return verify_password(password, df.iloc[0]["password_salt"], df.iloc[0]["password_hash"])
 
     def admin_code_configured(self):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT code_hash, code_salt FROM admin_config WHERE id = 1")
-        row = cursor.fetchone()
-        conn.close()
-        return bool(row and row[0] and row[1])
+        df = self._query("SELECT code_hash, code_salt FROM admin_config WHERE id = 1")
+        if df.empty:
+            return False
+        return bool(df.iloc[0]["code_hash"] and df.iloc[0]["code_salt"])
 
     def verify_admin_code(self, code):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT code_hash, code_salt FROM admin_config WHERE id = 1")
-        row = cursor.fetchone()
-        conn.close()
-        if not row:
+        df = self._query("SELECT code_hash, code_salt FROM admin_config WHERE id = 1")
+        if df.empty:
             return False
-        code_hash, code_salt = row
-        return verify_password(code, code_salt, code_hash)
+        return verify_password(code, df.iloc[0]["code_salt"], df.iloc[0]["code_hash"])
 
     def set_password_eleve(self, eleve_id, new_password):
         pwd_hash, salt = hash_password(new_password)
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("UPDATE eleves SET password_hash = ?, password_salt = ? WHERE id = ?", (pwd_hash, salt, eleve_id))
-        conn.commit()
-        conn.close()
+        self._exec("UPDATE eleves SET password_hash = :h, password_salt = :s WHERE id = :id",
+                    {"h": pwd_hash, "s": salt, "id": eleve_id})
 
     def set_password_instructeur(self, instr_id, new_password):
         pwd_hash, salt = hash_password(new_password)
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("UPDATE instructeurs SET password_hash = ?, password_salt = ? WHERE id = ?", (pwd_hash, salt, instr_id))
-        conn.commit()
-        conn.close()
+        self._exec("UPDATE instructeurs SET password_hash = :h, password_salt = :s WHERE id = :id",
+                    {"h": pwd_hash, "s": salt, "id": instr_id})
+
+    # ---------- Élèves ----------
 
     def get_eleves(self, groupe_id=None):
-        conn = self.get_connection()
         if groupe_id:
-            df = pd.read_sql_query("SELECT * FROM eleves WHERE groupe_id = ? ORDER BY nom, prenom", conn, params=(groupe_id,))
-        else:
-            df = pd.read_sql_query("SELECT * FROM eleves ORDER BY nom, prenom", conn)
-        conn.close()
-        return df
+            return self._query("SELECT * FROM eleves WHERE groupe_id = :gid ORDER BY nom, prenom", {"gid": groupe_id})
+        return self._query("SELECT * FROM eleves ORDER BY nom, prenom")
 
     def get_eleve_by_id(self, eleve_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, nom, prenom, email, groupe_id FROM eleves WHERE id = ?", (eleve_id,))
-        result = cursor.fetchone()
-        conn.close()
-        return result
+        df = self._query("SELECT id, nom, prenom, email, groupe_id FROM eleves WHERE id = :id", {"id": eleve_id})
+        if df.empty:
+            return None
+        row = df.iloc[0]
+        return (int(row["id"]), row["nom"], row["prenom"], row["email"], row["groupe_id"])
 
     def add_eleve(self, nom, prenom, email=None, password=None):
         temp_password = None
@@ -617,39 +672,29 @@ class Database:
             temp_password = generate_temp_password()
             password = temp_password
         pwd_hash, salt = hash_password(password)
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO eleves (nom, prenom, email, password_hash, password_salt) VALUES (?, ?, ?, ?, ?)",
-            (nom, prenom, email, pwd_hash, salt)
+        new_id = self._exec_returning_id(
+            "INSERT INTO eleves (nom, prenom, email, password_hash, password_salt) "
+            "VALUES (:nom, :prenom, :email, :h, :s) RETURNING id",
+            {"nom": nom, "prenom": prenom, "email": email, "h": pwd_hash, "s": salt}
         )
-        new_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
         return new_id, temp_password
 
     def delete_eleve(self, eleve_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM groupe_eleves WHERE eleve_id = ?", (eleve_id,))
-        cursor.execute("DELETE FROM notes WHERE eleve_id = ?", (eleve_id,))
-        cursor.execute("DELETE FROM eleves WHERE id = ?", (eleve_id,))
-        conn.commit()
-        conn.close()
+        self._exec("DELETE FROM groupe_eleves WHERE eleve_id = :id", {"id": eleve_id})
+        self._exec("DELETE FROM notes WHERE eleve_id = :id", {"id": eleve_id})
+        self._exec("DELETE FROM eleves WHERE id = :id", {"id": eleve_id})
+
+    # ---------- Instructeurs ----------
 
     def get_instructeurs(self):
-        conn = self.get_connection()
-        df = pd.read_sql_query("SELECT * FROM instructeurs WHERE actif=1 ORDER BY nom, prenom", conn)
-        conn.close()
-        return df
+        return self._query("SELECT * FROM instructeurs WHERE actif = 1 ORDER BY nom, prenom")
 
     def get_instructeur_by_id(self, instr_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, nom, prenom, actif FROM instructeurs WHERE id = ?", (instr_id,))
-        result = cursor.fetchone()
-        conn.close()
-        return result
+        df = self._query("SELECT id, nom, prenom, actif FROM instructeurs WHERE id = :id", {"id": instr_id})
+        if df.empty:
+            return None
+        row = df.iloc[0]
+        return (int(row["id"]), row["nom"], row["prenom"], row["actif"])
 
     def add_instructeur(self, nom, prenom, password=None):
         temp_password = None
@@ -657,74 +702,61 @@ class Database:
             temp_password = generate_temp_password()
             password = temp_password
         pwd_hash, salt = hash_password(password)
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO instructeurs (nom, prenom, actif, password_hash, password_salt) VALUES (?, ?, 1, ?, ?)",
-            (nom, prenom, pwd_hash, salt)
+        new_id = self._exec_returning_id(
+            "INSERT INTO instructeurs (nom, prenom, actif, password_hash, password_salt) "
+            "VALUES (:nom, :prenom, 1, :h, :s) RETURNING id",
+            {"nom": nom, "prenom": prenom, "h": pwd_hash, "s": salt}
         )
-        new_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
         return new_id, temp_password
 
     def delete_instructeur(self, instr_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM instructeurs WHERE id = ?", (instr_id,))
-        conn.commit()
-        conn.close()
+        self._exec("DELETE FROM instructeurs WHERE id = :id", {"id": instr_id})
+
+    # ---------- Groupes ----------
 
     def get_groupes(self):
-        conn = self.get_connection()
-        df = pd.read_sql_query("""
+        return self._query("""
             SELECT g.*, i.nom || ' ' || i.prenom as instructeur_nom
             FROM groupes g LEFT JOIN instructeurs i ON g.instructeur_id = i.id
             ORDER BY g.id
-        """, conn)
-        conn.close()
-        return df
+        """)
 
     def get_groupe_eleves(self, groupe_id):
-        conn = self.get_connection()
-        df = pd.read_sql_query("""
+        return self._query("""
             SELECT e.* FROM groupe_eleves ge JOIN eleves e ON ge.eleve_id = e.id
-            WHERE ge.groupe_id = ? ORDER BY e.nom, e.prenom
-        """, conn, params=(groupe_id,))
-        conn.close()
-        return df
+            WHERE ge.groupe_id = :gid ORDER BY e.nom, e.prenom
+        """, {"gid": groupe_id})
 
     def get_groupe_de_eleve(self, eleve_id):
-        conn = self.get_connection()
-        df = pd.read_sql_query("""
+        df = self._query("""
             SELECT g.*, i.nom || ' ' || i.prenom as instructeur_nom
             FROM eleves e
             JOIN groupes g ON e.groupe_id = g.id
             LEFT JOIN instructeurs i ON g.instructeur_id = i.id
-            WHERE e.id = ?
-        """, conn, params=(eleve_id,))
-        conn.close()
+            WHERE e.id = :id
+        """, {"id": eleve_id})
         return df.iloc[0].to_dict() if not df.empty else None
 
     def save_groupes(self, groupes):
-        conn = self.get_connection()
-        cursor = conn.cursor()
         id_map = {}
         for g in groupes:
-            cursor.execute("INSERT INTO groupes (nom, instructeur_id, simulateur_id) VALUES (?, ?, ?)",
-                          (g["nom"], g["instructeur_id"], g["simulateur_id"]))
-            gid = cursor.lastrowid
-            id_map[g["id"]] = gid
+            new_id = self._exec_returning_id(
+                "INSERT INTO groupes (nom, instructeur_id, simulateur_id) "
+                "VALUES (:nom, :instr, :sim) RETURNING id",
+                {"nom": g["nom"], "instr": g["instructeur_id"], "sim": g["simulateur_id"]}
+            )
+            id_map[g["id"]] = new_id
             for eid in g["eleves"]:
-                cursor.execute("INSERT INTO groupe_eleves (groupe_id, eleve_id) VALUES (?, ?)", (gid, eid))
-                cursor.execute("UPDATE eleves SET groupe_id = ? WHERE id = ?", (gid, eid))
-        conn.commit()
-        conn.close()
+                self._exec("INSERT INTO groupe_eleves (groupe_id, eleve_id) VALUES (:gid, :eid)",
+                          {"gid": new_id, "eid": eid})
+                self._exec("UPDATE eleves SET groupe_id = :gid WHERE id = :eid",
+                          {"gid": new_id, "eid": eid})
         return id_map
 
+    # ---------- Séances ----------
+
     def get_seances(self):
-        conn = self.get_connection()
-        df = pd.read_sql_query("""
+        return self._query("""
             SELECT s.*, sim.nom as simulation_nom, g.nom as groupe_nom,
                    i.nom || ' ' || i.prenom as instructeur_nom,
                    e1.nom || ' ' || e1.prenom as controle_eleve_nom,
@@ -736,13 +768,10 @@ class Database:
             LEFT JOIN eleves e1 ON s.controle_eleve_id = e1.id
             LEFT JOIN eleves e2 ON s.pseudo_eleve_id = e2.id
             ORDER BY s.date, s.heure_debut
-        """, conn)
-        conn.close()
-        return df
+        """)
 
     def get_seances_eleve(self, eleve_id):
-        conn = self.get_connection()
-        df = pd.read_sql_query("""
+        return self._query("""
             SELECT s.*, sim.nom as simulation_nom, g.nom as groupe_nom,
                    i.nom || ' ' || i.prenom as instructeur_nom,
                    e1.nom || ' ' || e1.prenom as controle_eleve_nom,
@@ -753,238 +782,195 @@ class Database:
             LEFT JOIN instructeurs i ON s.instructeur_id = i.id
             LEFT JOIN eleves e1 ON s.controle_eleve_id = e1.id
             LEFT JOIN eleves e2 ON s.pseudo_eleve_id = e2.id
-            WHERE s.type = 'simulation' AND (s.controle_eleve_id = ? OR s.pseudo_eleve_id = ?)
+            WHERE s.type = 'simulation' AND (s.controle_eleve_id = :eid OR s.pseudo_eleve_id = :eid)
             ORDER BY s.date, s.heure_debut
-        """, conn, params=(eleve_id, eleve_id))
-        conn.close()
-        return df
+        """, {"eid": eleve_id})
 
     def save_seances(self, seances):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        for s in seances:
-            cursor.execute("""
-                INSERT INTO seances (
-                    date, heure_debut, duree, type, simulation_id, groupe_id,
-                    instructeur_id, instructeur_evaluateur_id, simulateur_id,
-                    controle_eleve_id, pseudo_eleve_id, observateurs, notes
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (s["date"], s["heure_debut"], s["duree"], s["type"],
-                  s.get("simulation_id"), s.get("groupe_id"), s.get("instructeur_id"),
-                  s.get("instructeur_evaluateur_id"), s.get("simulateur_id"),
-                  s.get("controle_eleve_id"), s.get("pseudo_eleve_id"),
-                  json.dumps(s.get("observateurs", [])), s.get("notes", "")))
-        conn.commit()
-        conn.close()
+        rows = [{
+            "date": s["date"], "heure": s["heure_debut"], "duree": s["duree"], "type": s["type"],
+            "sim_id": s.get("simulation_id"), "groupe_id": s.get("groupe_id"),
+            "instr_id": s.get("instructeur_id"), "instr_eval_id": s.get("instructeur_evaluateur_id"),
+            "sim_engin": s.get("simulateur_id"), "controle_id": s.get("controle_eleve_id"),
+            "pseudo_id": s.get("pseudo_eleve_id"), "observateurs": json.dumps(s.get("observateurs", [])),
+            "notes": s.get("notes", ""),
+        } for s in seances]
+        self._exec_many("""
+            INSERT INTO seances (
+                date, heure_debut, duree, type, simulation_id, groupe_id,
+                instructeur_id, instructeur_evaluateur_id, simulateur_id,
+                controle_eleve_id, pseudo_eleve_id, observateurs, notes
+            ) VALUES (
+                :date, :heure, :duree, :type, :sim_id, :groupe_id,
+                :instr_id, :instr_eval_id, :sim_engin,
+                :controle_id, :pseudo_id, :observateurs, :notes
+            )
+        """, rows)
 
     def reset_planning(self):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        for table in ["seances", "groupe_eleves", "groupes"]:
-            cursor.execute(f"DELETE FROM {table}")
-        cursor.execute("UPDATE eleves SET groupe_id = NULL")
-        conn.commit()
-        conn.close()
+        for table in ("seances", "groupe_eleves", "groupes"):
+            self._exec(f"DELETE FROM {table}")
+        self._exec("UPDATE eleves SET groupe_id = NULL")
+
+    # ---------- Cours / Scénarios / TD ----------
 
     def _filtered_by_group(self, table, eleve_id, groupe_id, order_col):
-        conn = self.get_connection()
         if eleve_id is not None:
-            cursor = conn.cursor()
-            cursor.execute("SELECT groupe_id FROM eleves WHERE id = ?", (eleve_id,))
-            result = cursor.fetchone()
-            groupe_id = result[0] if result else None
-            df = pd.read_sql_query(
-                f"SELECT * FROM {table} WHERE groupe_cible_id IS NULL OR groupe_cible_id = ? ORDER BY {order_col} DESC",
-                conn, params=(groupe_id,)
+            df_g = self._query("SELECT groupe_id FROM eleves WHERE id = :id", {"id": eleve_id})
+            if not df_g.empty and pd.notna(df_g.iloc[0]["groupe_id"]):
+                groupe_id = int(df_g.iloc[0]["groupe_id"])
+            else:
+                groupe_id = None
+        if eleve_id is not None or groupe_id is not None:
+            return self._query(
+                f"SELECT * FROM {table} WHERE groupe_cible_id IS NULL OR groupe_cible_id = :gid "
+                f"ORDER BY {order_col} DESC",
+                {"gid": groupe_id}
             )
-        elif groupe_id is not None:
-            df = pd.read_sql_query(
-                f"SELECT * FROM {table} WHERE groupe_cible_id IS NULL OR groupe_cible_id = ? ORDER BY {order_col} DESC",
-                conn, params=(groupe_id,)
-            )
-        else:
-            df = pd.read_sql_query(f"SELECT * FROM {table} ORDER BY {order_col} DESC", conn)
-        conn.close()
-        return df
+        return self._query(f"SELECT * FROM {table} ORDER BY {order_col} DESC")
 
     def add_cours(self, cours):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
+        self._exec("""
             INSERT INTO cours (titre, description, type, contenu, date_upload, instructeur_id, groupe_cible_id, tags)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (cours["titre"], cours["description"], cours["type"], cours["contenu"],
-              cours["date_upload"], cours.get("instructeur_id"), cours.get("groupe_cible_id"), cours.get("tags", "")))
-        conn.commit()
-        conn.close()
+            VALUES (:titre, :description, :type, :contenu, :date_upload, :instructeur_id, :groupe_cible_id, :tags)
+        """, {
+            "titre": cours["titre"], "description": cours["description"], "type": cours["type"],
+            "contenu": cours["contenu"], "date_upload": cours["date_upload"],
+            "instructeur_id": cours.get("instructeur_id"), "groupe_cible_id": cours.get("groupe_cible_id"),
+            "tags": cours.get("tags", ""),
+        })
 
     def get_cours(self, eleve_id=None, groupe_id=None):
         return self._filtered_by_group("cours", eleve_id, groupe_id, "date_upload")
 
     def delete_cours(self, cours_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM cours WHERE id = ?", (cours_id,))
-        conn.commit()
-        conn.close()
+        self._exec("DELETE FROM cours WHERE id = :id", {"id": cours_id})
 
     def add_scenario(self, scenario):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO scenarios (titre, description, objectifs, duree_estimee, niveau, simulateur_requis, instructions, contenu, type, date_creation, instructeur_id, groupe_cible_id, tags)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (scenario["titre"], scenario["description"], scenario["objectifs"],
-              scenario["duree_estimee"], scenario["niveau"], scenario["simulateur_requis"],
-              scenario["instructions"], scenario.get("contenu", ""), scenario.get("type", "document"),
-              scenario["date_creation"], scenario.get("instructeur_id"), scenario.get("groupe_cible_id"), scenario.get("tags", "")))
-        conn.commit()
-        conn.close()
+        self._exec("""
+            INSERT INTO scenarios (titre, description, objectifs, duree_estimee, niveau, simulateur_requis,
+                                    instructions, contenu, type, date_creation, instructeur_id, groupe_cible_id, tags)
+            VALUES (:titre, :description, :objectifs, :duree_estimee, :niveau, :simulateur_requis,
+                    :instructions, :contenu, :type, :date_creation, :instructeur_id, :groupe_cible_id, :tags)
+        """, {
+            "titre": scenario["titre"], "description": scenario["description"], "objectifs": scenario["objectifs"],
+            "duree_estimee": scenario["duree_estimee"], "niveau": scenario["niveau"],
+            "simulateur_requis": int(bool(scenario["simulateur_requis"])),
+            "instructions": scenario["instructions"],
+            "contenu": scenario.get("contenu", ""), "type": scenario.get("type", "document"),
+            "date_creation": scenario["date_creation"], "instructeur_id": scenario.get("instructeur_id"),
+            "groupe_cible_id": scenario.get("groupe_cible_id"), "tags": scenario.get("tags", ""),
+        })
 
     def get_scenarios(self, eleve_id=None, groupe_id=None):
         return self._filtered_by_group("scenarios", eleve_id, groupe_id, "date_creation")
 
     def delete_scenario(self, scenario_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM scenarios WHERE id = ?", (scenario_id,))
-        conn.commit()
-        conn.close()
+        self._exec("DELETE FROM scenarios WHERE id = :id", {"id": scenario_id})
 
     def add_td(self, td):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
+        self._exec("""
             INSERT INTO td (titre, description, type, contenu, date_upload, instructeur_id, groupe_cible_id, tags)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (td["titre"], td["description"], td["type"], td["contenu"],
-              td["date_upload"], td.get("instructeur_id"), td.get("groupe_cible_id"), td.get("tags", "")))
-        conn.commit()
-        conn.close()
+            VALUES (:titre, :description, :type, :contenu, :date_upload, :instructeur_id, :groupe_cible_id, :tags)
+        """, {
+            "titre": td["titre"], "description": td["description"], "type": td["type"],
+            "contenu": td["contenu"], "date_upload": td["date_upload"],
+            "instructeur_id": td.get("instructeur_id"), "groupe_cible_id": td.get("groupe_cible_id"),
+            "tags": td.get("tags", ""),
+        })
 
     def get_td(self, eleve_id=None, groupe_id=None):
         return self._filtered_by_group("td", eleve_id, groupe_id, "date_upload")
 
     def delete_td(self, td_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM td WHERE id = ?", (td_id,))
-        conn.commit()
-        conn.close()
+        self._exec("DELETE FROM td WHERE id = :id", {"id": td_id})
+
+    # ---------- Évaluations ----------
 
     def add_grille(self, grille):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
+        self._exec("""
             INSERT INTO grilles_evaluation (nom, description, criteres, bareme, instructeur_id, date_creation)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (grille["nom"], grille["description"], grille["criteres"], grille["bareme"],
-              grille.get("instructeur_id"), grille["date_creation"]))
-        conn.commit()
-        conn.close()
+            VALUES (:nom, :description, :criteres, :bareme, :instructeur_id, :date_creation)
+        """, {
+            "nom": grille["nom"], "description": grille["description"],
+            "criteres": grille["criteres"], "bareme": grille["bareme"],
+            "instructeur_id": grille.get("instructeur_id"),
+            "date_creation": grille["date_creation"],
+        })
 
     def get_grilles(self):
-        conn = self.get_connection()
-        df = pd.read_sql_query("SELECT * FROM grilles_evaluation ORDER BY date_creation DESC", conn)
-        conn.close()
-        return df
+        return self._query("SELECT * FROM grilles_evaluation ORDER BY date_creation DESC")
 
     def add_note(self, note):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO notes (eleve_id, instructeur_id, grille_id, simulation_id, seance_id, date_note, note, appreciation, scores_criteres, commentaires)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (note["eleve_id"], note["instructeur_id"], note.get("grille_id"),
-              note.get("simulation_id"), note.get("seance_id"), note["date_note"],
-              note["note"], note.get("appreciation", ""), note.get("scores_criteres", "[]"), note.get("commentaires", "")))
-        conn.commit()
-        conn.close()
+        self._exec("""
+            INSERT INTO notes (eleve_id, instructeur_id, grille_id, simulation_id, seance_id, date_note, note,
+                                appreciation, scores_criteres, commentaires)
+            VALUES (:eleve_id, :instructeur_id, :grille_id, :simulation_id, :seance_id, :date_note, :note,
+                    :appreciation, :scores_criteres, :commentaires)
+        """, {
+            "eleve_id": note["eleve_id"], "instructeur_id": note["instructeur_id"],
+            "grille_id": note.get("grille_id"), "simulation_id": note.get("simulation_id"),
+            "seance_id": note.get("seance_id"), "date_note": note["date_note"], "note": note["note"],
+            "appreciation": note.get("appreciation", ""), "scores_criteres": note.get("scores_criteres", "[]"),
+            "commentaires": note.get("commentaires", ""),
+        })
 
     def get_notes_eleve(self, eleve_id):
-        conn = self.get_connection()
-        df = pd.read_sql_query("""
+        return self._query("""
             SELECT n.*, sim.nom as simulation_nom,
                    i.nom || ' ' || i.prenom as instructeur_nom, g.nom as grille_nom
             FROM notes n
             LEFT JOIN simulations sim ON n.simulation_id = sim.id
             LEFT JOIN instructeurs i ON n.instructeur_id = i.id
             LEFT JOIN grilles_evaluation g ON n.grille_id = g.id
-            WHERE n.eleve_id = ?
+            WHERE n.eleve_id = :id
             ORDER BY n.date_note DESC
-        """, conn, params=(eleve_id,))
-        conn.close()
-        return df
+        """, {"id": eleve_id})
 
     def delete_note(self, note_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM notes WHERE id = ?", (note_id,))
-        conn.commit()
-        conn.close()
+        self._exec("DELETE FROM notes WHERE id = :id", {"id": note_id})
 
     def delete_notes_eleve(self, eleve_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM notes WHERE eleve_id = ?", (eleve_id,))
-        conn.commit()
-        conn.close()
+        self._exec("DELETE FROM notes WHERE eleve_id = :id", {"id": eleve_id})
+
+    # ---------- Configuration ----------
 
     def save_config(self, config):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM config")
-        cursor.execute("""
+        self._exec("DELETE FROM config")
+        self._exec("""
             INSERT INTO config (
                 date_debut, date_fin_souhaitee, nb_eleves, nb_instructeurs,
                 nb_simulateurs, duree_briefing, duree_debriefing,
                 heure_debut_matin, heure_fin_matin, heure_debut_apres_midi, heure_fin_apres_midi,
                 pause_matin_debut, pause_matin_fin, pause_am_debut, pause_am_fin
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (config["date_debut"], config["date_fin_souhaitee"], config["nb_eleves"],
-              config["nb_instructeurs"], config["nb_simulateurs"],
-              config["duree_briefing"], config["duree_debriefing"],
-              config["heure_debut_matin"], config["heure_fin_matin"],
-              config["heure_debut_apres_midi"], config["heure_fin_apres_midi"],
-              config["pause_matin_debut"], config["pause_matin_fin"],
-              config["pause_am_debut"], config["pause_am_fin"]))
-        conn.commit()
-        conn.close()
+            ) VALUES (
+                :date_debut, :date_fin_souhaitee, :nb_eleves, :nb_instructeurs,
+                :nb_simulateurs, :duree_briefing, :duree_debriefing,
+                :heure_debut_matin, :heure_fin_matin, :heure_debut_apres_midi, :heure_fin_apres_midi,
+                :pause_matin_debut, :pause_matin_fin, :pause_am_debut, :pause_am_fin
+            )
+        """, config)
 
     def get_config(self):
-        conn = self.get_connection()
-        df = pd.read_sql_query("SELECT * FROM config ORDER BY id DESC LIMIT 1", conn)
-        conn.close()
+        df = self._query("SELECT * FROM config ORDER BY id DESC LIMIT 1")
         return df.iloc[0].to_dict() if not df.empty else None
 
     def get_simulations(self):
-        conn = self.get_connection()
-        df = pd.read_sql_query("SELECT * FROM simulations ORDER BY ordre", conn)
-        conn.close()
-        return df
+        return self._query("SELECT * FROM simulations ORDER BY ordre")
 
     def update_simulation_duree(self, sim_id, duree):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("UPDATE simulations SET duree=? WHERE id=?", (duree, sim_id))
-        conn.commit()
-        conn.close()
+        self._exec("UPDATE simulations SET duree = :duree WHERE id = :id", {"duree": duree, "id": sim_id})
 
     def delete_all_data(self):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        for table in ["seances", "groupe_eleves", "groupes", "eleves", "instructeurs",
-                      "cours", "scenarios", "td", "notes", "grilles_evaluation"]:
-            cursor.execute(f"DELETE FROM {table}")
-        conn.commit()
-        conn.close()
+        for table in ("seances", "groupe_eleves", "groupes", "eleves", "instructeurs",
+                      "cours", "scenarios", "td", "notes", "grilles_evaluation"):
+            self._exec(f"DELETE FROM {table}")
 
 # ============================================
-# VISUALISATION DE DOCUMENTS - VERSION AMÉLIORÉE
+# FONCTIONS DE VISUALISATION DE DOCUMENTS
 # ============================================
 
 def detect_file_type(decoded):
-    """Renvoie (extension, icone, label, mime_type) à partir des octets."""
     if decoded[:4] == b'%PDF':
         return "pdf", "📄", "Document PDF", "application/pdf"
     if len(decoded) > 4 and decoded[:4] == b'PK\x03\x04':
@@ -1013,17 +999,12 @@ def detect_file_type(decoded):
         return "bin", "📎", "Fichier", "application/octet-stream"
 
 def render_document_view(contenu, type_doc, titre):
-    """
-    Affiche un document dans l'interface.
-    Version améliorée avec lien de secours pour les PDF.
-    """
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
         return
 
     titre_safe = esc(titre)
 
-    # --- 1. Lien externe (si c'est une URL) ---
     if contenu.startswith(("http://", "https://")):
         st.markdown(f"""
         <div class="doc-viewer">
@@ -1039,24 +1020,16 @@ def render_document_view(contenu, type_doc, titre):
             </div>
         </div>
         """, unsafe_allow_html=True)
-        st.markdown(
-            f'<iframe src="{contenu}" style="width:100%;height:700px;border-radius:8px;'
-            f'border:1px solid rgba(0,255,100,0.06);background:#0d1a2b;"></iframe>',
-            unsafe_allow_html=True
-        )
         return
 
-    # --- 2. Décodage du contenu base64 ---
     try:
         decoded = base64.b64decode(contenu)
     except Exception:
-        # Pas du base64 valide : on affiche le texte brut échappé
         st.markdown('<div class="doc-viewer">', unsafe_allow_html=True)
         st.write(contenu[:2000] + ("..." if len(contenu) > 2000 else ""))
         st.markdown('</div>', unsafe_allow_html=True)
         return
 
-    # --- 3. Détection du type de fichier ---
     file_ext, icon, label, mime_type = detect_file_type(decoded)
     taille_kb = len(decoded) // 1024
 
@@ -1073,15 +1046,10 @@ def render_document_view(contenu, type_doc, titre):
     </div>
     """, unsafe_allow_html=True)
 
-    # --- 4. Affichage selon le type ---
-    if mime_type.startswith("image/"):
-        st.image(decoded, caption=titre, use_container_width=True)
-
-    elif mime_type == "application/pdf":
+    if mime_type == "application/pdf":
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
         data_url = f"data:application/pdf;base64,{pdf_b64}"
         
-        # ✅ Lien de secours (toujours visible)
         st.markdown(f"""
         <div style="margin:10px 0;text-align:center;">
             <a href="{data_url}" target="_blank" 
@@ -1093,7 +1061,6 @@ def render_document_view(contenu, type_doc, titre):
         </div>
         """, unsafe_allow_html=True)
         
-        # ✅ Aperçu avec <embed>
         st.markdown(f"""
         <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
                     background:#0d1a2b;padding:4px;margin-top:8px;">
@@ -1101,6 +1068,9 @@ def render_document_view(contenu, type_doc, titre):
                    style="width:100%;height:700px;border-radius:4px;background:#0d1a2b;">
         </div>
         """, unsafe_allow_html=True)
+
+    elif mime_type.startswith("image/"):
+        st.image(decoded, caption=titre, use_container_width=True)
 
     elif mime_type == "text/plain":
         try:
@@ -1116,11 +1086,10 @@ def render_document_view(contenu, type_doc, titre):
         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     ):
         st.info(
-            "📌 L'aperçu intégré n'est pas disponible pour ce format (Word/Excel/PowerPoint) "
-            "directement dans le navigateur. Téléchargez le fichier ci-dessous pour l'ouvrir."
+            "📌 L'aperçu intégré n'est pas disponible pour ce format (Word/Excel/PowerPoint). "
+            "Téléchargez le fichier ci-dessous pour l'ouvrir."
         )
 
-    # --- 5. Toujours proposer le téléchargement ---
     st.download_button(
         label=f"📥 Télécharger {titre}.{file_ext}",
         data=decoded,

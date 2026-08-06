@@ -1,4 +1,5 @@
 import streamlit as st
+pip install streamlit-pdf-viewer
 import pandas as pd
 import plotly.express as px
 from datetime import datetime, timedelta, date, time as dtime

@@ -407,14 +407,28 @@ import pandas as pd
 DB_PATH = "data/planning.db"
 os.makedirs("data", exist_ok=True)
 
+# ============================================
+# DATABASE SQLITE (VERSION DÉFINITIVE)
+# ============================================
+
+import sqlite3
+import os
+import json
+import pandas as pd
+
+DB_PATH = "data/planning.db"
+os.makedirs("data", exist_ok=True)
+
 class Database:
     def __init__(self):
         self.db_path = DB_PATH
         self._ensure_schema()
 
     def get_connection(self):
-        """Retourne une connexion SQLite."""
-        return sqlite3.connect(self.db_path)
+        """Retourne une connexion SQLite avec autocommit."""
+        conn = sqlite3.connect(self.db_path)
+        conn.isolation_level = None  # ← CRUCIAL : autocommit mode
+        return conn
 
     def _query(self, sql, params=None):
         """SELECT -> DataFrame."""
@@ -437,9 +451,7 @@ class Database:
                 cursor.execute(sql, params)
             else:
                 cursor.execute(sql)
-            conn.commit()
         except Exception as e:
-            conn.rollback()
             raise e
         finally:
             conn.close()
@@ -452,9 +464,7 @@ class Database:
         cursor = conn.cursor()
         try:
             cursor.executemany(sql, list_of_params)
-            conn.commit()
         except Exception as e:
-            conn.rollback()
             raise e
         finally:
             conn.close()
@@ -468,10 +478,8 @@ class Database:
                 cursor.execute(sql, params)
             else:
                 cursor.execute(sql)
-            conn.commit()
             new_id = cursor.lastrowid
         except Exception as e:
-            conn.rollback()
             raise e
         finally:
             conn.close()
@@ -573,7 +581,11 @@ class Database:
             self._exec(ddl)
 
         # --- Seed simulations (une seule fois) ---
-        nb_sims = self._query("SELECT COUNT(*) AS n FROM simulations").iloc[0]["n"]
+        try:
+            nb_sims = self._query("SELECT COUNT(*) AS n FROM simulations").iloc[0]["n"]
+        except:
+            nb_sims = 0
+            
         if nb_sims == 0:
             sims = [
                 {"nom": "Synthese Dynamique", "duree": 65, "est_test": 0, "ordre": 1},
@@ -591,7 +603,11 @@ class Database:
             )
 
         # --- Seed grille par défaut (une seule fois) ---
-        nb_grilles = self._query("SELECT COUNT(*) AS n FROM grilles_evaluation").iloc[0]["n"]
+        try:
+            nb_grilles = self._query("SELECT COUNT(*) AS n FROM grilles_evaluation").iloc[0]["n"]
+        except:
+            nb_grilles = 0
+            
         if nb_grilles == 0:
             self._exec(
                 "INSERT INTO grilles_evaluation (nom, description, criteres, bareme, date_creation) "
@@ -606,8 +622,13 @@ class Database:
             )
 
         # --- Seed démo (3 instructeurs + 9 élèves) ---
-        nb_instr = self._query("SELECT COUNT(*) AS n FROM instructeurs").iloc[0]["n"]
-        nb_eleves = self._query("SELECT COUNT(*) AS n FROM eleves").iloc[0]["n"]
+        try:
+            nb_instr = self._query("SELECT COUNT(*) AS n FROM instructeurs").iloc[0]["n"]
+            nb_eleves = self._query("SELECT COUNT(*) AS n FROM eleves").iloc[0]["n"]
+        except:
+            nb_instr = 0
+            nb_eleves = 0
+            
         if nb_instr == 0 and nb_eleves == 0:
             for nom, prenom in [("RIFAI", "Mr"), ("TAHERI", "Mr"), ("JBARA", "Mr")]:
                 self.add_instructeur(nom, prenom, password=DEFAULT_PASSWORD)
@@ -620,13 +641,16 @@ class Database:
 
         # --- Backfill : tout compte sans mot de passe reçoit le mot de passe par défaut ---
         for table in ("eleves", "instructeurs"):
-            sans_mdp = self._query(f"SELECT id FROM {table} WHERE password_hash IS NULL OR password_salt IS NULL")
-            for row_id in sans_mdp["id"].tolist():
-                pwd_hash, salt = hash_password(DEFAULT_PASSWORD)
-                self._exec(
-                    f"UPDATE {table} SET password_hash = :h, password_salt = :s WHERE id = :id",
-                    {"h": pwd_hash, "s": salt, "id": int(row_id)}
-                )
+            try:
+                sans_mdp = self._query(f"SELECT id FROM {table} WHERE password_hash IS NULL OR password_salt IS NULL")
+                for row_id in sans_mdp["id"].tolist():
+                    pwd_hash, salt = hash_password(DEFAULT_PASSWORD)
+                    self._exec(
+                        f"UPDATE {table} SET password_hash = :h, password_salt = :s WHERE id = :id",
+                        {"h": pwd_hash, "s": salt, "id": int(row_id)}
+                    )
+            except:
+                pass
 
     # ---------- Mots de passe ----------
 
@@ -977,7 +1001,6 @@ class Database:
         for table in ("seances", "groupe_eleves", "groupes", "eleves", "instructeurs",
                       "cours", "scenarios", "td", "notes", "grilles_evaluation"):
             self._exec(f"DELETE FROM {table}")
-
 
 # ============================================
 # ⚠️ FIN DE LA CLASSE DATABASE SQLITE

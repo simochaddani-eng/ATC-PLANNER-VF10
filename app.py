@@ -65,7 +65,7 @@ def generate_temp_password() -> str:
     return secrets.token_urlsafe(6)
 
 # ============================================
-# STYLE CSS (RACCOURCI POUR GAIN DE PLACE)
+# STYLE CSS
 # ============================================
 
 st.markdown("""
@@ -368,13 +368,11 @@ class Database:
         self._ensure_schema()
 
     def get_connection(self):
-        """Retourne une connexion SQLite avec autocommit."""
         conn = sqlite3.connect(self.db_path)
         conn.isolation_level = None
         return conn
 
     def _query(self, sql, params=None):
-        """SELECT -> DataFrame."""
         conn = self.get_connection()
         try:
             if params:
@@ -386,7 +384,6 @@ class Database:
         return df
 
     def _exec(self, sql, params=None):
-        """INSERT / UPDATE / DELETE simple."""
         conn = self.get_connection()
         cursor = conn.cursor()
         try:
@@ -400,7 +397,6 @@ class Database:
             conn.close()
 
     def _exec_many(self, sql, list_of_params):
-        """Plusieurs lignes en une seule transaction."""
         if not list_of_params:
             return
         conn = self.get_connection()
@@ -413,7 +409,6 @@ class Database:
             conn.close()
 
     def _exec_returning_id(self, sql, params=None):
-        """INSERT ... RETURNING id -> renvoie le nouvel id."""
         conn = self.get_connection()
         cursor = conn.cursor()
         try:
@@ -429,7 +424,6 @@ class Database:
         return new_id
 
     def _ensure_schema(self):
-        """Crée les tables si elles n'existent pas."""
         ddl_statements = [
             """CREATE TABLE IF NOT EXISTS config (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -521,7 +515,6 @@ class Database:
         for ddl in ddl_statements:
             self._exec(ddl)
 
-        # Seed simulations
         try:
             nb_sims = self._query("SELECT COUNT(*) AS n FROM simulations").iloc[0]["n"]
         except:
@@ -543,7 +536,6 @@ class Database:
                 sims
             )
 
-        # Seed grille par défaut
         try:
             nb_grilles = self._query("SELECT COUNT(*) AS n FROM grilles_evaluation").iloc[0]["n"]
         except:
@@ -562,7 +554,6 @@ class Database:
                 }
             )
 
-        # Seed démo
         try:
             nb_instr = self._query("SELECT COUNT(*) AS n FROM instructeurs").iloc[0]["n"]
             nb_eleves = self._query("SELECT COUNT(*) AS n FROM eleves").iloc[0]["n"]
@@ -580,7 +571,6 @@ class Database:
             ]:
                 self.add_eleve(nom, prenom, password=DEFAULT_PASSWORD)
 
-        # Backfill
         for table in ("eleves", "instructeurs"):
             try:
                 sans_mdp = self._query(f"SELECT id FROM {table} WHERE password_hash IS NULL OR password_salt IS NULL")
@@ -592,8 +582,6 @@ class Database:
                     )
             except:
                 pass
-
-    # ---------- Mots de passe ----------
 
     def verify_password_eleve(self, eleve_id, password):
         df = self._query("SELECT password_hash, password_salt FROM eleves WHERE id = :id", {"id": eleve_id})
@@ -629,8 +617,6 @@ class Database:
         self._exec("UPDATE instructeurs SET password_hash = :h, password_salt = :s WHERE id = :id",
                     {"h": pwd_hash, "s": salt, "id": instr_id})
 
-    # ---------- Élèves ----------
-
     def get_eleves(self, groupe_id=None):
         if groupe_id:
             return self._query("SELECT * FROM eleves WHERE groupe_id = :gid ORDER BY nom, prenom", {"gid": groupe_id})
@@ -661,8 +647,6 @@ class Database:
         self._exec("DELETE FROM notes WHERE eleve_id = :id", {"id": eleve_id})
         self._exec("DELETE FROM eleves WHERE id = :id", {"id": eleve_id})
 
-    # ---------- Instructeurs ----------
-
     def get_instructeurs(self):
         return self._query("SELECT * FROM instructeurs WHERE actif = 1 ORDER BY nom, prenom")
 
@@ -688,8 +672,6 @@ class Database:
 
     def delete_instructeur(self, instr_id):
         self._exec("DELETE FROM instructeurs WHERE id = :id", {"id": instr_id})
-
-    # ---------- Groupes ----------
 
     def get_groupes(self):
         return self._query("""
@@ -729,8 +711,6 @@ class Database:
                 self._exec("UPDATE eleves SET groupe_id = :gid WHERE id = :eid",
                           {"gid": new_id, "eid": eid})
         return id_map
-
-    # ---------- Séances ----------
 
     def get_seances(self):
         return self._query("""
@@ -788,8 +768,6 @@ class Database:
         for table in ("seances", "groupe_eleves", "groupes"):
             self._exec(f"DELETE FROM {table}")
         self._exec("UPDATE eleves SET groupe_id = NULL")
-
-    # ---------- Cours / Scénarios / TD ----------
 
     def _filtered_by_group(self, table, eleve_id, groupe_id, order_col):
         if eleve_id is not None:
@@ -862,8 +840,6 @@ class Database:
     def delete_td(self, td_id):
         self._exec("DELETE FROM td WHERE id = :id", {"id": td_id})
 
-    # ---------- Évaluations ----------
-
     def add_grille(self, grille):
         self._exec("""
             INSERT INTO grilles_evaluation (nom, description, criteres, bareme, instructeur_id, date_creation)
@@ -910,8 +886,6 @@ class Database:
     def delete_notes_eleve(self, eleve_id):
         self._exec("DELETE FROM notes WHERE eleve_id = :id", {"id": eleve_id})
 
-    # ---------- Configuration ----------
-
     def save_config(self, config):
         self._exec("DELETE FROM config")
         self._exec("""
@@ -944,7 +918,7 @@ class Database:
             self._exec(f"DELETE FROM {table}")
 
 # ============================================
-# FONCTIONS DE VISUALISATION DE DOCUMENTS - VERSION CORRIGÉE
+# FONCTION DE VISUALISATION DE DOCUMENTS - VERSION CORRIGÉE
 # ============================================
 
 def detect_file_type(decoded):
@@ -976,9 +950,9 @@ def detect_file_type(decoded):
     except Exception:
         return "bin", "📎", "Fichier", "application/octet-stream"
 
-# ✅ VERSION CORRIGÉE avec gestion des erreurs améliorée
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document dans l'interface avec gestion robuste des erreurs."""
+    """Affiche un document dans l'interface - Version robuste pour PDF"""
+    
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
         return
@@ -1006,129 +980,115 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         """, unsafe_allow_html=True)
         return
 
-    # --- Décodage du contenu ---
+    # --- DÉCODAGE ROBUSTE DU CONTENU ---
+    decoded = None
+    
+    # Tentative 1: Décodage base64 standard
     try:
-        decoded = base64.b64decode(contenu)
-    except Exception as e:
-        st.error(f"❌ Erreur de décodage base64 : {e}")
-        # Tentative de récupération : si le contenu commence par %PDF, c'est du texte brut
-        if contenu.startswith('%PDF'):
-            try:
-                decoded = contenu.encode('utf-8')
-                st.warning("⚠️ Le contenu a été traité comme du texte brut (non encodé en base64)")
-            except:
-                st.error("❌ Impossible de décoder le document")
-                return
+        padding = 4 - (len(contenu) % 4)
+        if padding != 4:
+            contenu_padded = contenu + "=" * padding
         else:
-            st.code(f"Début du contenu : {contenu[:200]}")
+            contenu_padded = contenu
+        decoded = base64.b64decode(contenu_padded)
+    except Exception as e:
+        # Tentative 2: Le contenu est peut-être du texte brut
+        try:
+            if contenu.startswith('%PDF'):
+                decoded = contenu.encode('utf-8')
+            elif contenu.startswith('JVBER'):
+                decoded = bytes.fromhex(contenu)
+            else:
+                # Tentative 3: base64 sans padding
+                try:
+                    decoded = base64.b64decode(contenu + '==')
+                except:
+                    # Tentative 4: base64 URL-safe
+                    try:
+                        decoded = base64.urlsafe_b64decode(contenu + '==')
+                    except Exception:
+                        st.error("❌ Impossible de décoder le document")
+                        st.code(f"Début du contenu: {contenu[:200]}")
+                        return
+        except Exception:
+            st.error("❌ Impossible de décoder le document")
+            st.code(f"Début du contenu: {contenu[:200]}")
             return
 
-    # --- Détection du type ---
-    file_ext, icon, label, mime_type = detect_file_type(decoded)
-    taille_kb = len(decoded) // 1024
-    taille_mo = len(decoded) / (1024 * 1024)
+    if decoded is None:
+        st.error("❌ Impossible de décoder le document")
+        return
 
-    # --- Affichage des infos ---
+    # --- VÉRIFICATION DE LA SIGNATURE ---
+    taille_mo = len(decoded) / (1024 * 1024)
+    taille_kb = len(decoded) // 1024
+    
+    # Vérifier la signature PDF
+    is_pdf = False
+    if len(decoded) >= 4:
+        if decoded[:4] == b'%PDF':
+            is_pdf = True
+        elif decoded[:7] == b'%PDF-1.':
+            is_pdf = True
+
+    # --- AFFICHAGE ---
     st.markdown(f"""
     <div class="doc-viewer">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <span style="font-size:1.2em;">{icon}</span>
+            <span style="font-size:1.2em;">📄</span>
             <div>
                 <div style="color:#7affb0;font-weight:600;">{titre_safe}</div>
-                <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">{esc(label)}</div>
+                <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">Document PDF</div>
                 <div style="color:rgba(180,200,220,0.3);font-size:0.7em;">📦 {taille_kb} KB ({taille_mo:.2f} Mo)</div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # --- Afficher selon le type ---
-    if mime_type == "application/pdf":
+    # --- AFFICHAGE DU PDF ---
+    if is_pdf or type_doc == "pdf":
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
         data_url = f"data:application/pdf;base64,{pdf_b64}"
         
         st.markdown("### 📄 Aperçu du document")
         
-        # Si le PDF est trop grand, proposer des alternatives
-        if taille_mo > 2:
-            st.warning(f"⚠️ Le PDF fait {taille_mo:.2f} Mo. L'affichage intégré peut être limité ou échouer.")
-            
-            # Proposer un téléchargement direct
-            st.download_button(
-                label=f"📥 Télécharger {titre}.pdf",
-                data=decoded,
-                file_name=f"{titre}.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-                key=f"download_pdf_{doc_index}"
-            )
-            
-            # Proposer d'ouvrir dans un nouvel onglet
-            st.markdown(f"""
-            <div style="margin-top:12px;">
-                <a href="{data_url}" target="_blank" 
-                   style="display:inline-block;padding:10px 20px;background:rgba(0,255,100,0.05);
-                          border:1px solid rgba(0,255,100,0.1);border-radius:8px;color:#66ddff;
-                          text-decoration:none;font-family:'JetBrains Mono',monospace;text-align:center;">
-                    🔗 Ouvrir le PDF dans un nouvel onglet
-                </a>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Tenter l'affichage avec PDF.js quand même (parfois ça fonctionne)
-            with st.expander("📖 Tenter l'affichage intégré (peut échouer)", expanded=False):
-                viewer_url = f"https://mozilla.github.io/pdf.js/web/viewer.html?file={data_url}"
-                st.markdown(f"""
-                <iframe src="{viewer_url}" 
-                        style="width:100%;height:600px;border:none;border-radius:4px;">
-                </iframe>
-                """, unsafe_allow_html=True)
-        else:
-            # Affichage normal pour les petits PDF
-            viewer_url = f"https://mozilla.github.io/pdf.js/web/viewer.html?file={data_url}"
-            st.markdown(f"""
-            <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                        background:#0d1a2b;padding:4px;margin-top:8px;">
-                <iframe src="{viewer_url}" 
-                        style="width:100%;height:700px;border:none;border-radius:4px;">
-                </iframe>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Bouton de téléchargement
-            st.download_button(
-                label=f"📥 Télécharger {titre}.pdf",
-                data=decoded,
-                file_name=f"{titre}.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-                key=f"download_pdf_{doc_index}"
-            )
-
-    elif mime_type.startswith("image/"):
-        st.image(decoded, caption=titre, use_container_width=True)
-
-    elif mime_type == "text/plain":
-        try:
-            text_content = decoded.decode("utf-8")
-            with st.expander("📄 Voir le contenu texte", expanded=True):
-                st.text(text_content[:5000] + ("..." if len(text_content) > 5000 else ""))
-        except Exception:
-            pass
-
-    else:
-        # Pour les autres types, proposer le téléchargement
+        # Utiliser PDF.js Viewer
+        viewer_url = f"https://mozilla.github.io/pdf.js/web/viewer.html?file={data_url}"
+        st.markdown(f"""
+        <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
+                    background:#0d1a2b;padding:4px;margin-top:8px;">
+            <iframe src="{viewer_url}" 
+                    style="width:100%;height:700px;border:none;border-radius:4px;">
+            </iframe>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Bouton de téléchargement
         st.download_button(
-            label=f"📥 Télécharger {titre}.{file_ext}",
+            label=f"📥 Télécharger {titre}.pdf",
             data=decoded,
-            file_name=f"{titre}.{file_ext}",
-            mime=mime_type,
+            file_name=f"{titre}.pdf",
+            mime="application/pdf",
             use_container_width=True,
-            key=f"download_doc_{doc_index}_{file_ext}"
+            key=f"download_pdf_{doc_index}"
+        )
+    
+    elif type_doc == "image" or type_doc == "png" or type_doc == "jpg" or type_doc == "jpeg":
+        st.image(decoded, caption=titre, use_container_width=True)
+    
+    else:
+        # Type inconnu - proposer le téléchargement
+        st.info(f"📎 Type de document: {type_doc}")
+        st.download_button(
+            label=f"📥 Télécharger {titre}",
+            data=decoded,
+            file_name=f"{titre}",
+            use_container_width=True,
+            key=f"download_doc_{doc_index}"
         )
 
 # ============================================
-# FONCTIONS DE GÉNÉRATION DU PLANNING (inchangées)
+# FONCTIONS DE GÉNÉRATION DU PLANNING
 # ============================================
 
 def parse_hm(s):
@@ -1467,7 +1427,7 @@ def section_mon_mot_de_passe(db, role, user_id):
                 st.success("✅ Mot de passe mis à jour avec succès.")
 
 # ============================================
-# ÉCRAN DE CONNEXION (RACCOURCI)
+# ÉCRAN DE CONNEXION
 # ============================================
 
 def radar_login():
@@ -1793,7 +1753,7 @@ def section_notes_eleve(notes):
         st.plotly_chart(fig, use_container_width=True)
 
 # ============================================
-# SECTIONS INSTRUCTEUR (RACCOURCIES)
+# SECTIONS INSTRUCTEUR
 # ============================================
 
 def _groupe_name_to_id(db):

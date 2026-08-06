@@ -950,7 +950,7 @@ def detect_file_type(decoded):
         return "bin", "📎", "Fichier", "application/octet-stream"
 
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document - Version qui fonctionne sur GitHub"""
+    """Affiche un document - Version GitHub avec embed"""
     
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
@@ -976,24 +976,46 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         """, unsafe_allow_html=True)
         return
 
-    # --- DÉCODAGE BASE64 ---
+    # --- DÉCODAGE BASE64 ROBUSTE ---
+    decoded = None
+    
+    # Tentative 1: Décodage base64 standard avec padding
     try:
-        # Ajouter du padding si nécessaire
         padding = len(contenu) % 4
         if padding:
-            contenu += '=' * (4 - padding)
-        decoded = base64.b64decode(contenu)
+            contenu_padded = contenu + '=' * (4 - padding)
+        else:
+            contenu_padded = contenu
+        decoded = base64.b64decode(contenu_padded)
     except Exception as e:
-        st.warning(f"⚠️ Erreur de décodage: {str(e)[:50]}...")
-        st.markdown('<div class="doc-viewer">', unsafe_allow_html=True)
-        st.write(contenu[:2000] + ("..." if len(contenu) > 2000 else ""))
-        st.markdown('</div>', unsafe_allow_html=True)
+        pass
+    
+    # Tentative 2: Décodage base64 sans padding
+    if decoded is None:
+        try:
+            decoded = base64.b64decode(contenu + '==')
+        except Exception as e:
+            pass
+    
+    # Tentative 3: Si le contenu est du texte brut
+    if decoded is None:
+        try:
+            if contenu.startswith('%PDF'):
+                decoded = contenu.encode('utf-8')
+        except Exception as e:
+            pass
+    
+    if decoded is None:
+        st.error("❌ Impossible de décoder le document")
+        st.code(contenu[:200])
         return
 
     # --- DÉTECTION DU TYPE ---
     file_ext, icon, label, mime_type = detect_file_type(decoded)
     taille_kb = len(decoded) // 1024
+    taille_mo = len(decoded) / (1024 * 1024)
 
+    # --- AFFICHAGE DES INFOS ---
     st.markdown(f"""
     <div class="doc-viewer">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -1001,7 +1023,7 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
             <div>
                 <div style="color:#7affb0;font-weight:600;">{titre_safe}</div>
                 <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">{esc(label)}</div>
-                <div style="color:rgba(180,200,220,0.3);font-size:0.7em;">📦 {taille_kb} KB</div>
+                <div style="color:rgba(180,200,220,0.3);font-size:0.7em;">📦 {taille_kb} KB ({taille_mo:.2f} Mo)</div>
             </div>
         </div>
     </div>
@@ -1014,7 +1036,11 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         
         st.markdown("### 📄 Aperçu du document")
         
-        # Afficher avec embed
+        # Vérifier la taille du PDF
+        if taille_mo > 2:
+            st.warning(f"⚠️ Le PDF fait {taille_mo:.2f} Mo. L'affichage peut être limité.")
+        
+        # Méthode 1: Embed (fonctionne sur la plupart des navigateurs)
         st.markdown(f"""
         <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
                     background:#ffffff;padding:4px;margin-top:8px;">
@@ -1023,12 +1049,14 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         </div>
         """, unsafe_allow_html=True)
         
-        # Lien de secours
+        # Méthode 2: Lien de secours
         st.markdown(f"""
-        <div style="margin-top:10px;text-align:center;">
+        <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
             <a href="{data_url}" target="_blank" 
-               style="color:#66ddff;text-decoration:none;font-family:'JetBrains Mono',monospace;">
-               🔗 Ouvrir dans un nouvel onglet
+               style="display:inline-block;padding:10px 20px;background:rgba(0,255,100,0.05);
+                      border:1px solid rgba(0,255,100,0.1);border-radius:8px;color:#66ddff;
+                      text-decoration:none;font-family:'JetBrains Mono',monospace;text-align:center;">
+                🔗 Ouvrir dans un nouvel onglet
             </a>
         </div>
         """, unsafe_allow_html=True)
@@ -1044,6 +1072,9 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         except Exception:
             pass
 
+    else:
+        st.info(f"📎 Type de document: {label}")
+    
     # --- BOUTON DE TÉLÉCHARGEMENT ---
     st.download_button(
         label=f"📥 Télécharger {titre}.{file_ext}",

@@ -31,8 +31,335 @@ st.set_page_config(
     page_title="ATC Planner - ICNA AIAC",
     page_icon="📡",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed",  # 👈 Sidebar repliée par défaut sur mobile
+    menu_items={
+        'Get Help': None,
+        'Report a bug': None,
+        'About': None
+    }
 )
+
+# ============================================
+# GESTION DES LANGUES
+# ============================================
+
+LANGUAGES = {
+    "🇫🇷 Français": {
+        "code": "fr",
+        "title": "Planificateur ATC",
+        "subtitle": "ICNA · AIAC · Phase Pratique",
+        "login_title": "⬡ SÉLECTIONNEZ VOTRE PROFIL",
+        "student": "👨‍🎓 ÉLÈVE",
+        "instructor": "👨‍🏫 INSTRUCTEUR",
+        "select_name": "Choisissez votre nom",
+        "password": "Mot de passe",
+        "enter": "🎯 Entrer",
+        "forgot_password": "🔒 Mot de passe oublié ?",
+        "reset_password": "🔄 Réinitialiser mon mot de passe",
+        "logout": "🚪 Se déconnecter",
+        "my_group": "👥 Mon Groupe",
+        "courses": "📚 Cours",
+        "scenarios": "🎯 Scénarios",
+        "td": "📝 TD",
+        "my_planning": "📅 Mon Planning",
+        "my_notes": "📊 Mes Notes",
+        "my_password": "🔑 Mon Mot de Passe",
+        "people": "👥 Personnes",
+        "config": "⚙️ Configuration",
+        "generator": "🚀 Générateur",
+        "planning": "📅 Planning",
+        "evaluations": "📊 Évaluations",
+        "groups": "🏷️ Groupes",
+        "change_password": "🔒 Mettre à jour le mot de passe",
+        "current_password": "Mot de passe actuel",
+        "new_password": "Nouveau mot de passe",
+        "confirm_password": "Confirmer le nouveau mot de passe",
+        "no_students": "Aucun élève disponible.",
+        "no_instructors": "Aucun instructeur disponible.",
+        "no_courses": "Aucun cours disponible pour le moment.",
+        "no_scenarios": "Aucun scénario disponible pour le moment.",
+        "no_td": "Aucun TD disponible pour le moment.",
+        "no_planning": "Aucune simulation planifiée pour le moment.",
+        "no_notes": "Aucune note disponible pour le moment.",
+        "password_updated": "✅ Mot de passe mis à jour avec succès.",
+        "password_incorrect": "❌ Le mot de passe actuel est incorrect.",
+        "password_too_short": "❌ Le nouveau mot de passe doit contenir au moins 4 caractères.",
+        "password_mismatch": "❌ Les deux mots de passe ne correspondent pas.",
+        "password_same": "⚠️ Le nouveau mot de passe doit être différent de l'ancien.",
+        "add_course": "➕ Ajouter un cours",
+        "add_scenario": "➕ Ajouter un scénario",
+        "add_td": "➕ Ajouter un TD",
+        "course_title": "Titre du cours",
+        "description": "Description",
+        "upload_file": "📎 Importer un fichier",
+        "type": "Type",
+        "tags": "Tags (séparés par des virgules)",
+        "target_group": "Groupe cible",
+        "all_groups": "Tous",
+        "add": "➕ Ajouter",
+        "delete": "🗑️ Supprimer",
+        "download": "📥 Télécharger",
+        "preview": "📄 Aperçu du document",
+        "no_content": "Aucun contenu disponible pour ce document.",
+        "external_link": "Lien externe",
+        "open_link": "🔗 Ouvrir",
+        "no_group": "Vous n'êtes pas encore affecté(e) à un groupe.",
+        "instructor_label": "Instructeur",
+        "simulator_label": "Simulateur",
+        "students_count": "élève(s)",
+        "average": "Moyenne sur",
+        "evaluations": "évaluation(s)",
+        "export": "📤 Exporter",
+        "export_excel": "📥 Exporter en Excel (.xlsx)",
+        "export_csv": "📥 Exporter en CSV",
+        "mobile_mode": "📱 Mode Mobile",
+        "mobile_mode_active": "📱 Mode mobile activé",
+        "back": "⬅ Retour",
+        "language": "🌐 Langue",
+        "delete_all": "🗑️ Tout réinitialiser",
+        "danger_zone": "⚠️ Zone dangereuse",
+        "confirm_delete": "Je comprends que cette action est irréversible",
+        "simulation": "Simulation",
+        "briefing": "Briefing",
+        "debriefing": "Débriefing",
+        "controller": "Contrôleur",
+        "pseudopilot": "Pseudopilote",
+        "observer": "Observateur",
+        "date": "Date",
+        "time": "Heure",
+        "duration": "Durée (min)",
+        "group": "Groupe",
+        "observers": "Observateurs",
+        "notes": "Notes",
+        "generate_planning": "🚀 Générer le planning",
+        "config_saved": "✅ Configuration sauvegardée",
+        "planning_generated": "✅ Planning généré !",
+        "planning_error": "❌ Erreur : {error}",
+        "title_required": "Le titre est requis.",
+        "content_required": "Titre et contenu requis.",
+        "students": "👨‍🎓 Élèves",
+        "instructors": "👨‍🏫 Instructeurs",
+        "no_students_in_group": "Aucun élève dans ce groupe",
+        "your_group": "Mon Groupe",
+        "your_planning": "Mon Planning",
+        "your_notes": "Mes Notes",
+    },
+    "🇬🇧 English": {
+        "code": "en",
+        "title": "ATC Planner",
+        "subtitle": "ICNA · AIAC · Practical Phase",
+        "login_title": "⬡ SELECT YOUR PROFILE",
+        "student": "👨‍🎓 STUDENT",
+        "instructor": "👨‍🏫 INSTRUCTOR",
+        "select_name": "Choose your name",
+        "password": "Password",
+        "enter": "🎯 Enter",
+        "forgot_password": "🔒 Forgot password?",
+        "reset_password": "🔄 Reset my password",
+        "logout": "🚪 Logout",
+        "my_group": "👥 My Group",
+        "courses": "📚 Courses",
+        "scenarios": "🎯 Scenarios",
+        "td": "📝 TD",
+        "my_planning": "📅 My Planning",
+        "my_notes": "📊 My Notes",
+        "my_password": "🔑 My Password",
+        "people": "👥 People",
+        "config": "⚙️ Configuration",
+        "generator": "🚀 Generator",
+        "planning": "📅 Planning",
+        "evaluations": "📊 Evaluations",
+        "groups": "🏷️ Groups",
+        "change_password": "🔒 Update password",
+        "current_password": "Current password",
+        "new_password": "New password",
+        "confirm_password": "Confirm new password",
+        "no_students": "No students available.",
+        "no_instructors": "No instructors available.",
+        "no_courses": "No courses available at the moment.",
+        "no_scenarios": "No scenarios available at the moment.",
+        "no_td": "No TD available at the moment.",
+        "no_planning": "No simulation scheduled at the moment.",
+        "no_notes": "No notes available at the moment.",
+        "password_updated": "✅ Password updated successfully.",
+        "password_incorrect": "❌ Current password is incorrect.",
+        "password_too_short": "❌ New password must be at least 4 characters.",
+        "password_mismatch": "❌ Passwords do not match.",
+        "password_same": "⚠️ New password must be different from current.",
+        "add_course": "➕ Add a course",
+        "add_scenario": "➕ Add a scenario",
+        "add_td": "➕ Add a TD",
+        "course_title": "Course title",
+        "description": "Description",
+        "upload_file": "📎 Upload a file",
+        "type": "Type",
+        "tags": "Tags (comma separated)",
+        "target_group": "Target group",
+        "all_groups": "All",
+        "add": "➕ Add",
+        "delete": "🗑️ Delete",
+        "download": "📥 Download",
+        "preview": "📄 Document preview",
+        "no_content": "No content available for this document.",
+        "external_link": "External link",
+        "open_link": "🔗 Open",
+        "no_group": "You are not assigned to a group yet.",
+        "instructor_label": "Instructor",
+        "simulator_label": "Simulator",
+        "students_count": "student(s)",
+        "average": "Average over",
+        "evaluations": "evaluation(s)",
+        "export": "📤 Export",
+        "export_excel": "📥 Export to Excel (.xlsx)",
+        "export_csv": "📥 Export to CSV",
+        "mobile_mode": "📱 Mobile Mode",
+        "mobile_mode_active": "📱 Mobile mode activated",
+        "back": "⬅ Back",
+        "language": "🌐 Language",
+        "delete_all": "🗑️ Reset all",
+        "danger_zone": "⚠️ Danger Zone",
+        "confirm_delete": "I understand this action is irreversible",
+        "simulation": "Simulation",
+        "briefing": "Briefing",
+        "debriefing": "Debriefing",
+        "controller": "Controller",
+        "pseudopilot": "Pseudo-pilot",
+        "observer": "Observer",
+        "date": "Date",
+        "time": "Time",
+        "duration": "Duration (min)",
+        "group": "Group",
+        "observers": "Observers",
+        "notes": "Notes",
+        "generate_planning": "🚀 Generate planning",
+        "config_saved": "✅ Configuration saved",
+        "planning_generated": "✅ Planning generated!",
+        "planning_error": "❌ Error: {error}",
+        "title_required": "Title is required.",
+        "content_required": "Title and content are required.",
+        "students": "👨‍🎓 Students",
+        "instructors": "👨‍🏫 Instructors",
+        "no_students_in_group": "No students in this group",
+        "your_group": "My Group",
+        "your_planning": "My Planning",
+        "your_notes": "My Notes",
+    },
+    "🇸🇦 العربية": {
+        "code": "ar",
+        "title": "مخطط ATC",
+        "subtitle": "ICNA · AIAC · المرحلة العملية",
+        "login_title": "⬡ اختر ملفك الشخصي",
+        "student": "👨‍🎓 طالب",
+        "instructor": "👨‍🏫 مدرب",
+        "select_name": "اختر اسمك",
+        "password": "كلمة المرور",
+        "enter": "🎯 دخول",
+        "forgot_password": "🔒 نسيت كلمة المرور؟",
+        "reset_password": "🔄 إعادة تعيين كلمة المرور",
+        "logout": "🚪 تسجيل الخروج",
+        "my_group": "👥 مجموعتي",
+        "courses": "📚 الدورات",
+        "scenarios": "🎯 السيناريوهات",
+        "td": "📝 الأعمال الموجهة",
+        "my_planning": "📅 جدولي",
+        "my_notes": "📊 درجاتي",
+        "my_password": "🔑 كلمة المرور",
+        "people": "👥 الأشخاص",
+        "config": "⚙️ الإعدادات",
+        "generator": "🚀 المولد",
+        "planning": "📅 الجدول",
+        "evaluations": "📊 التقييمات",
+        "groups": "🏷️ المجموعات",
+        "change_password": "🔒 تحديث كلمة المرور",
+        "current_password": "كلمة المرور الحالية",
+        "new_password": "كلمة المرور الجديدة",
+        "confirm_password": "تأكيد كلمة المرور الجديدة",
+        "no_students": "لا يوجد طلاب متاحون.",
+        "no_instructors": "لا يوجد مدربون متاحون.",
+        "no_courses": "لا توجد دورات متاحة حالياً.",
+        "no_scenarios": "لا توجد سيناريوهات متاحة حالياً.",
+        "no_td": "لا توجد أعمال موجهة متاحة حالياً.",
+        "no_planning": "لا توجد محاكاة مجدولة حالياً.",
+        "no_notes": "لا توجد درجات متاحة حالياً.",
+        "password_updated": "✅ تم تحديث كلمة المرور بنجاح.",
+        "password_incorrect": "❌ كلمة المرور الحالية غير صحيحة.",
+        "password_too_short": "❌ يجب أن تحتوي كلمة المرور الجديدة على 4 أحرف على الأقل.",
+        "password_mismatch": "❌ كلمات المرور غير متطابقة.",
+        "password_same": "⚠️ يجب أن تكون كلمة المرور الجديدة مختلفة عن الحالية.",
+        "add_course": "➕ إضافة دورة",
+        "add_scenario": "➕ إضافة سيناريو",
+        "add_td": "➕ إضافة عمل موجه",
+        "course_title": "عنوان الدورة",
+        "description": "الوصف",
+        "upload_file": "📎 رفع ملف",
+        "type": "النوع",
+        "tags": "الوسوم (مفصولة بفواصل)",
+        "target_group": "المجموعة المستهدفة",
+        "all_groups": "الكل",
+        "add": "➕ إضافة",
+        "delete": "🗑️ حذف",
+        "download": "📥 تحميل",
+        "preview": "📄 معاينة المستند",
+        "no_content": "لا يوجد محتوى متاح لهذا المستند.",
+        "external_link": "رابط خارجي",
+        "open_link": "🔗 فتح",
+        "no_group": "لم يتم تعيينك لمجموعة بعد.",
+        "instructor_label": "المدرب",
+        "simulator_label": "المحاكي",
+        "students_count": "طالب(ـة)",
+        "average": "المتوسط على",
+        "evaluations": "تقييم(ـات)",
+        "export": "📤 تصدير",
+        "export_excel": "📥 تصدير إلى Excel (.xlsx)",
+        "export_csv": "📥 تصدير إلى CSV",
+        "mobile_mode": "📱 الوضع المحمول",
+        "mobile_mode_active": "📱 تم تفعيل الوضع المحمول",
+        "back": "⬅ رجوع",
+        "language": "🌐 اللغة",
+        "delete_all": "🗑️ إعادة تعيين الكل",
+        "danger_zone": "⚠️ منطقة خطرة",
+        "confirm_delete": "أفهم أن هذا الإجراء لا رجعة فيه",
+        "simulation": "محاكاة",
+        "briefing": "إحاطة",
+        "debriefing": "تقييم",
+        "controller": "مراقب",
+        "pseudopilot": "طيار وهمي",
+        "observer": "مراقب",
+        "date": "التاريخ",
+        "time": "الوقت",
+        "duration": "المدة (دقيقة)",
+        "group": "المجموعة",
+        "observers": "المراقبون",
+        "notes": "ملاحظات",
+        "generate_planning": "🚀 إنشاء الجدول",
+        "config_saved": "✅ تم حفظ الإعدادات",
+        "planning_generated": "✅ تم إنشاء الجدول!",
+        "planning_error": "❌ خطأ: {error}",
+        "title_required": "العنوان مطلوب.",
+        "content_required": "العنوان والمحتوى مطلوبان.",
+        "students": "👨‍🎓 الطلاب",
+        "instructors": "👨‍🏫 المدربون",
+        "no_students_in_group": "لا يوجد طلاب في هذه المجموعة",
+        "your_group": "مجموعتي",
+        "your_planning": "جدولي",
+        "your_notes": "درجاتي",
+    }
+}
+
+def t(key, lang=None):
+    """Traduit une clé dans la langue sélectionnée."""
+    if lang is None:
+        lang = st.session_state.get("language", "🇫🇷 Français")
+    return LANGUAGES[lang].get(key, key)
+
+def is_mobile_device():
+    """Détecte si l'utilisateur est sur un appareil mobile."""
+    try:
+        user_agent = st.context.headers.get("User-Agent", "")
+        mobile_keywords = ["Mobile", "Android", "iPhone", "iPad", "webOS"]
+        return any(keyword in user_agent for keyword in mobile_keywords)
+    except:
+        return False
 
 def esc(x):
     """Échappe le texte libre avant de l'insérer dans un bloc HTML brut."""
@@ -65,7 +392,7 @@ def generate_temp_password() -> str:
     return secrets.token_urlsafe(6)
 
 # ============================================
-# STYLE CSS
+# STYLE CSS - IDENTITÉ ATC + RESPONSIVE MOBILE
 # ============================================
 
 st.markdown("""
@@ -73,6 +400,91 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@300;400;600;700&display=swap');
     * { font-family: 'Inter', 'JetBrains Mono', sans-serif; }
     .stApp { background: #0a0e17; }
+    
+    /* ============================================
+       STYLES RESPONSIVE POUR MOBILE
+    ============================================ */
+    
+    /* Ajustements pour écrans mobiles */
+    @media only screen and (max-width: 768px) {
+        .section-title {
+            font-size: 0.9em !important;
+        }
+        * {
+            font-size: 14px !important;
+        }
+        .doc-viewer {
+            padding: 8px !important;
+        }
+        .groupe-card {
+            padding: 10px 12px !important;
+        }
+        .flight-strip {
+            padding: 8px 10px !important;
+            font-size: 0.8em !important;
+        }
+        .pdf-viewer-container {
+            height: 500px !important;
+        }
+        div[data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+        }
+        .radar-screen {
+            width: 280px !important;
+            height: 280px !important;
+        }
+        .login-card {
+            min-width: 90% !important;
+            padding: 16px 20px !important;
+            bottom: 40px !important;
+        }
+        .stat-number {
+            font-size: 1.5em !important;
+        }
+        .badge-success, .badge-warning, .badge-info, .badge-danger, .badge-td {
+            font-size: 0.55em !important;
+            padding: 1px 8px !important;
+        }
+        [data-testid="stSidebar"] {
+            width: 280px !important;
+        }
+    }
+    
+    @media only screen and (max-width: 480px) {
+        .radar-screen {
+            width: 200px !important;
+            height: 200px !important;
+        }
+        .login-card {
+            min-width: 95% !important;
+            padding: 12px 16px !important;
+        }
+        .login-card h2 {
+            font-size: 0.7em !important;
+        }
+        .section-title {
+            font-size: 0.8em !important;
+        }
+        .flight-strip .strip-callsign {
+            font-size: 0.85em !important;
+        }
+        .flight-strip .strip-info {
+            font-size: 0.65em !important;
+        }
+        .flight-strip .strip-time {
+            font-size: 0.75em !important;
+        }
+        .hide-on-mobile {
+            display: none !important;
+        }
+    }
+    
+    /* ============================================
+       STYLES PRINCIPAUX
+    ============================================ */
+    
     .radar-container {
         position: relative;
         display: flex;
@@ -676,7 +1088,8 @@ class Database:
     def get_groupes(self):
         return self._query("""
             SELECT g.*, i.nom || ' ' || i.prenom as instructeur_nom
-            FROM groupes g LEFT JOIN instructeurs i ON g.instructeur_id = i.id            ORDER BY g.id
+            FROM groupes g LEFT JOIN instructeurs i ON g.instructeur_id = i.id
+            ORDER BY g.id
         """)
 
     def get_groupe_eleves(self, groupe_id):
@@ -917,7 +1330,7 @@ class Database:
             self._exec(f"DELETE FROM {table}")
 
 # ============================================
-# FONCTION DE VISUALISATION DE DOCUMENTS - VERSION STREAMLIT CLOUD
+# FONCTION DE VISUALISATION DE DOCUMENTS - AVEC STREAMLIT-PDF-VIEWER
 # ============================================
 
 def detect_file_type(decoded):
@@ -949,17 +1362,11 @@ def detect_file_type(decoded):
     except Exception:
         return "bin", "📎", "Fichier", "application/octet-stream"
 
-from streamlit_pdf_viewer import pdf_viewer
-
-from streamlit_pdf_viewer import pdf_viewer
-
-from streamlit_pdf_viewer import pdf_viewer
-
 def render_document_view(contenu, type_doc, titre, doc_index=None):
     """Affiche un document - Version avec streamlit-pdf-viewer"""
     
     if not contenu:
-        st.info("Aucun contenu disponible pour ce document.")
+        st.info(t("no_content"))
         return
 
     titre_safe = esc(titre)
@@ -975,10 +1382,10 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
                 <span style="font-size:1.2em;">🔗</span>
                 <div>
                     <div style="color:#7affb0;font-weight:600;">{titre_safe}</div>
-                    <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">Lien externe</div>
+                    <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">{t("external_link")}</div>
                 </div>
                 <div style="margin-left:auto;">
-                    <a href="{contenu}" target="_blank" class="doc-btn doc-btn-open">🔗 Ouvrir</a>
+                    <a href="{contenu}" target="_blank" class="doc-btn doc-btn-open">{t("open_link")}</a>
                 </div>
             </div>
         </div>
@@ -1037,16 +1444,44 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
 
     # --- AFFICHAGE DU PDF ---
     if mime_type == "application/pdf":
-        st.markdown("### 📄 Aperçu du document")
+        st.markdown(f"### {t('preview')}")
+        
+        # Détecter si on est sur mobile
+        is_mobile = st.session_state.get("is_mobile", False)
+        
+        # Ajuster les dimensions en fonction de l'écran
+        if is_mobile:
+            viewer_width = "100%"
+            viewer_height = 500
+        else:
+            viewer_width = 1200
+            viewer_height = 800
         
         # Utiliser le composant streamlit-pdf-viewer
-        # Arguments valides : input, width, height, annotations
         try:
+            from streamlit_pdf_viewer import pdf_viewer
             pdf_viewer(
                 input=decoded,
-                width=1200,    # Largeur en pixels
-                height=800     # Hauteur en pixels
+                width=viewer_width,
+                height=viewer_height
             )
+        except ImportError:
+            st.error("❌ La bibliothèque streamlit-pdf-viewer n'est pas installée.")
+            st.info("💡 Installez-la avec : pip install streamlit-pdf-viewer")
+            
+            # Fallback : lien de téléchargement
+            pdf_b64 = base64.b64encode(decoded).decode("utf-8")
+            data_url = f"data:application/pdf;base64,{pdf_b64}"
+            st.markdown(f"""
+            <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+                <a href="{data_url}" target="_blank" 
+                   style="display:inline-block;padding:10px 20px;background:rgba(0,255,100,0.05);
+                          border:1px solid rgba(0,255,100,0.1);border-radius:8px;color:#66ddff;
+                          text-decoration:none;font-family:'JetBrains Mono',monospace;text-align:center;">
+                    🔗 {t('open_link')}
+                </a>
+            </div>
+            """, unsafe_allow_html=True)
         except Exception as e:
             st.error(f"❌ Erreur d'affichage du PDF : {str(e)}")
             
@@ -1059,7 +1494,7 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
                    style="display:inline-block;padding:10px 20px;background:rgba(0,255,100,0.05);
                           border:1px solid rgba(0,255,100,0.1);border-radius:8px;color:#66ddff;
                           text-decoration:none;font-family:'JetBrains Mono',monospace;text-align:center;">
-                    🔗 Ouvrir dans un nouvel onglet
+                    🔗 {t('open_link')}
                 </a>
             </div>
             """, unsafe_allow_html=True)
@@ -1080,13 +1515,14 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     
     # --- BOUTON DE TÉLÉCHARGEMENT ---
     st.download_button(
-        label=f"📥 Télécharger {titre}.{file_ext}",
+        label=f"{t('download')} {titre}.{file_ext}",
         data=decoded,
         file_name=f"{titre}.{file_ext}",
         mime=mime_type,
         use_container_width=True,
         key=f"download_doc_{doc_index}_{file_ext}"
     )
+
 # ============================================
 # FONCTIONS DE GÉNÉRATION DU PLANNING
 # ============================================
@@ -1289,20 +1725,20 @@ def get_avatar(nom, prenom):
     """
 
 def render_flight_strip(seance, eleve_id):
-    role_text = "Observateur"
+    role_text = t("observer")
     role_class = "strip-role-observer"
     if seance.get("controle_eleve_id") == eleve_id:
-        role_text = "Contrôleur"
+        role_text = t("controller")
         role_class = "strip-role-controller"
     elif seance.get("pseudo_eleve_id") == eleve_id:
-        role_text = "Pseudopilote"
+        role_text = t("pseudopilot")
         role_class = "strip-role-pseudo"
 
     return f"""
     <div class="flight-strip">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
             <div>
-                <span class="strip-callsign">📡 {esc(seance.get('simulation_nom', 'Simulation'))}</span>
+                <span class="strip-callsign">📡 {esc(seance.get('simulation_nom', t('simulation')))}</span>
                 <span style="margin-left:10px;">
                     <span class="{role_class}" style="padding:2px 10px;border-radius:10px;font-size:0.7em;font-weight:600;">{role_text}</span>
                 </span>
@@ -1320,7 +1756,12 @@ def render_flight_strip(seance, eleve_id):
     """
 
 def _type_label(t):
-    return {"briefing": "Briefing", "simulation": "Simulation", "debriefing": "Débriefing"}.get(t, t)
+    type_map = {
+        "briefing": t("briefing"),
+        "simulation": t("simulation"),
+        "debriefing": t("debriefing")
+    }
+    return type_map.get(t, t)
 
 def build_export_dataframe(seances_df, eleves_df=None):
     colonnes = ["Date", "Heure", "Durée (min)", "Type", "Simulation", "Groupe",
@@ -1367,14 +1808,14 @@ def to_excel_bytes(df, sheet_name="Planning"):
     return buffer.getvalue()
 
 def render_export_buttons(export_df, filename_prefix, key_prefix):
-    st.markdown('<div class="section-title" style="font-size:1em;">📤 Exporter</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title" style="font-size:1em;">{t("export")}</div>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     horodatage = date.today().strftime("%Y-%m-%d")
     unique_id = random.randint(1000, 9999)
     
     with col1:
         st.download_button(
-            "📥 Exporter en Excel (.xlsx)",
+            t("export_excel"),
             data=to_excel_bytes(export_df, "Planning"),
             file_name=f"{filename_prefix}_{horodatage}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1383,7 +1824,7 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
         )
     with col2:
         st.download_button(
-            "📥 Exporter en CSV",
+            t("export_csv"),
             data=export_df.to_csv(index=False).encode("utf-8-sig"),
             file_name=f"{filename_prefix}_{horodatage}.csv",
             mime="text/csv",
@@ -1396,14 +1837,14 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
 # ============================================
 
 def section_mon_mot_de_passe(db, role, user_id):
-    st.markdown('<div class="section-title">🔑 Mon Mot de Passe</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("my_password")}</div>', unsafe_allow_html=True)
     st.caption("Vous pouvez modifier votre mot de passe à tout moment. Il n'est jamais stocké en clair.")
 
     with st.form("change_password_form"):
-        ancien = st.text_input("Mot de passe actuel", type="password")
-        nouveau = st.text_input("Nouveau mot de passe", type="password")
-        confirmation = st.text_input("Confirmer le nouveau mot de passe", type="password")
-        submitted = st.form_submit_button("🔒 Mettre à jour le mot de passe")
+        ancien = st.text_input(t("current_password"), type="password")
+        nouveau = st.text_input(t("new_password"), type="password")
+        confirmation = st.text_input(t("confirm_password"), type="password")
+        submitted = st.form_submit_button(t("change_password"))
 
         if submitted:
             if role == "eleve":
@@ -1412,19 +1853,19 @@ def section_mon_mot_de_passe(db, role, user_id):
                 mdp_valide = db.verify_password_instructeur(user_id, ancien)
 
             if not mdp_valide:
-                st.error("❌ Le mot de passe actuel est incorrect.")
+                st.error(t("password_incorrect"))
             elif len(nouveau) < 4:
-                st.error("❌ Le nouveau mot de passe doit contenir au moins 4 caractères.")
+                st.error(t("password_too_short"))
             elif nouveau != confirmation:
-                st.error("❌ Les deux mots de passe ne correspondent pas.")
+                st.error(t("password_mismatch"))
             elif nouveau == ancien:
-                st.warning("⚠️ Le nouveau mot de passe doit être différent de l'ancien.")
+                st.warning(t("password_same"))
             else:
                 if role == "eleve":
                     db.set_password_eleve(user_id, nouveau)
                 else:
                     db.set_password_instructeur(user_id, nouveau)
-                st.success("✅ Mot de passe mis à jour avec succès.")
+                st.success(t("password_updated"))
 
 # ============================================
 # ÉCRAN DE CONNEXION
@@ -1456,11 +1897,11 @@ def radar_login():
     db = Database()
 
     with col1:
-        if st.button("👨‍🎓 ÉLÈVE", use_container_width=True):
+        if st.button(t("student"), use_container_width=True):
             st.session_state["login_role"] = "eleve"
             st.rerun()
     with col2:
-        if st.button("👨‍🏫 INSTRUCTEUR", use_container_width=True):
+        if st.button(t("instructor"), use_container_width=True):
             st.session_state["login_role"] = "instructeur"
             st.rerun()
 
@@ -1469,12 +1910,12 @@ def radar_login():
     if role == "eleve":
         eleves = db.get_eleves()
         if eleves.empty:
-            st.warning("Aucun élève disponible.")
+            st.warning(t("no_students"))
             return
         eleve_options = {f"{row['prenom']} {row['nom']}": row['id'] for _, row in eleves.iterrows()}
-        selected = st.selectbox("Choisissez votre nom", list(eleve_options.keys()))
-        password_input = st.text_input("Mot de passe", type="password", key="login_pwd_eleve")
-        if st.button("🎯 Entrer", type="primary", use_container_width=True):
+        selected = st.selectbox(t("select_name"), list(eleve_options.keys()))
+        password_input = st.text_input(t("password"), type="password", key="login_pwd_eleve")
+        if st.button(t("enter"), type="primary", use_container_width=True):
             eleve_id = eleve_options[selected]
             if db.verify_password_eleve(eleve_id, password_input):
                 eleve = db.get_eleve_by_id(eleve_id)
@@ -1485,9 +1926,9 @@ def radar_login():
             else:
                 st.error("❌ Mot de passe incorrect.")
 
-        with st.expander("🔒 Mot de passe oublié ?"):
+        with st.expander(t("forgot_password")):
             st.caption(f"Réinitialiser directement le mot de passe de **{esc(selected)}**")
-            if st.button("🔄 Réinitialiser mon mot de passe", key="reset_btn_eleve"):
+            if st.button(t("reset_password"), key="reset_btn_eleve"):
                 new_temp = generate_temp_password()
                 db.set_password_eleve(eleve_options[selected], new_temp)
                 st.success(f"✅ Nouveau mot de passe temporaire : **{new_temp}**")
@@ -1495,12 +1936,12 @@ def radar_login():
     elif role == "instructeur":
         instructeurs = db.get_instructeurs()
         if instructeurs.empty:
-            st.warning("Aucun instructeur disponible.")
+            st.warning(t("no_instructors"))
             return
         instr_options = {f"{row['prenom']} {row['nom']}": row['id'] for _, row in instructeurs.iterrows()}
-        selected = st.selectbox("Choisissez votre nom", list(instr_options.keys()))
-        password_input = st.text_input("Mot de passe", type="password", key="login_pwd_instr")
-        if st.button("🎯 Entrer", type="primary", use_container_width=True):
+        selected = st.selectbox(t("select_name"), list(instr_options.keys()))
+        password_input = st.text_input(t("password"), type="password", key="login_pwd_instr")
+        if st.button(t("enter"), type="primary", use_container_width=True):
             instr_id = instr_options[selected]
             if db.verify_password_instructeur(instr_id, password_input):
                 instr = db.get_instructeur_by_id(instr_id)
@@ -1511,7 +1952,7 @@ def radar_login():
             else:
                 st.error("❌ Mot de passe incorrect.")
 
-        with st.expander("🔒 Mot de passe oublié ?"):
+        with st.expander(t("forgot_password")):
             autres_instructeurs = {k: v for k, v in instr_options.items() if k != selected}
             if autres_instructeurs:
                 st.caption(f"Un **autre** instructeur peut autoriser la réinitialisation")
@@ -1557,7 +1998,7 @@ def header_eleve(user):
                 </h1>
                 <p style="color:rgba(180,200,220,0.3);font-family:'JetBrains Mono',monospace;font-size:0.75em;
                           margin:0;letter-spacing:0.3px;">
-                    Espace Élève · Phase Pratique Aérodrome
+                    {t("title")} · {t("subtitle")}
                 </p>
             </div>
         </div>
@@ -1578,7 +2019,7 @@ def header_instructeur(user):
                 </h1>
                 <p style="color:rgba(180,200,220,0.3);font-family:'JetBrains Mono',monospace;font-size:0.75em;
                           margin:0;letter-spacing:0.3px;">
-                    Espace Instructeur · Phase Pratique Aérodrome
+                    {t("title")} · {t("subtitle")}
                 </p>
             </div>
         </div>
@@ -1590,9 +2031,9 @@ def header_instructeur(user):
 # ============================================
 
 def section_cours_eleve(cours):
-    st.markdown('<div class="section-title">📚 Cours disponibles</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("courses")}</div>', unsafe_allow_html=True)
     if cours.empty:
-        st.info("Aucun cours disponible.")
+        st.info(t("no_courses"))
         return
     
     for idx, (_, c) in enumerate(cours.iterrows()):
@@ -1608,9 +2049,9 @@ def section_cours_eleve(cours):
             render_document_view(c['contenu'], c['type'], c['titre'], doc_index=idx)
 
 def section_scenarios_eleve(scenarios):
-    st.markdown('<div class="section-title">🎯 Scénarios de simulation</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("scenarios")}</div>', unsafe_allow_html=True)
     if scenarios.empty:
-        st.info("Aucun scénario disponible.")
+        st.info(t("no_scenarios"))
         return
     
     niveau_badge = {"debutant": "badge-success", "intermediaire": "badge-warning", "avance": "badge-danger"}
@@ -1633,9 +2074,9 @@ def section_scenarios_eleve(scenarios):
                 render_document_view(s['contenu'], s['type'], s['titre'], doc_index=idx)
 
 def section_td_eleve(tds):
-    st.markdown('<div class="section-title">📝 Travaux Dirigés</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("td")}</div>', unsafe_allow_html=True)
     if tds.empty:
-        st.info("Aucun TD disponible.")
+        st.info(t("no_td"))
         return
     
     for idx, (_, td) in enumerate(tds.iterrows()):
@@ -1651,9 +2092,9 @@ def section_td_eleve(tds):
             render_document_view(td['contenu'], td['type'], td['titre'], doc_index=idx)
 
 def section_planning_eleve(db, seances, eleve_id, eleve_nom=""):
-    st.markdown('<div class="section-title">📅 Mon Planning</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("my_planning")}</div>', unsafe_allow_html=True)
     if seances.empty:
-        st.info("Aucune simulation planifiée.")
+        st.info(t("no_planning"))
         return
     for date_val in sorted(seances["date"].unique()):
         st.markdown(f"""
@@ -1672,10 +2113,10 @@ def section_planning_eleve(db, seances, eleve_id, eleve_nom=""):
     render_export_buttons(export_df, prefix, "planning_eleve")
 
 def section_groupe_eleve(db, eleve_id):
-    st.markdown('<div class="section-title">👥 Mon Groupe</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("my_group")}</div>', unsafe_allow_html=True)
     groupe = db.get_groupe_de_eleve(eleve_id)
     if not groupe:
-        st.info("Vous n'êtes pas encore affecté(e) à un groupe.")
+        st.info(t("no_group"))
         return
 
     membres = db.get_groupe_eleves(groupe["id"])
@@ -1685,37 +2126,37 @@ def section_groupe_eleve(db, eleve_id):
     ])
     instr_nom = groupe.get("instructeur_nom") or "Non assigné"
     sim_id = groupe.get("simulateur_id")
-    sim_label = f"Simulateur {sim_id}" if sim_id is not None else "Simulateur non assigné"
+    sim_label = f"{t('simulator_label')} {sim_id}" if sim_id is not None else "Simulateur non assigné"
 
     st.markdown(f"""
     <div class="groupe-card">
         <h4>🏷️ {esc(groupe['nom'])}</h4>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-            <span class="instructeur-badge">👤 Instructeur : {esc(instr_nom)}</span>
+            <span class="instructeur-badge">👤 {t('instructor_label')} : {esc(instr_nom)}</span>
             <span style="display:inline-block;background:rgba(0,255,100,0.03);border:1px solid rgba(0,255,100,0.04);
                         border-radius:16px;padding:4px 12px;font-size:0.8em;color:rgba(180,200,220,0.4);">
                 💻 {esc(sim_label)}
             </span>
             <span style="display:inline-block;background:rgba(0,255,100,0.03);border:1px solid rgba(0,255,100,0.04);
                         border-radius:16px;padding:4px 12px;font-size:0.8em;color:rgba(180,200,220,0.4);">
-                👨‍🎓 {len(membres)} élève(s)
+                👨‍🎓 {len(membres)} {t('students_count')}
             </span>
         </div>
-        <div>{chips if chips else '<span style="color:rgba(180,200,220,0.3);font-size:0.85em;">Aucun élève</span>'}</div>
+        <div>{chips if chips else f'<span style="color:rgba(180,200,220,0.3);font-size:0.85em;">{t("no_students_in_group")}</span>'}</div>
     </div>
     """, unsafe_allow_html=True)
 
 def section_notes_eleve(notes):
-    st.markdown('<div class="section-title">📊 Mes Notes</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("my_notes")}</div>', unsafe_allow_html=True)
     if notes.empty:
-        st.info("Aucune note disponible.")
+        st.info(t("no_notes"))
         return
     moyenne = notes["note"].mean()
     st.markdown(f"""
     <div style="text-align:center;margin-bottom:16px;">
         <span style="font-size:2em;font-weight:700;color:#7affb0;">{moyenne:.1f}/20</span>
         <span style="display:block;color:rgba(180,200,220,0.3);font-size:0.75em;">
-            Moyenne sur {len(notes)} évaluation(s)
+            {t('average')} {len(notes)} {t('evaluations')}
         </span>
     </div>
     """, unsafe_allow_html=True)
@@ -1753,7 +2194,7 @@ def section_notes_eleve(notes):
         st.plotly_chart(fig, use_container_width=True)
 
 # ============================================
-# SECTIONS INSTRUCTEUR
+# SECTIONS INSTRUCTEUR (RACCOURCIES)
 # ============================================
 
 def _groupe_name_to_id(db):
@@ -1761,37 +2202,37 @@ def _groupe_name_to_id(db):
     return {g["nom"]: g["id"] for _, g in groupes_list.iterrows()}
 
 def section_cours_instr(db, instr_id):
-    st.markdown('<div class="section-title">📚 Gestion des Cours</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("courses")}</div>', unsafe_allow_html=True)
 
-    with st.expander("➕ Ajouter un cours", expanded=False):
+    with st.expander(t("add_course"), expanded=False):
         with st.form("add_cours_form"):
-            titre = st.text_input("Titre du cours")
-            description = st.text_area("Description")
-            uploaded_file = st.file_uploader("📎 Importer un fichier", type=["pdf", "docx", "txt", "md", "pptx", "xlsx"])
+            titre = st.text_input(t("course_title"))
+            description = st.text_area(t("description"))
+            uploaded_file = st.file_uploader(t("upload_file"), type=["pdf", "docx", "txt", "md", "pptx", "xlsx"])
             col1, col2 = st.columns(2)
             with col1:
-                type_cours = st.selectbox("Type", ["document", "pdf", "video", "lien"])
+                type_cours = st.selectbox(t("type"), ["document", "pdf", "video", "lien"])
             with col2:
                 if uploaded_file:
                     st.success(f"✅ {uploaded_file.name} ({uploaded_file.size // 1024} KB)")
                     contenu = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
                 else:
                     contenu = st.text_input("URL ou contenu (si pas de fichier)")
-            tags = st.text_input("Tags (séparés par des virgules)")
+            tags = st.text_input(t("tags"))
             g_map = _groupe_name_to_id(db)
-            groupe_cible = st.selectbox("Groupe cible", ["Tous"] + list(g_map.keys()))
-            if st.form_submit_button("➕ Ajouter"):
+            groupe_cible = st.selectbox(t("target_group"), [t("all_groups")] + list(g_map.keys()))
+            if st.form_submit_button(t("add")):
                 if titre and (contenu or uploaded_file):
                     db.add_cours({
                         "titre": titre, "description": description, "type": type_cours, "contenu": contenu,
                         "date_upload": date.today().strftime("%Y-%m-%d"), "instructeur_id": instr_id,
-                        "groupe_cible_id": None if groupe_cible == "Tous" else g_map[groupe_cible],
+                        "groupe_cible_id": None if groupe_cible == t("all_groups") else g_map[groupe_cible],
                         "tags": tags
                     })
                     st.success("✅ Cours ajouté")
                     st.rerun()
                 else:
-                    st.error("Titre et contenu requis.")
+                    st.error(t("content_required"))
 
     cours_df = db.get_cours()
     for idx, (_, c) in enumerate(cours_df.iterrows()):
@@ -1808,48 +2249,48 @@ def section_cours_instr(db, instr_id):
                     st.write(c["description"])
                 render_document_view(c['contenu'], c['type'], c['titre'], doc_index=idx)
         with col2:
-            if st.button("🗑️ Supprimer", key=f"del_cours_{c['id']}", use_container_width=True):
+            if st.button(t("delete"), key=f"del_cours_{c['id']}", use_container_width=True):
                 db.delete_cours(c["id"])
                 st.rerun()
 
 def section_scenarios_instr(db, instr_id):
-    st.markdown('<div class="section-title">🎯 Gestion des Scénarios</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("scenarios")}</div>', unsafe_allow_html=True)
 
-    with st.expander("➕ Ajouter un scénario", expanded=False):
+    with st.expander(t("add_scenario"), expanded=False):
         with st.form("add_scenario_form"):
             titre = st.text_input("Titre du scénario")
-            description = st.text_area("Description")
+            description = st.text_area(t("description"))
             objectifs = st.text_area("Objectifs pédagogiques")
             duree = st.number_input("Durée estimée (minutes)", min_value=5, value=45)
             niveau = st.selectbox("Niveau", ["debutant", "intermediaire", "avance"])
             sim_requis = st.checkbox("Simulateur requis")
             instructions = st.text_area("Instructions")
-            uploaded_file = st.file_uploader("📎 Fichier joint", type=["pdf", "docx", "txt", "md", "pptx", "xlsx"], key="upload_scenario")
+            uploaded_file = st.file_uploader(t("upload_file"), type=["pdf", "docx", "txt", "md", "pptx", "xlsx"], key="upload_scenario")
             col1, col2 = st.columns(2)
             with col1:
-                type_scenario = st.selectbox("Type de fichier", ["document", "pdf", "video", "lien"])
+                type_scenario = st.selectbox(t("type"), ["document", "pdf", "video", "lien"])
             with col2:
                 if uploaded_file:
                     contenu = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
                 else:
                     contenu = st.text_input("URL ou contenu")
-            tags = st.text_input("Tags")
+            tags = st.text_input(t("tags"))
             g_map = _groupe_name_to_id(db)
-            groupe_cible = st.selectbox("Groupe cible", ["Tous"] + list(g_map.keys()))
-            if st.form_submit_button("➕ Ajouter"):
+            groupe_cible = st.selectbox(t("target_group"), [t("all_groups")] + list(g_map.keys()))
+            if st.form_submit_button(t("add")):
                 if titre:
                     db.add_scenario({
                         "titre": titre, "description": description, "objectifs": objectifs,
                         "duree_estimee": duree, "niveau": niveau, "simulateur_requis": sim_requis,
                         "instructions": instructions, "contenu": contenu, "type": type_scenario,
                         "date_creation": date.today().strftime("%Y-%m-%d"), "instructeur_id": instr_id,
-                        "groupe_cible_id": None if groupe_cible == "Tous" else g_map[groupe_cible],
+                        "groupe_cible_id": None if groupe_cible == t("all_groups") else g_map[groupe_cible],
                         "tags": tags
                     })
                     st.success("✅ Scénario ajouté")
                     st.rerun()
                 else:
-                    st.error("Le titre est requis.")
+                    st.error(t("title_required"))
 
     scenarios_df = db.get_scenarios()
     niveau_badge = {"debutant": "badge-success", "intermediaire": "badge-warning", "avance": "badge-danger"}
@@ -1870,41 +2311,41 @@ def section_scenarios_instr(db, instr_id):
                 if s.get("contenu"):
                     render_document_view(s['contenu'], s['type'], s['titre'], doc_index=idx)
         with col2:
-            if st.button("🗑️ Supprimer", key=f"del_scenario_{s['id']}", use_container_width=True):
+            if st.button(t("delete"), key=f"del_scenario_{s['id']}", use_container_width=True):
                 db.delete_scenario(s["id"])
                 st.rerun()
 
 def section_td_instr(db, instr_id):
-    st.markdown('<div class="section-title">📝 Gestion des TD</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("td")}</div>', unsafe_allow_html=True)
 
-    with st.expander("➕ Ajouter un TD", expanded=False):
+    with st.expander(t("add_td"), expanded=False):
         with st.form("add_td_form"):
             titre = st.text_input("Titre du TD")
-            description = st.text_area("Description")
-            uploaded_file = st.file_uploader("📎 Importer un fichier", type=["pdf", "docx", "txt", "md", "pptx", "xlsx"], key="upload_td")
+            description = st.text_area(t("description"))
+            uploaded_file = st.file_uploader(t("upload_file"), type=["pdf", "docx", "txt", "md", "pptx", "xlsx"], key="upload_td")
             col1, col2 = st.columns(2)
             with col1:
-                type_td = st.selectbox("Type", ["exercice", "corrige", "serie", "devoir"])
+                type_td = st.selectbox(t("type"), ["exercice", "corrige", "serie", "devoir"])
             with col2:
                 if uploaded_file:
                     contenu = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
                 else:
                     contenu = st.text_input("URL ou contenu")
-            tags = st.text_input("Tags")
+            tags = st.text_input(t("tags"))
             g_map = _groupe_name_to_id(db)
-            groupe_cible = st.selectbox("Groupe cible", ["Tous"] + list(g_map.keys()))
-            if st.form_submit_button("➕ Ajouter"):
+            groupe_cible = st.selectbox(t("target_group"), [t("all_groups")] + list(g_map.keys()))
+            if st.form_submit_button(t("add")):
                 if titre and (contenu or uploaded_file):
                     db.add_td({
                         "titre": titre, "description": description, "type": type_td, "contenu": contenu,
                         "date_upload": date.today().strftime("%Y-%m-%d"), "instructeur_id": instr_id,
-                        "groupe_cible_id": None if groupe_cible == "Tous" else g_map[groupe_cible],
+                        "groupe_cible_id": None if groupe_cible == t("all_groups") else g_map[groupe_cible],
                         "tags": tags
                     })
                     st.success("✅ TD ajouté")
                     st.rerun()
                 else:
-                    st.error("Titre et contenu requis.")
+                    st.error(t("content_required"))
 
     tds_df = db.get_td()
     for idx, (_, td) in enumerate(tds_df.iterrows()):
@@ -1921,17 +2362,17 @@ def section_td_instr(db, instr_id):
                     st.write(td["description"])
                 render_document_view(td['contenu'], td['type'], td['titre'], doc_index=idx)
         with col2:
-            if st.button("🗑️ Supprimer", key=f"del_td_{td['id']}", use_container_width=True):
+            if st.button(t("delete"), key=f"del_td_{td['id']}", use_container_width=True):
                 db.delete_td(td["id"])
                 st.rerun()
 
 def section_evals_instr(db, instr_id):
-    st.markdown('<div class="section-title">📊 Évaluations</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("evaluations")}</div>', unsafe_allow_html=True)
 
     with st.expander("📋 Gérer les grilles d'évaluation", expanded=False):
         with st.form("add_grille_form"):
             nom = st.text_input("Nom de la grille")
-            description = st.text_area("Description")
+            description = st.text_area(t("description"))
             criteres = st.text_area("Critères (un par ligne)", "Phraséologie\nAnticipation\nGestion du trafic\nCommunication\nRéactivité")
             bareme = st.text_area("Barème (un par ligne)", "4\n4\n4\n4\n4")
             if st.form_submit_button("➕ Créer"):
@@ -1957,7 +2398,7 @@ def section_evals_instr(db, instr_id):
     st.markdown('<div style="margin-top:12px;color:#7affb0;font-size:0.9em;">✏️ Noter un élève</div>', unsafe_allow_html=True)
     eleves_df = db.get_eleves()
     if eleves_df.empty:
-        st.info("Aucun élève inscrit.")
+        st.info(t("no_students"))
         return
 
     eleve_labels = {f"{row['prenom']} {row['nom']}": row['id'] for _, row in eleves_df.iterrows()}
@@ -1978,7 +2419,7 @@ def section_evals_instr(db, instr_id):
         sim_name_to_id = {row["nom"]: row["id"] for _, row in simulations_df.iterrows()}
 
         with st.form("note_form"):
-            simulation = st.selectbox("Simulation", list(sim_name_to_id.keys()))
+            simulation = st.selectbox(t("simulation"), list(sim_name_to_id.keys()))
             st.markdown("**Critères d'évaluation**")
             scores = []
             for c, b in zip(criteres, bareme):
@@ -2008,32 +2449,32 @@ def section_evals_instr(db, instr_id):
             with col2:
                 st.write(f"Note: {n['note']:.1f}/20 - {n['appreciation']}")
             with col3:
-                if st.button("🗑️", key=f"del_note_{n['id']}"):
+                if st.button(t("delete"), key=f"del_note_{n['id']}"):
                     db.delete_note(n['id'])
                     st.rerun()
-        if st.button("🗑️ Supprimer toutes les notes", key=f"del_all_notes_{eleve_id}", use_container_width=True):
+        if st.button(f"{t('delete')} {t('all_groups')}", key=f"del_all_notes_{eleve_id}", use_container_width=True):
             db.delete_notes_eleve(eleve_id)
             st.rerun()
 
 def section_planning_instr(db):
-    st.markdown('<div class="section-title">📅 Planning Général</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("planning")}</div>', unsafe_allow_html=True)
     seances = db.get_seances()
     if seances.empty:
         st.info("Aucun planning généré.")
         return
 
     groupes_df = db.get_groupes()
-    groupe_options = ["Tous les groupes"] + (groupes_df["nom"].tolist() if not groupes_df.empty else [])
-    type_options = {"Tous les types": None, "Briefing": "briefing", "Simulation": "simulation", "Débriefing": "debriefing"}
+    groupe_options = [t("all_groups")] + (groupes_df["nom"].tolist() if not groupes_df.empty else [])
+    type_options = {t("all_groups"): None, t("briefing"): "briefing", t("simulation"): "simulation", t("debriefing"): "debriefing"}
 
     col1, col2 = st.columns(2)
     with col1:
-        groupe_choisi = st.selectbox("Filtrer par groupe", groupe_options)
+        groupe_choisi = st.selectbox(t("group"), groupe_options)
     with col2:
-        type_label_choisi = st.selectbox("Filtrer par type", list(type_options.keys()))
+        type_label_choisi = st.selectbox(t("type"), list(type_options.keys()))
 
     filtered = seances.copy()
-    if groupe_choisi != "Tous les groupes":
+    if groupe_choisi != t("all_groups"):
         filtered = filtered[filtered["groupe_nom"] == groupe_choisi]
     if type_options[type_label_choisi] is not None:
         filtered = filtered[filtered["type"] == type_options[type_label_choisi]]
@@ -2048,7 +2489,7 @@ def section_planning_instr(db):
     render_export_buttons(export_df, "planning_general_atc", "planning_instr")
 
 def section_groupes_instr(db):
-    st.markdown('<div class="section-title">🏷️ Groupes</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("groups")}</div>', unsafe_allow_html=True)
     groupes = db.get_groupes()
     if groupes.empty:
         st.info("Aucun groupe généré.")
@@ -2060,22 +2501,22 @@ def section_groupes_instr(db):
         <div class="groupe-card">
             <h4>🏷️ {esc(g['nom'])}</h4>
             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-                <span class="instructeur-badge">👤 Instructeur : {esc(g['instructeur_nom'])}</span>
+                <span class="instructeur-badge">👤 {t('instructor_label')} : {esc(g['instructeur_nom'])}</span>
                 <span style="display:inline-block;background:rgba(0,255,100,0.03);border:1px solid rgba(0,255,100,0.04);
                             border-radius:16px;padding:4px 12px;font-size:0.8em;color:rgba(180,200,220,0.4);">
-                    💻 Simulateur {g['simulateur_id']}
+                    💻 {t('simulator_label')} {g['simulateur_id']}
                 </span>
                 <span style="display:inline-block;background:rgba(0,255,100,0.03);border:1px solid rgba(0,255,100,0.04);
                             border-radius:16px;padding:4px 12px;font-size:0.8em;color:rgba(180,200,220,0.4);">
-                    👨‍🎓 {len(membres)} élève(s)
+                    👨‍🎓 {len(membres)} {t('students_count')}
                 </span>
             </div>
-            <div>{chips if chips else '<span style="color:rgba(180,200,220,0.3);">Aucun élève</span>'}</div>
+            <div>{chips if chips else f'<span style="color:rgba(180,200,220,0.3);">{t("no_students_in_group")}</span>'}</div>
         </div>
         """, unsafe_allow_html=True)
 
 def page_generateur():
-    st.markdown('<div class="section-title">🚀 Générateur de Planning</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">{t("generator")}</div>', unsafe_allow_html=True)
     db = Database()
     config = db.get_config()
     eleves = db.get_eleves()
@@ -2085,10 +2526,10 @@ def page_generateur():
         st.warning("⚠️ Configurez d'abord l'application")
         return
     if eleves.empty:
-        st.warning("⚠️ Ajoutez des élèves")
+        st.warning(t("no_students"))
         return
     if instructeurs.empty:
-        st.warning("⚠️ Ajoutez des instructeurs")
+        st.warning(t("no_instructors"))
         return
     if len(instructeurs) < 2:
         st.warning("⚠️ Il faut au moins 2 instructeurs")
@@ -2097,9 +2538,9 @@ def page_generateur():
     date_debut = config['date_debut']
     date_fin_souhaitee = config['date_fin_souhaitee']
     
-    st.info(f"👨‍🎓 {len(eleves)} élèves | 👨‍🏫 {len(instructeurs)} instructeurs | 📅 {date_debut} → {date_fin_souhaitee}")
+    st.info(f"👨‍🎓 {len(eleves)} {t('students')} | 👨‍🏫 {len(instructeurs)} {t('instructors')} | 📅 {date_debut} → {date_fin_souhaitee}")
 
-    if st.button("🚀 Générer le planning", type="primary"):
+    if st.button(t("generate_planning"), type="primary"):
         with st.spinner("🔄 Génération..."):
             try:
                 db.reset_planning()
@@ -2122,7 +2563,7 @@ def page_generateur():
                 nb_sim = len([s for s in seances if s["type"] == "simulation"])
                 
                 if date_fin_reelle <= date_fin_souhaitee_obj:
-                    st.success(f"✅ Planning généré ! Fin: {date_fin_reelle.strftime('%d/%m/%Y')}")
+                    st.success(f"✅ {t('planning_generated')} Fin: {date_fin_reelle.strftime('%d/%m/%Y')}")
                     st.success(f"✅ {nb_sim} simulations planifiées")
                     st.balloons()
                 else:
@@ -2160,9 +2601,25 @@ def page_generateur():
 # ============================================
 
 def main():
+    # Initialisation des variables de session
     if "logged_in" not in st.session_state:
         st.session_state["logged_in"] = False
         st.session_state["login_role"] = None
+        st.session_state["language"] = "🇫🇷 Français"
+        st.session_state["mobile_mode"] = False
+        st.session_state["is_mobile"] = is_mobile_device()
+
+    # Sélecteur de langue dans la sidebar avant la connexion
+    with st.sidebar:
+        st.markdown(f"### {t('language')}")
+        lang = st.selectbox(
+            "",
+            list(LANGUAGES.keys()),
+            index=list(LANGUAGES.keys()).index(st.session_state.get("language", "🇫🇷 Français"))
+        )
+        if lang != st.session_state.get("language"):
+            st.session_state["language"] = lang
+            st.rerun()
 
     if not st.session_state["logged_in"]:
         radar_login()
@@ -2181,18 +2638,44 @@ def main():
         """, unsafe_allow_html=True)
 
         if role == "eleve":
-            pages = {"👥 Mon Groupe": "Groupe", "📚 Cours": "Cours", "🎯 Scénarios": "Scenarios", "📝 TD": "TD",
-                    "📅 Mon Planning": "Planning", "📊 Mes Notes": "Notes", "🔑 Mon Mot de Passe": "MotDePasse"}
+            pages = {
+                t("my_group"): "Groupe",
+                t("courses"): "Cours",
+                t("scenarios"): "Scenarios",
+                t("td"): "TD",
+                t("my_planning"): "Planning",
+                t("my_notes"): "Notes",
+                t("my_password"): "MotDePasse"
+            }
         else:
-            pages = {"👥 Personnes": "Personnes", "⚙️ Configuration": "Config", "🚀 Générateur": "Generateur",
-                    "📅 Planning": "Planning_Instr",
-                    "📚 Cours": "Cours_Instr", "🎯 Scénarios": "Scenarios_Instr", "📝 TD": "TD_Instr",
-                    "📊 Évaluations": "Evals", "🏷️ Groupes": "Groupes_Instr", "🔑 Mon Mot de Passe": "MotDePasse_Instr"}
-        selection = st.radio("Navigation", list(pages.keys()))
+            pages = {
+                t("people"): "Personnes",
+                t("config"): "Config",
+                t("generator"): "Generateur",
+                t("planning"): "Planning_Instr",
+                t("courses"): "Cours_Instr",
+                t("scenarios"): "Scenarios_Instr",
+                t("td"): "TD_Instr",
+                t("evaluations"): "Evals",
+                t("groups"): "Groupes_Instr",
+                t("my_password"): "MotDePasse_Instr"
+            }
+
+        selection = st.radio(t("menu", lang=st.session_state["language"]) if "menu" in LANGUAGES[st.session_state["language"]] else "Navigation", list(pages.keys()))
         page = pages[selection]
 
         st.markdown("---")
-        if st.button("🚪 Se déconnecter", use_container_width=True):
+        
+        # Mode mobile
+        if st.button(t("mobile_mode"), use_container_width=True):
+            st.session_state["mobile_mode"] = not st.session_state.get("mobile_mode", False)
+            st.rerun()
+        
+        if st.session_state.get("mobile_mode", False):
+            st.info(t("mobile_mode_active"))
+        
+        st.markdown("---")
+        if st.button(t("logout"), use_container_width=True):
             st.session_state["logged_in"] = False
             st.session_state["user"] = {}
             st.rerun()
@@ -2200,29 +2683,84 @@ def main():
     if role == "eleve":
         eleve_id = user.get("id")
         header_eleve(user)
-        if page == "Groupe":
-            section_groupe_eleve(db, eleve_id)
-        elif page == "Cours":
-            section_cours_eleve(db.get_cours(eleve_id))
-        elif page == "Scenarios":
-            section_scenarios_eleve(db.get_scenarios(eleve_id))
-        elif page == "TD":
-            section_td_eleve(db.get_td(eleve_id))
-        elif page == "Planning":
-            section_planning_eleve(db, db.get_seances_eleve(eleve_id), eleve_id, f"{user.get('prenom','')} {user.get('nom','')}")
-        elif page == "Notes":
-            section_notes_eleve(db.get_notes_eleve(eleve_id))
-        elif page == "MotDePasse":
-            section_mon_mot_de_passe(db, "eleve", eleve_id)
+        
+        if st.session_state.get("mobile_mode", False):
+            # Mode mobile : utiliser des onglets
+            tabs = st.tabs(list(pages.keys()))
+            tab_pages = list(pages.values())
+            for tab, page_name in zip(tabs, tab_pages):
+                with tab:
+                    if page_name == "Groupe":
+                        section_groupe_eleve(db, eleve_id)
+                    elif page_name == "Cours":
+                        section_cours_eleve(db.get_cours(eleve_id))
+                    elif page_name == "Scenarios":
+                        section_scenarios_eleve(db.get_scenarios(eleve_id))
+                    elif page_name == "TD":
+                        section_td_eleve(db.get_td(eleve_id))
+                    elif page_name == "Planning":
+                        section_planning_eleve(db, db.get_seances_eleve(eleve_id), eleve_id, f"{user.get('prenom','')} {user.get('nom','')}")
+                    elif page_name == "Notes":
+                        section_notes_eleve(db.get_notes_eleve(eleve_id))
+                    elif page_name == "MotDePasse":
+                        section_mon_mot_de_passe(db, "eleve", eleve_id)
+        else:
+            # Mode desktop normal
+            if page == "Groupe":
+                section_groupe_eleve(db, eleve_id)
+            elif page == "Cours":
+                section_cours_eleve(db.get_cours(eleve_id))
+            elif page == "Scenarios":
+                section_scenarios_eleve(db.get_scenarios(eleve_id))
+            elif page == "TD":
+                section_td_eleve(db.get_td(eleve_id))
+            elif page == "Planning":
+                section_planning_eleve(db, db.get_seances_eleve(eleve_id), eleve_id, f"{user.get('prenom','')} {user.get('nom','')}")
+            elif page == "Notes":
+                section_notes_eleve(db.get_notes_eleve(eleve_id))
+            elif page == "MotDePasse":
+                section_mon_mot_de_passe(db, "eleve", eleve_id)
         return
 
     # ---- Instructeur ----
     instr_id = user.get("id")
 
+    # Mode mobile pour instructeur
+    if st.session_state.get("mobile_mode", False):
+        tabs = st.tabs(list(pages.keys()))
+        tab_pages = list(pages.values())
+        for tab, page_name in zip(tabs, tab_pages):
+            with tab:
+                if page_name == "Personnes":
+                    # Fonction personnes simplifiée pour mobile
+                    st.markdown(f'<div class="section-title">{t("people")}</div>', unsafe_allow_html=True)
+                    st.info("📱 Version mobile - Gestion des personnes")
+                elif page_name == "Config":
+                    st.markdown(f'<div class="section-title">{t("config")}</div>', unsafe_allow_html=True)
+                    st.info("📱 Version mobile - Configuration")
+                elif page_name == "Generateur":
+                    page_generateur()
+                elif page_name == "Planning_Instr":
+                    section_planning_instr(db)
+                elif page_name == "Cours_Instr":
+                    section_cours_instr(db, instr_id)
+                elif page_name == "Scenarios_Instr":
+                    section_scenarios_instr(db, instr_id)
+                elif page_name == "TD_Instr":
+                    section_td_instr(db, instr_id)
+                elif page_name == "Evals":
+                    section_evals_instr(db, instr_id)
+                elif page_name == "Groupes_Instr":
+                    section_groupes_instr(db)
+                elif page_name == "MotDePasse_Instr":
+                    section_mon_mot_de_passe(db, "instructeur", instr_id)
+        return
+
+    # Mode desktop normal - Instructeur
     if page == "Personnes":
         header_instructeur(user)
-        st.markdown('<div class="section-title">👥 Gestion des Personnes</div>', unsafe_allow_html=True)
-        tab1, tab2 = st.tabs(["👨‍🎓 Élèves", "👨‍🏫 Instructeurs"])
+        st.markdown(f'<div class="section-title">{t("people")}</div>', unsafe_allow_html=True)
+        tab1, tab2 = st.tabs([t("students"), t("instructors")])
         with tab1:
             if st.session_state.get("temp_pwd_eleve"):
                 st.info(f"🔑 Compte créé. Mot de passe temporaire : **{st.session_state['temp_pwd_eleve']}**")
@@ -2261,7 +2799,7 @@ def main():
                             st.session_state["reset_pwd_eleve"] = new_temp
                             st.rerun()
                     with col3:
-                        if st.button("🗑️", key=f"del_eleve_{row['id']}"):
+                        if st.button(t("delete"), key=f"del_eleve_{row['id']}"):
                             db.delete_eleve(row['id'])
                             st.rerun()
         with tab2:
@@ -2302,24 +2840,24 @@ def main():
                             st.session_state["reset_pwd_instr"] = new_temp
                             st.rerun()
                     with col3:
-                        if st.button("🗑️", key=f"del_instr_{row['id']}"):
+                        if st.button(t("delete"), key=f"del_instr_{row['id']}"):
                             db.delete_instructeur(row['id'])
                             st.rerun()
         st.markdown("---")
-        with st.expander("⚠️ Zone dangereuse"):
-            confirm = st.checkbox("Je comprends que cette action est irréversible")
-            if st.button("🗑️ Tout réinitialiser", disabled=not confirm):
+        with st.expander(t("danger_zone")):
+            confirm = st.checkbox(t("confirm_delete"))
+            if st.button(t("delete_all"), disabled=not confirm):
                 db.delete_all_data()
                 st.success("✅ Toutes les données ont été supprimées")
                 st.rerun()
 
     elif page == "Config":
         header_instructeur(user)
-        st.markdown('<div class="section-title">⚙️ Configuration</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="section-title">{t("config")}</div>', unsafe_allow_html=True)
         with st.form("config_form"):
             col1, col2 = st.columns(2)
             with col1:
-                date_debut = st.date_input("Date de début", value=date.today())
+                date_debut = st.date_input(t("date"), value=date.today())
             with col2:
                 date_fin = st.date_input("Date de fin souhaitée", value=date.today() + timedelta(days=30))
             st.markdown("**Horaires**")
@@ -2365,7 +2903,7 @@ def main():
                 db.save_config(config_data)
                 for sim_id, duree in durees_input.items():
                     db.update_simulation_duree(sim_id, duree)
-                st.success("✅ Configuration sauvegardée")
+                st.success(t("config_saved"))
 
     elif page == "Generateur":
         header_instructeur(user)

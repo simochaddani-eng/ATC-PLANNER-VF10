@@ -949,8 +949,10 @@ def detect_file_type(decoded):
     except Exception:
         return "bin", "📎", "Fichier", "application/octet-stream"
 
+from streamlit_pdf_viewer import pdf_viewer
+
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document - Version Streamlit Cloud (compatible CSP)"""
+    """Affiche un document - Version avec streamlit-pdf-viewer"""
     
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
@@ -1032,50 +1034,30 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     </div>
     """, unsafe_allow_html=True)
 
-    # --- AFFICHAGE DU PDF ---
+    # --- AFFICHAGE DU PDF AVEC STREAMLIT-PDF-VIEWER ---
     if mime_type == "application/pdf":
         st.markdown("### 📄 Aperçu du document")
         
-        # Encoder le PDF en base64 pour l'URL
-        pdf_b64 = base64.b64encode(decoded).decode("utf-8")
-        data_url = f"data:application/pdf;base64,{pdf_b64}"
-        
-        # Utiliser st.components.v1.html avec un viewer PDF intégré
-        # Cela évite la CSP car le contenu est dans un sandbox
-        pdf_viewer_html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body {{ margin: 0; padding: 0; background: #ffffff; height: 100vh; }}
-                iframe {{
-                    width: 100%;
-                    height: 100vh;
-                    border: none;
-                    background: #ffffff;
-                }}
-            </style>
-        </head>
-        <body>
-            <iframe src="{data_url}" type="application/pdf"></iframe>
-        </body>
-        </html>
-        """
-        
-        # Afficher avec st.components.v1.html
-        st.components.v1.html(pdf_viewer_html, height=700)
-        
-        # Lien de secours pour ouvrir dans un nouvel onglet
-        st.markdown(f"""
-        <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-            <a href="{data_url}" target="_blank" 
-               style="display:inline-block;padding:10px 20px;background:rgba(0,255,100,0.05);
-                      border:1px solid rgba(0,255,100,0.1);border-radius:8px;color:#66ddff;
-                      text-decoration:none;font-family:'JetBrains Mono',monospace;text-align:center;">
-                🔗 Ouvrir dans un nouvel onglet
-            </a>
-        </div>
-        """, unsafe_allow_html=True)
+        # Utiliser le composant streamlit-pdf-viewer
+        # Il passe par le mécanisme officiel des composants Streamlit
+        try:
+            pdf_viewer(input=decoded, width=1100, height=700)
+        except Exception as e:
+            st.error(f"❌ Erreur d'affichage du PDF : {str(e)}")
+            
+            # Fallback : lien de téléchargement
+            pdf_b64 = base64.b64encode(decoded).decode("utf-8")
+            data_url = f"data:application/pdf;base64,{pdf_b64}"
+            st.markdown(f"""
+            <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+                <a href="{data_url}" target="_blank" 
+                   style="display:inline-block;padding:10px 20px;background:rgba(0,255,100,0.05);
+                          border:1px solid rgba(0,255,100,0.1);border-radius:8px;color:#66ddff;
+                          text-decoration:none;font-family:'JetBrains Mono',monospace;text-align:center;">
+                    🔗 Ouvrir dans un nouvel onglet
+                </a>
+            </div>
+            """, unsafe_allow_html=True)
 
     elif mime_type.startswith("image/"):
         st.image(decoded, caption=titre, use_container_width=True)

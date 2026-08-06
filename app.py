@@ -406,50 +406,66 @@ class Database:
         """Retourne une connexion SQLite."""
         return sqlite3.connect(self.db_path)
 
-    def _query(self, sql, params=None):
-        """SELECT -> DataFrame."""
-        conn = self.get_connection()
+def _query(self, sql, params=None):
+    """SELECT -> DataFrame."""
+    conn = self.get_connection()
+    try:
         if params:
             df = pd.read_sql_query(sql, conn, params=params)
         else:
             df = pd.read_sql_query(sql, conn)
+    finally:
         conn.close()
-        return df
+    return df
 
-    def _exec(self, sql, params=None):
-        """INSERT / UPDATE / DELETE simple."""
-        conn = self.get_connection()
-        cursor = conn.cursor()
+def _exec(self, sql, params=None):
+    """INSERT / UPDATE / DELETE simple."""
+    conn = self.get_connection()
+    cursor = conn.cursor()
+    try:
         if params:
             cursor.execute(sql, params)
         else:
             cursor.execute(sql)
         conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
         conn.close()
 
-    def _exec_many(self, sql, list_of_params):
-        """Plusieurs lignes en une seule transaction."""
-        if not list_of_params:
-            return
-        conn = self.get_connection()
-        cursor = conn.cursor()
+def _exec_many(self, sql, list_of_params):
+    """Plusieurs lignes en une seule transaction."""
+    if not list_of_params:
+        return
+    conn = self.get_connection()
+    cursor = conn.cursor()
+    try:
         cursor.executemany(sql, list_of_params)
         conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
         conn.close()
 
-    def _exec_returning_id(self, sql, params=None):
-        """INSERT ... RETURNING id -> renvoie le nouvel id."""
-        conn = self.get_connection()
-        cursor = conn.cursor()
+   def _exec_returning_id(self, sql, params=None):
+    """INSERT ... RETURNING id -> renvoie le nouvel id."""
+    conn = self.get_connection()
+    cursor = conn.cursor()
+    try:
         if params:
             cursor.execute(sql, params)
         else:
             cursor.execute(sql)
         conn.commit()
         new_id = cursor.lastrowid
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
         conn.close()
-        return new_id
-
+    return new_id
     # ---------- Schéma ----------
 
     def _ensure_schema(self):

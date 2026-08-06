@@ -950,13 +950,16 @@ def detect_file_type(decoded):
         return "bin", "📎", "Fichier", "application/octet-stream"
 
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document - Version GitHub avec embed"""
+    """Affiche un document dans l'interface - Version Streamlit Cloud"""
     
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
         return
 
-    titre_safe = esc(titre)
+    titre_safe = html_lib.escape(str(titre))
+
+    if doc_index is None:
+        doc_index = random.randint(1000, 9999)
 
     # --- Gestion des liens externes ---
     if contenu.startswith(("http://", "https://")):
@@ -987,14 +990,14 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         else:
             contenu_padded = contenu
         decoded = base64.b64decode(contenu_padded)
-    except Exception as e:
+    except Exception:
         pass
     
     # Tentative 2: Décodage base64 sans padding
     if decoded is None:
         try:
             decoded = base64.b64decode(contenu + '==')
-        except Exception as e:
+        except Exception:
             pass
     
     # Tentative 3: Si le contenu est du texte brut
@@ -1002,12 +1005,11 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         try:
             if contenu.startswith('%PDF'):
                 decoded = contenu.encode('utf-8')
-        except Exception as e:
+        except Exception:
             pass
     
     if decoded is None:
         st.error("❌ Impossible de décoder le document")
-        st.code(contenu[:200])
         return
 
     # --- DÉTECTION DU TYPE ---
@@ -1022,34 +1024,47 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
             <span style="font-size:1.2em;">{icon}</span>
             <div>
                 <div style="color:#7affb0;font-weight:600;">{titre_safe}</div>
-                <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">{esc(label)}</div>
+                <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">{html_lib.escape(label)}</div>
                 <div style="color:rgba(180,200,220,0.3);font-size:0.7em;">📦 {taille_kb} KB ({taille_mo:.2f} Mo)</div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # --- AFFICHAGE DU PDF ---
+    # --- AFFICHAGE DU PDF AVEC ST.COMPONENTS ---
     if mime_type == "application/pdf":
+        st.markdown("### 📄 Aperçu du document")
+        
+        # Encoder le PDF en base64 pour l'URL
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
         data_url = f"data:application/pdf;base64,{pdf_b64}"
         
-        st.markdown("### 📄 Aperçu du document")
+        # Utiliser st.components.v1.html avec un viewer PDF intégré
+        # Cela évite la CSP car le contenu est dans un sandbox
+        pdf_viewer_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ margin: 0; padding: 0; background: #ffffff; height: 100vh; }}
+                iframe {{
+                    width: 100%;
+                    height: 100vh;
+                    border: none;
+                    background: #ffffff;
+                }}
+            </style>
+        </head>
+        <body>
+            <iframe src="{data_url}" type="application/pdf"></iframe>
+        </body>
+        </html>
+        """
         
-        # Vérifier la taille du PDF
-        if taille_mo > 2:
-            st.warning(f"⚠️ Le PDF fait {taille_mo:.2f} Mo. L'affichage peut être limité.")
+        # Afficher avec st.components.v1.html
+        st.components.v1.html(pdf_viewer_html, height=700)
         
-        # Méthode 1: Embed (fonctionne sur la plupart des navigateurs)
-        st.markdown(f"""
-        <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                    background:#ffffff;padding:4px;margin-top:8px;">
-            <embed src="{data_url}" type="application/pdf"
-                   style="width:100%;height:700px;border-radius:4px;background:#ffffff;">
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Méthode 2: Lien de secours
+        # Lien de secours pour ouvrir dans un nouvel onglet
         st.markdown(f"""
         <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
             <a href="{data_url}" target="_blank" 
@@ -1082,8 +1097,9 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         file_name=f"{titre}.{file_ext}",
         mime=mime_type,
         use_container_width=True,
-        key=f"download_doc_{doc_index or random.randint(1000, 9999)}"
+        key=f"download_doc_{doc_index}_{file_ext}"
     )
+
 # ============================================
 # FONCTIONS DE GÉNÉRATION DU PLANNING
 # ============================================

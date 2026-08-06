@@ -951,7 +951,7 @@ def detect_file_type(decoded):
         return "bin", "📎", "Fichier", "application/octet-stream"
 
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document dans l'interface - Version robuste pour PDF"""
+    """Affiche un document dans l'interface - Version Colab (fonctionnelle)"""
     
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
@@ -959,10 +959,7 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
 
     titre_safe = esc(titre)
 
-    if doc_index is None:
-        doc_index = random.randint(1000, 9999)
-
-    # --- Gestion des liens externes ---
+    # Lien externe
     if contenu.startswith(("http://", "https://")):
         st.markdown(f"""
         <div class="doc-viewer">
@@ -978,115 +975,82 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
             </div>
         </div>
         """, unsafe_allow_html=True)
+        st.markdown(
+            f'<iframe src="{contenu}" style="width:100%;height:700px;border-radius:8px;'
+            f'border:1px solid rgba(0,255,100,0.06);background:#0d1a2b;"></iframe>',
+            unsafe_allow_html=True
+        )
         return
 
-    # --- DÉCODAGE ROBUSTE DU CONTENU ---
-    decoded = None
-    
-    # Tentative 1: Décodage base64 standard
+    # --- DÉCODAGE BASE64 (tolérant) ---
     try:
-        padding = 4 - (len(contenu) % 4)
-        if padding != 4:
-            contenu_padded = contenu + "=" * padding
-        else:
-            contenu_padded = contenu
-        decoded = base64.b64decode(contenu_padded)
-    except Exception as e:
-        # Tentative 2: Le contenu est peut-être du texte brut
-        try:
-            if contenu.startswith('%PDF'):
-                decoded = contenu.encode('utf-8')
-            elif contenu.startswith('JVBER'):
-                decoded = bytes.fromhex(contenu)
-            else:
-                # Tentative 3: base64 sans padding
-                try:
-                    decoded = base64.b64decode(contenu + '==')
-                except:
-                    # Tentative 4: base64 URL-safe
-                    try:
-                        decoded = base64.urlsafe_b64decode(contenu + '==')
-                    except Exception:
-                        st.error("❌ Impossible de décoder le document")
-                        st.code(f"Début du contenu: {contenu[:200]}")
-                        return
-        except Exception:
-            st.error("❌ Impossible de décoder le document")
-            st.code(f"Début du contenu: {contenu[:200]}")
-            return
-
-    if decoded is None:
-        st.error("❌ Impossible de décoder le document")
+        decoded = base64.b64decode(contenu)
+    except Exception:
+        # Pas du base64 valide : on affiche le texte brut
+        st.markdown('<div class="doc-viewer">', unsafe_allow_html=True)
+        st.write(contenu[:2000] + ("..." if len(contenu) > 2000 else ""))
+        st.markdown('</div>', unsafe_allow_html=True)
         return
 
-    # --- VÉRIFICATION DE LA SIGNATURE ---
-    taille_mo = len(decoded) / (1024 * 1024)
+    # --- DÉTECTION DU TYPE ---
+    file_ext, icon, label, mime_type = detect_file_type(decoded)
     taille_kb = len(decoded) // 1024
-    
-    # Vérifier la signature PDF
-    is_pdf = False
-    if len(decoded) >= 4:
-        if decoded[:4] == b'%PDF':
-            is_pdf = True
-        elif decoded[:7] == b'%PDF-1.':
-            is_pdf = True
 
-    # --- AFFICHAGE ---
     st.markdown(f"""
     <div class="doc-viewer">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <span style="font-size:1.2em;">📄</span>
+            <span style="font-size:1.2em;">{icon}</span>
             <div>
                 <div style="color:#7affb0;font-weight:600;">{titre_safe}</div>
-                <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">Document PDF</div>
-                <div style="color:rgba(180,200,220,0.3);font-size:0.7em;">📦 {taille_kb} KB ({taille_mo:.2f} Mo)</div>
+                <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">{esc(label)}</div>
+                <div style="color:rgba(180,200,220,0.3);font-size:0.7em;">📦 {taille_kb} KB</div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # --- AFFICHAGE DU PDF ---
-    if is_pdf or type_doc == "pdf":
+    # --- AFFICHAGE SELON LE TYPE ---
+    if mime_type.startswith("image/"):
+        st.image(decoded, caption=titre, use_container_width=True)
+
+    # ✅ PDF AVEC <embed> (comme dans Colab)
+    elif mime_type == "application/pdf":
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
-        data_url = f"data:application/pdf;base64,{pdf_b64}"
-        
-        st.markdown("### 📄 Aperçu du document")
-        
-        # Utiliser PDF.js Viewer
-        viewer_url = f"https://mozilla.github.io/pdf.js/web/viewer.html?file={data_url}"
         st.markdown(f"""
         <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
                     background:#0d1a2b;padding:4px;margin-top:8px;">
-            <iframe src="{viewer_url}" 
-                    style="width:100%;height:700px;border:none;border-radius:4px;">
-            </iframe>
+            <embed src="data:application/pdf;base64,{pdf_b64}" type="application/pdf"
+                   style="width:100%;height:700px;border-radius:4px;background:#0d1a2b;">
         </div>
         """, unsafe_allow_html=True)
-        
-        # Bouton de téléchargement
-        st.download_button(
-            label=f"📥 Télécharger {titre}.pdf",
-            data=decoded,
-            file_name=f"{titre}.pdf",
-            mime="application/pdf",
-            use_container_width=True,
-            key=f"download_pdf_{doc_index}"
-        )
-    
-    elif type_doc == "image" or type_doc == "png" or type_doc == "jpg" or type_doc == "jpeg":
-        st.image(decoded, caption=titre, use_container_width=True)
-    
-    else:
-        # Type inconnu - proposer le téléchargement
-        st.info(f"📎 Type de document: {type_doc}")
-        st.download_button(
-            label=f"📥 Télécharger {titre}",
-            data=decoded,
-            file_name=f"{titre}",
-            use_container_width=True,
-            key=f"download_doc_{doc_index}"
+
+    elif mime_type == "text/plain":
+        try:
+            text_content = decoded.decode("utf-8")
+            with st.expander("📄 Voir le contenu texte", expanded=True):
+                st.text(text_content[:5000] + ("..." if len(text_content) > 5000 else ""))
+        except Exception:
+            pass
+
+    elif mime_type in (
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ):
+        st.info(
+            "📌 L'aperçu intégré n'est pas disponible pour ce format (Word/Excel/PowerPoint) "
+            "directement dans le navigateur. Téléchargez le fichier ci-dessous pour l'ouvrir."
         )
 
+    # ✅ Bouton de téléchargement avec clé unique
+    st.download_button(
+        label=f"📥 Télécharger {titre}.{file_ext}",
+        data=decoded,
+        file_name=f"{titre}.{file_ext}",
+        mime=mime_type,
+        use_container_width=True,
+        key=f"download_doc_{doc_index or random.randint(1000, 9999)}_{file_ext}"
+    )
 # ============================================
 # FONCTIONS DE GÉNÉRATION DU PLANNING
 # ============================================

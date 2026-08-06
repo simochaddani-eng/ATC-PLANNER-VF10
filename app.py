@@ -395,6 +395,18 @@ st.markdown("""
 # ⚠️ NOUVEAU : CLASSE DATABASE SQLITE (REMPLACE POSTGRESQL)
 # ============================================
 
+# ============================================
+# DATABASE SQLITE (VERSION CORRECTEMENT INDENTÉE)
+# ============================================
+
+import sqlite3
+import os
+import json
+import pandas as pd
+
+DB_PATH = "data/planning.db"
+os.makedirs("data", exist_ok=True)
+
 class Database:
     def __init__(self):
         self.db_path = DB_PATH
@@ -464,6 +476,7 @@ class Database:
         finally:
             conn.close()
         return new_id
+
     # ---------- Schéma ----------
 
     def _ensure_schema(self):

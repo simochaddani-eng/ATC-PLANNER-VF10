@@ -1003,13 +1003,18 @@ def detect_file_type(decoded):
     except Exception:
         return "bin", "📎", "Fichier", "application/octet-stream"
 
-def render_document_view(contenu, type_doc, titre):
-    """Affiche un document dans l'interface."""
+# ✅ CORRIGÉ : Ajout de doc_index pour clé unique
+def render_document_view(contenu, type_doc, titre, doc_index=None):
+    """Affiche un document dans l'interface avec une clé unique pour download_button."""
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
         return
 
     titre_safe = esc(titre)
+
+    # Générer un index unique si non fourni
+    if doc_index is None:
+        doc_index = random.randint(1000, 9999)
 
     # Lien externe
     if contenu.startswith(("http://", "https://")):
@@ -1067,42 +1072,16 @@ def render_document_view(contenu, type_doc, titre):
         
         st.markdown("### 📄 Aperçu du document")
         
-        # CRÉER UNE SECTION AVEC PLUSIEURS OPTIONS
-        tab1, tab2, tab3 = st.tabs(["📖 Viewer PDF.js", "📖 Google Docs", "📥 Télécharger"])
-        
-        with tab1:
-            # PDF.js Viewer (le plus fiable)
-            viewer_url = f"https://mozilla.github.io/pdf.js/web/viewer.html?file={data_url}"
-            st.markdown(f"""
-            <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                        background:#0d1a2b;padding:4px;margin-top:8px;">
-                <iframe src="{viewer_url}" 
-                        style="width:100%;height:700px;border:none;border-radius:4px;">
-                </iframe>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with tab2:
-            # Google Docs Viewer
-            google_url = f"https://docs.google.com/viewer?url={data_url}&embedded=true"
-            st.markdown(f"""
-            <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
-                        background:#0d1a2b;padding:4px;margin-top:8px;">
-                <iframe src="{google_url}" 
-                        style="width:100%;height:700px;border:none;border-radius:4px;">
-                </iframe>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with tab3:
-            # Téléchargement
-            st.download_button(
-                label=f"📥 Télécharger {titre}.pdf",
-                data=decoded,
-                file_name=f"{titre}.pdf",
-                mime="application/pdf",
-                use_container_width=True
-            )
+        # Utiliser PDF.js Viewer
+        viewer_url = f"https://mozilla.github.io/pdf.js/web/viewer.html?file={data_url}"
+        st.markdown(f"""
+        <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
+                    background:#0d1a2b;padding:4px;margin-top:8px;">
+            <iframe src="{viewer_url}" 
+                    style="width:100%;height:700px;border:none;border-radius:4px;">
+            </iframe>
+        </div>
+        """, unsafe_allow_html=True)
 
     elif mime_type.startswith("image/"):
         st.image(decoded, caption=titre, use_container_width=True)
@@ -1115,13 +1094,14 @@ def render_document_view(contenu, type_doc, titre):
         except Exception:
             pass
 
-    # Toujours proposer le téléchargement
+    # ✅ CLÉ UNIQUE POUR LE BOUTON DE TÉLÉCHARGEMENT
     st.download_button(
         label=f"📥 Télécharger {titre}.{file_ext}",
         data=decoded,
         file_name=f"{titre}.{file_ext}",
         mime=mime_type,
-        use_container_width=True
+        use_container_width=True,
+        key=f"download_doc_{doc_index}_{file_ext}_{titre[:20]}"  # ← CLÉ UNIQUE
     )
 
 # ============================================
@@ -1407,10 +1387,15 @@ def to_excel_bytes(df, sheet_name="Planning"):
             worksheet.column_dimensions[worksheet.cell(row=1, column=i + 1).column_letter].width = min(max_len, 40)
     return buffer.getvalue()
 
+# ✅ CORRIGÉ : Ajout de clés uniques pour les boutons d'export
 def render_export_buttons(export_df, filename_prefix, key_prefix):
     st.markdown('<div class="section-title" style="font-size:1em;">📤 Exporter</div>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     horodatage = date.today().strftime("%Y-%m-%d")
+    
+    # Générer un ID unique pour cette instance
+    unique_id = random.randint(1000, 9999)
+    
     with col1:
         st.download_button(
             "📥 Exporter en Excel (.xlsx)",
@@ -1418,7 +1403,7 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
             file_name=f"{filename_prefix}_{horodatage}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True,
-            key=f"{key_prefix}_xlsx",
+            key=f"export_xlsx_{key_prefix}_{unique_id}"  # ← CLÉ UNIQUE
         )
     with col2:
         st.download_button(
@@ -1427,7 +1412,7 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
             file_name=f"{filename_prefix}_{horodatage}.csv",
             mime="text/csv",
             use_container_width=True,
-            key=f"{key_prefix}_csv",
+            key=f"export_csv_{key_prefix}_{unique_id}"  # ← CLÉ UNIQUE
         )
 
 # ============================================
@@ -1628,12 +1613,14 @@ def header_instructeur(user):
 # SECTIONS ÉLÈVE
 # ============================================
 
+# ✅ CORRIGÉ : Ajout de enumerate pour avoir un index unique
 def section_cours_eleve(cours):
     st.markdown('<div class="section-title">📚 Cours disponibles</div>', unsafe_allow_html=True)
     if cours.empty:
         st.info("Aucun cours disponible.")
         return
-    for _, c in cours.iterrows():
+    
+    for idx, (_, c) in enumerate(cours.iterrows()):
         with st.expander(f"📄 {c['titre']}", expanded=False):
             st.markdown(f"""
             <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">
@@ -1643,15 +1630,16 @@ def section_cours_eleve(cours):
             """, unsafe_allow_html=True)
             if c.get("description"):
                 st.write(c["description"])
-            render_document_view(c['contenu'], c['type'], c['titre'])
+            render_document_view(c['contenu'], c['type'], c['titre'], doc_index=idx)
 
 def section_scenarios_eleve(scenarios):
     st.markdown('<div class="section-title">🎯 Scénarios de simulation</div>', unsafe_allow_html=True)
     if scenarios.empty:
         st.info("Aucun scénario disponible.")
         return
+    
     niveau_badge = {"debutant": "badge-success", "intermediaire": "badge-warning", "avance": "badge-danger"}
-    for _, s in scenarios.iterrows():
+    for idx, (_, s) in enumerate(scenarios.iterrows()):
         with st.expander(f"🎯 {s['titre']}", expanded=False):
             st.markdown(f"""
             <div class="scenario-meta">
@@ -1667,14 +1655,15 @@ def section_scenarios_eleve(scenarios):
             if s.get("instructions"):
                 st.write("**Instructions :**", s["instructions"])
             if s.get("contenu"):
-                render_document_view(s['contenu'], s['type'], s['titre'])
+                render_document_view(s['contenu'], s['type'], s['titre'], doc_index=idx)
 
 def section_td_eleve(tds):
     st.markdown('<div class="section-title">📝 Travaux Dirigés</div>', unsafe_allow_html=True)
     if tds.empty:
         st.info("Aucun TD disponible.")
         return
-    for _, td in tds.iterrows():
+    
+    for idx, (_, td) in enumerate(tds.iterrows()):
         with st.expander(f"📝 {td['titre']}", expanded=False):
             st.markdown(f"""
             <div style="color:rgba(180,200,220,0.4);font-size:0.8em;">
@@ -1684,7 +1673,7 @@ def section_td_eleve(tds):
             """, unsafe_allow_html=True)
             if td.get("description"):
                 st.write(td["description"])
-            render_document_view(td['contenu'], td['type'], td['titre'])
+            render_document_view(td['contenu'], td['type'], td['titre'], doc_index=idx)
 
 def section_planning_eleve(db, seances, eleve_id, eleve_nom=""):
     st.markdown('<div class="section-title">📅 Mon Planning</div>', unsafe_allow_html=True)
@@ -1830,7 +1819,7 @@ def section_cours_instr(db, instr_id):
                     st.error("Titre et contenu requis.")
 
     cours_df = db.get_cours()
-    for _, c in cours_df.iterrows():
+    for idx, (_, c) in enumerate(cours_df.iterrows()):
         col1, col2 = st.columns([4, 1])
         with col1:
             with st.expander(f"📄 {c['titre']}", expanded=False):
@@ -1842,7 +1831,7 @@ def section_cours_instr(db, instr_id):
                 """, unsafe_allow_html=True)
                 if c.get("description"):
                     st.write(c["description"])
-                render_document_view(c['contenu'], c['type'], c['titre'])
+                render_document_view(c['contenu'], c['type'], c['titre'], doc_index=idx)
         with col2:
             if st.button("🗑️ Supprimer", key=f"del_cours_{c['id']}", use_container_width=True):
                 db.delete_cours(c["id"])
@@ -1889,7 +1878,7 @@ def section_scenarios_instr(db, instr_id):
 
     scenarios_df = db.get_scenarios()
     niveau_badge = {"debutant": "badge-success", "intermediaire": "badge-warning", "avance": "badge-danger"}
-    for _, s in scenarios_df.iterrows():
+    for idx, (_, s) in enumerate(scenarios_df.iterrows()):
         col1, col2 = st.columns([4, 1])
         with col1:
             with st.expander(f"🎯 {s['titre']}", expanded=False):
@@ -1904,7 +1893,7 @@ def section_scenarios_instr(db, instr_id):
                 if s.get("instructions"):
                     st.write("**Instructions :**", s["instructions"])
                 if s.get("contenu"):
-                    render_document_view(s['contenu'], s['type'], s['titre'])
+                    render_document_view(s['contenu'], s['type'], s['titre'], doc_index=idx)
         with col2:
             if st.button("🗑️ Supprimer", key=f"del_scenario_{s['id']}", use_container_width=True):
                 db.delete_scenario(s["id"])
@@ -1943,7 +1932,7 @@ def section_td_instr(db, instr_id):
                     st.error("Titre et contenu requis.")
 
     tds_df = db.get_td()
-    for _, td in tds_df.iterrows():
+    for idx, (_, td) in enumerate(tds_df.iterrows()):
         col1, col2 = st.columns([4, 1])
         with col1:
             with st.expander(f"📝 {td['titre']}", expanded=False):
@@ -1955,7 +1944,7 @@ def section_td_instr(db, instr_id):
                 """, unsafe_allow_html=True)
                 if td.get("description"):
                     st.write(td["description"])
-                render_document_view(td['contenu'], td['type'], td['titre'])
+                render_document_view(td['contenu'], td['type'], td['titre'], doc_index=idx)
         with col2:
             if st.button("🗑️ Supprimer", key=f"del_td_{td['id']}", use_container_width=True):
                 db.delete_td(td["id"])

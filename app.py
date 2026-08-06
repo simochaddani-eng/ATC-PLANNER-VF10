@@ -13,7 +13,7 @@ from io import BytesIO
 import html as html_lib
 import hashlib
 import secrets
-import sqlite3  # ⚠️ NOUVEAU : AJOUTÉ POUR SQLITE
+import sqlite3  # ⚠️ NOUVEAU : AJOUTÉ POUR SQLIT
 import warnings
 warnings.filterwarnings("ignore")
 

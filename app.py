@@ -951,8 +951,10 @@ def detect_file_type(decoded):
 
 from streamlit_pdf_viewer import pdf_viewer
 
+from streamlit_pdf_viewer import pdf_viewer
+
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document - Version avec streamlit-pdf-viewer"""
+    """Affiche un document - Version avec streamlit-pdf-viewer optimisé"""
     
     if not contenu:
         st.info("Aucun contenu disponible pour ce document.")
@@ -984,7 +986,6 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     # --- DÉCODAGE BASE64 ROBUSTE ---
     decoded = None
     
-    # Tentative 1: Décodage base64 standard avec padding
     try:
         padding = len(contenu) % 4
         if padding:
@@ -995,14 +996,12 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     except Exception:
         pass
     
-    # Tentative 2: Décodage base64 sans padding
     if decoded is None:
         try:
             decoded = base64.b64decode(contenu + '==')
         except Exception:
             pass
     
-    # Tentative 3: Si le contenu est du texte brut
     if decoded is None:
         try:
             if contenu.startswith('%PDF'):
@@ -1034,14 +1033,18 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     </div>
     """, unsafe_allow_html=True)
 
-    # --- AFFICHAGE DU PDF AVEC STREAMLIT-PDF-VIEWER ---
+    # --- AFFICHAGE DU PDF ---
     if mime_type == "application/pdf":
         st.markdown("### 📄 Aperçu du document")
         
-        # Utiliser le composant streamlit-pdf-viewer
-        # Il passe par le mécanisme officiel des composants Streamlit
+        # Utiliser le composant streamlit-pdf-viewer avec une largeur adaptée
         try:
-            pdf_viewer(input=decoded, width=1100, height=700)
+            pdf_viewer(
+                input=decoded, 
+                width=1200,        # Largeur fixe pour éviter le débordement
+                height=800,        # Hauteur adaptée
+                rendering="unwrap" # Dérouler le contenu
+            )
         except Exception as e:
             st.error(f"❌ Erreur d'affichage du PDF : {str(e)}")
             
@@ -1082,7 +1085,6 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         use_container_width=True,
         key=f"download_doc_{doc_index}_{file_ext}"
     )
-
 # ============================================
 # FONCTIONS DE GÉNÉRATION DU PLANNING
 # ============================================

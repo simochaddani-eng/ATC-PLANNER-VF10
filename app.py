@@ -1024,8 +1024,8 @@ def detect_file_type(decoded):
                     return "xlsx", "📊", "Tableur Excel (XLSX)", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 if 'ppt/presentation.xml' in names:
                     return "pptx", "📽️", "Présentation PowerPoint (PPTX)", "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Erreur ZIP : {e}")
         return "zip", "📦", "Archive ZIP", "application/zip"
     if decoded[:8] == b'\x89PNG\r\n\x1a\n':
         return "png", "🖼️", "Image PNG", "image/png"
@@ -1048,6 +1048,12 @@ def render_document_view(contenu, type_doc, titre):
 
     titre_safe = esc(titre)
 
+    # 🔍 DIAGNOSTIC (en développement)
+    with st.expander("🔍 Diagnostic du document"):
+        st.write(f"Type contenu : {type(contenu)}")
+        st.write(f"Longueur : {len(contenu)} caractères")
+        st.write(f"Début : {contenu[:100] if contenu else 'Vide'}")
+
     # Lien externe
     if contenu.startswith(("http://", "https://")):
         st.markdown(f"""
@@ -1064,24 +1070,25 @@ def render_document_view(contenu, type_doc, titre):
             </div>
         </div>
         """, unsafe_allow_html=True)
-        st.markdown(
-            f'<iframe src="{contenu}" style="width:100%;height:700px;border-radius:8px;'
-            f'border:1px solid rgba(0,255,100,0.06);background:#0d1a2b;"></iframe>',
-            unsafe_allow_html=True
-        )
         return
 
-    # Décoder le contenu base64
+    # ✅ Décoder le base64
     try:
         decoded = base64.b64decode(contenu)
-    except Exception:
-        # Pas du base64 valide : afficher le texte brut
-        st.markdown('<div class="doc-viewer">', unsafe_allow_html=True)
-        st.text(contenu[:2000] + ("..." if len(contenu) > 2000 else ""))
-        st.markdown('</div>', unsafe_allow_html=True)
-        return
+    except Exception as e:
+        st.error(f"❌ Erreur de décodage base64 : {e}")
+        # Essayer de lire directement le contenu
+        try:
+            if contenu.startswith('%PDF'):
+                st.warning("⚠️ Le contenu semble être un PDF non encodé")
+                decoded = contenu.encode('utf-8')
+            else:
+                st.error("❌ Impossible de décoder le document")
+                return
+        except:
+            return
 
-    # Détecter le type de fichier
+    # Détecter le type
     file_ext, icon, label, mime_type = detect_file_type(decoded)
     taille_kb = len(decoded) // 1024
 
@@ -1098,12 +1105,8 @@ def render_document_view(contenu, type_doc, titre):
     </div>
     """, unsafe_allow_html=True)
 
-    # Afficher selon le type
-    if mime_type.startswith("image/"):
-        st.image(decoded, caption=titre, use_container_width=True)
-
-    elif mime_type == "application/pdf":
-        # Aperçu PDF
+    # ✅ Afficher selon le type
+    if mime_type == "application/pdf":
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
         st.markdown(f"""
         <div style="border:1px solid rgba(0,255,100,0.06);border-radius:8px;overflow:hidden;
@@ -1113,15 +1116,18 @@ def render_document_view(contenu, type_doc, titre):
         </div>
         """, unsafe_allow_html=True)
 
+    elif mime_type.startswith("image/"):
+        st.image(decoded, caption=titre, use_container_width=True)
+
     elif mime_type == "text/plain":
         try:
             text_content = decoded.decode("utf-8")
             with st.expander("📄 Voir le contenu texte", expanded=True):
                 st.text(text_content[:5000] + ("..." if len(text_content) > 5000 else ""))
-        except Exception:
-            pass
+        except Exception as e:
+            st.error(f"Erreur d'affichage texte : {e}")
 
-    # Bouton de téléchargement
+    # ✅ Toujours proposer le téléchargement
     st.download_button(
         label=f"📥 Télécharger {titre}.{file_ext}",
         data=decoded,
@@ -1129,7 +1135,6 @@ def render_document_view(contenu, type_doc, titre):
         mime=mime_type,
         use_container_width=True
     )
-
 # ============================================
 # FONCTIONS DE GÉNÉRATION DU PLANNING (inchangées)
 # ============================================

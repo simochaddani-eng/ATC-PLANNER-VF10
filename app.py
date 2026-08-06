@@ -13,12 +13,12 @@ from io import BytesIO
 import html as html_lib
 import hashlib
 import secrets
-import sqlite3  # ⚠️ NOUVEAU : AJOUTÉ POUR SQLIT
+import sqlite3
 import warnings
 warnings.filterwarnings("ignore")
 
 # ============================================
-# ⚠️ NOUVEAU : CONFIGURATION SQLITE
+# CONFIGURATION SQLITE
 # ============================================
 DB_PATH = "data/planning.db"
 os.makedirs("data", exist_ok=True)
@@ -43,16 +43,11 @@ def esc(x):
 # ============================================
 # AUTHENTIFICATION - HACHAGE DES MOTS DE PASSE
 # ============================================
-# PBKDF2-HMAC-SHA256 : pas de mot de passe stocké en clair, salage
-# individuel par compte, 100 000 itérations (recommandation OWASP).
 
 PASSWORD_ITERATIONS = 100_000
-DEFAULT_PASSWORD = "ATC2026"  # mot de passe temporaire attribué automatiquement
-                                # à tout compte existant qui n'en a pas encore.
-                                # À changer immédiatement via "🔑 Mon mot de passe".
+DEFAULT_PASSWORD = "ATC2026"
 
 def hash_password(password: str, salt: str = None):
-    """Retourne (hash_hex, salt_hex). Génère un sel aléatoire si non fourni."""
     if salt is None:
         salt = secrets.token_hex(16)
     pwd_hash = hashlib.pbkdf2_hmac(
@@ -67,11 +62,10 @@ def verify_password(password: str, salt: str, stored_hash: str) -> bool:
     return secrets.compare_digest(test_hash, stored_hash)
 
 def generate_temp_password() -> str:
-    """Mot de passe temporaire lisible (ex: 'kx4-mQ2p') à communiquer à l'utilisateur."""
     return secrets.token_urlsafe(6)
 
 # ============================================
-# STYLE CSS - IDENTITÉ ATC
+# STYLE CSS
 # ============================================
 
 st.markdown("""
@@ -392,32 +386,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# ⚠️ NOUVEAU : CLASSE DATABASE SQLITE (REMPLACE POSTGRESQL)
+# DATABASE SQLITE
 # ============================================
-
-# ============================================
-# DATABASE SQLITE (VERSION CORRECTEMENT INDENTÉE)
-# ============================================
-
-import sqlite3
-import os
-import json
-import pandas as pd
-
-DB_PATH = "data/planning.db"
-os.makedirs("data", exist_ok=True)
-
-# ============================================
-# DATABASE SQLITE (VERSION DÉFINITIVE)
-# ============================================
-
-import sqlite3
-import os
-import json
-import pandas as pd
-
-DB_PATH = "data/planning.db"
-os.makedirs("data", exist_ok=True)
 
 class Database:
     def __init__(self):
@@ -427,7 +397,7 @@ class Database:
     def get_connection(self):
         """Retourne une connexion SQLite avec autocommit."""
         conn = sqlite3.connect(self.db_path)
-        conn.isolation_level = None  # ← CRUCIAL : autocommit mode
+        conn.isolation_level = None  # Autocommit mode
         return conn
 
     def _query(self, sql, params=None):
@@ -484,8 +454,6 @@ class Database:
         finally:
             conn.close()
         return new_id
-
-    # ---------- Schéma ----------
 
     def _ensure_schema(self):
         """Crée les tables si elles n'existent pas."""
@@ -580,7 +548,7 @@ class Database:
         for ddl in ddl_statements:
             self._exec(ddl)
 
-        # --- Seed simulations (une seule fois) ---
+        # Seed simulations
         try:
             nb_sims = self._query("SELECT COUNT(*) AS n FROM simulations").iloc[0]["n"]
         except:
@@ -602,7 +570,7 @@ class Database:
                 sims
             )
 
-        # --- Seed grille par défaut (une seule fois) ---
+        # Seed grille par défaut
         try:
             nb_grilles = self._query("SELECT COUNT(*) AS n FROM grilles_evaluation").iloc[0]["n"]
         except:
@@ -621,7 +589,7 @@ class Database:
                 }
             )
 
-        # --- Seed démo (3 instructeurs + 9 élèves) ---
+        # Seed démo
         try:
             nb_instr = self._query("SELECT COUNT(*) AS n FROM instructeurs").iloc[0]["n"]
             nb_eleves = self._query("SELECT COUNT(*) AS n FROM eleves").iloc[0]["n"]
@@ -639,7 +607,7 @@ class Database:
             ]:
                 self.add_eleve(nom, prenom, password=DEFAULT_PASSWORD)
 
-        # --- Backfill : tout compte sans mot de passe reçoit le mot de passe par défaut ---
+        # Backfill
         for table in ("eleves", "instructeurs"):
             try:
                 sans_mdp = self._query(f"SELECT id FROM {table} WHERE password_hash IS NULL OR password_salt IS NULL")
@@ -1003,11 +971,7 @@ class Database:
             self._exec(f"DELETE FROM {table}")
 
 # ============================================
-# ⚠️ FIN DE LA CLASSE DATABASE SQLITE
-# ============================================
-
-# ============================================
-# VISUALISATION DE DOCUMENTS (CORRIGÉE)
+# FONCTIONS DE VISUALISATION DE DOCUMENTS
 # ============================================
 
 def detect_file_type(decoded):
@@ -1024,8 +988,8 @@ def detect_file_type(decoded):
                     return "xlsx", "📊", "Tableur Excel (XLSX)", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 if 'ppt/presentation.xml' in names:
                     return "pptx", "📽️", "Présentation PowerPoint (PPTX)", "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        except Exception as e:
-            print(f"Erreur ZIP : {e}")
+        except Exception:
+            pass
         return "zip", "📦", "Archive ZIP", "application/zip"
     if decoded[:8] == b'\x89PNG\r\n\x1a\n':
         return "png", "🖼️", "Image PNG", "image/png"
@@ -1048,7 +1012,7 @@ def render_document_view(contenu, type_doc, titre):
 
     titre_safe = esc(titre)
 
-    # 🔍 DIAGNOSTIC (en développement)
+    # 🔍 Diagnostic
     with st.expander("🔍 Diagnostic du document"):
         st.write(f"Type contenu : {type(contenu)}")
         st.write(f"Longueur : {len(contenu)} caractères")
@@ -1072,12 +1036,12 @@ def render_document_view(contenu, type_doc, titre):
         """, unsafe_allow_html=True)
         return
 
-    # ✅ Décoder le base64
+    # Décoder le base64
     try:
         decoded = base64.b64decode(contenu)
+        st.success(f"✅ Base64 décodé : {len(decoded)} bytes")
     except Exception as e:
         st.error(f"❌ Erreur de décodage base64 : {e}")
-        # Essayer de lire directement le contenu
         try:
             if contenu.startswith('%PDF'):
                 st.warning("⚠️ Le contenu semble être un PDF non encodé")
@@ -1105,7 +1069,7 @@ def render_document_view(contenu, type_doc, titre):
     </div>
     """, unsafe_allow_html=True)
 
-    # ✅ Afficher selon le type
+    # Afficher selon le type
     if mime_type == "application/pdf":
         pdf_b64 = base64.b64encode(decoded).decode("utf-8")
         st.markdown(f"""
@@ -1115,6 +1079,7 @@ def render_document_view(contenu, type_doc, titre):
                    style="width:100%;height:700px;border-radius:4px;background:#0d1a2b;">
         </div>
         """, unsafe_allow_html=True)
+        st.success("✅ PDF affiché avec succès !")
 
     elif mime_type.startswith("image/"):
         st.image(decoded, caption=titre, use_container_width=True)
@@ -1124,10 +1089,10 @@ def render_document_view(contenu, type_doc, titre):
             text_content = decoded.decode("utf-8")
             with st.expander("📄 Voir le contenu texte", expanded=True):
                 st.text(text_content[:5000] + ("..." if len(text_content) > 5000 else ""))
-        except Exception as e:
-            st.error(f"Erreur d'affichage texte : {e}")
+        except Exception:
+            pass
 
-    # ✅ Toujours proposer le téléchargement
+    # Toujours proposer le téléchargement
     st.download_button(
         label=f"📥 Télécharger {titre}.{file_ext}",
         data=decoded,
@@ -1135,8 +1100,9 @@ def render_document_view(contenu, type_doc, titre):
         mime=mime_type,
         use_container_width=True
     )
+
 # ============================================
-# FONCTIONS DE GÉNÉRATION DU PLANNING (inchangées)
+# FONCTIONS DE GÉNÉRATION DU PLANNING
 # ============================================
 
 def parse_hm(s):
@@ -1322,7 +1288,6 @@ def generer_planning_complet(groupes, instructeurs_df, simulations_df, config):
         date_fin = max(date_fin, max(sim_dates))
     return toutes_seances, date_fin
 
-
 # ============================================
 # FONCTIONS UTILITAIRES
 # ============================================
@@ -1368,16 +1333,14 @@ def render_flight_strip(seance, eleve_id):
     </div>
     """
 
-
 # ============================================
-# EXPORT DU PLANNING (Excel / CSV)
+# EXPORT DU PLANNING
 # ============================================
 
 def _type_label(t):
     return {"briefing": "Briefing", "simulation": "Simulation", "debriefing": "Débriefing"}.get(t, t)
 
 def build_export_dataframe(seances_df, eleves_df=None):
-    """Transforme le DataFrame interne des séances en tableau propre et lisible pour l'export."""
     colonnes = ["Date", "Heure", "Durée (min)", "Type", "Simulation", "Groupe",
                 "Instructeur", "Contrôleur", "Pseudo-pilote", "Observateurs", "Notes"]
     if seances_df is None or seances_df.empty:
@@ -1444,9 +1407,8 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
             key=f"{key_prefix}_csv",
         )
 
-
 # ============================================
-# CHANGEMENT DE MOT DE PASSE (élève ou instructeur)
+# CHANGEMENT DE MOT DE PASSE
 # ============================================
 
 def section_mon_mot_de_passe(db, role, user_id):
@@ -1480,9 +1442,8 @@ def section_mon_mot_de_passe(db, role, user_id):
                     db.set_password_instructeur(user_id, nouveau)
                 st.success("✅ Mot de passe mis à jour avec succès.")
 
-
 # ============================================
-# ÉCRAN DE CONNEXION - RADAR
+# ÉCRAN DE CONNEXION
 # ============================================
 
 def radar_login():
@@ -1541,11 +1502,11 @@ def radar_login():
                 st.error("❌ Mot de passe incorrect.")
 
         with st.expander("🔒 Mot de passe oublié ?"):
-            st.caption(f"Réinitialiser directement le mot de passe de **{esc(selected)}** — un nouveau mot de passe temporaire sera affiché ci-dessous.")
+            st.caption(f"Réinitialiser directement le mot de passe de **{esc(selected)}**")
             if st.button("🔄 Réinitialiser mon mot de passe", key="reset_btn_eleve"):
                 new_temp = generate_temp_password()
                 db.set_password_eleve(eleve_options[selected], new_temp)
-                st.success(f"✅ Nouveau mot de passe temporaire pour {selected} : **{new_temp}** — à changer via « 🔑 Mon Mot de Passe » dès la connexion.")
+                st.success(f"✅ Nouveau mot de passe temporaire : **{new_temp}**")
 
     elif role == "instructeur":
         instructeurs = db.get_instructeurs()
@@ -1569,38 +1530,33 @@ def radar_login():
         with st.expander("🔒 Mot de passe oublié ?"):
             autres_instructeurs = {k: v for k, v in instr_options.items() if k != selected}
             if autres_instructeurs:
-                st.caption(f"Un **autre** instructeur peut autoriser la réinitialisation du mot de passe de **{esc(selected)}**.")
-                autor_selected = st.selectbox("Instructeur autorisant la réinitialisation", list(autres_instructeurs.keys()), key="reset_instr_select_instr")
+                st.caption(f"Un **autre** instructeur peut autoriser la réinitialisation")
+                autor_selected = st.selectbox("Instructeur autorisant", list(autres_instructeurs.keys()), key="reset_instr_select_instr")
                 autor_password = st.text_input("Son mot de passe", type="password", key="reset_instr_pwd_instr")
                 if st.button("🔄 Réinitialiser (autorisation instructeur)", key="reset_btn_instr"):
                     if db.verify_password_instructeur(autres_instructeurs[autor_selected], autor_password):
                         new_temp = generate_temp_password()
                         db.set_password_instructeur(instr_options[selected], new_temp)
-                        st.success(f"✅ Nouveau mot de passe temporaire pour {selected} : **{new_temp}** — à changer via « 🔑 Mon Mot de Passe » dès la connexion.")
+                        st.success(f"✅ Nouveau mot de passe temporaire : **{new_temp}**")
                     else:
-                        st.error("❌ Mot de passe incorrect — réinitialisation refusée.")
-            else:
-                st.caption("Aucun autre instructeur disponible pour autoriser une réinitialisation.")
+                        st.error("❌ Mot de passe incorrect")
 
             if db.admin_code_configured():
                 st.markdown("---")
-                st.caption("🛡️ Ou avec le code administrateur de secours :")
-                admin_code_input_instr = st.text_input("Code administrateur", type="password", key="admin_code_instr")
-                if st.button("🔄 Réinitialiser (code administrateur)", key="reset_admin_btn_instr"):
-                    if db.verify_admin_code(admin_code_input_instr):
+                st.caption("🛡️ Code administrateur :")
+                admin_code_input = st.text_input("Code administrateur", type="password", key="admin_code_instr")
+                if st.button("🔄 Réinitialiser (code admin)", key="reset_admin_btn_instr"):
+                    if db.verify_admin_code(admin_code_input):
                         new_temp = generate_temp_password()
                         db.set_password_instructeur(instr_options[selected], new_temp)
-                        st.success(f"✅ Nouveau mot de passe temporaire pour {selected} : **{new_temp}** — à changer via « 🔑 Mon Mot de Passe » dès la connexion.")
+                        st.success(f"✅ Nouveau mot de passe temporaire : **{new_temp}**")
                     else:
                         st.error("❌ Code administrateur incorrect.")
-            elif not autres_instructeurs:
-                st.caption("💡 Ajoutez le secret « ADMIN_RESET_CODE » dans les paramètres de l'app (Secrets) pour activer une voie de secours ici.")
 
     st.markdown('</div></div>', unsafe_allow_html=True)
 
-
 # ============================================
-# EN-TÊTES (élève / instructeur)
+# EN-TÊTES
 # ============================================
 
 def header_eleve(user):
@@ -1645,15 +1601,14 @@ def header_instructeur(user):
     </div>
     """, unsafe_allow_html=True)
 
-
 # ============================================
-# SECTIONS ÉLÈVE (une fonction par page de la sidebar)
+# SECTIONS ÉLÈVE
 # ============================================
 
 def section_cours_eleve(cours):
     st.markdown('<div class="section-title">📚 Cours disponibles</div>', unsafe_allow_html=True)
     if cours.empty:
-        st.info("Aucun cours disponible pour le moment.")
+        st.info("Aucun cours disponible.")
         return
     for _, c in cours.iterrows():
         with st.expander(f"📄 {c['titre']}", expanded=False):
@@ -1664,13 +1619,13 @@ def section_cours_eleve(cours):
             </div>
             """, unsafe_allow_html=True)
             if c.get("description"):
-                st.write(c["description"])  # texte libre : rendu natif, jamais interpolé en HTML brut
+                st.write(c["description"])
             render_document_view(c['contenu'], c['type'], c['titre'])
 
 def section_scenarios_eleve(scenarios):
     st.markdown('<div class="section-title">🎯 Scénarios de simulation</div>', unsafe_allow_html=True)
     if scenarios.empty:
-        st.info("Aucun scénario disponible pour le moment.")
+        st.info("Aucun scénario disponible.")
         return
     niveau_badge = {"debutant": "badge-success", "intermediaire": "badge-warning", "avance": "badge-danger"}
     for _, s in scenarios.iterrows():
@@ -1683,7 +1638,7 @@ def section_scenarios_eleve(scenarios):
             </div>
             """, unsafe_allow_html=True)
             if s.get("description"):
-                st.write("**Description :**", s["description"])
+                st.write(s["description"])
             if s.get("objectifs"):
                 st.write("**Objectifs :**", s["objectifs"])
             if s.get("instructions"):
@@ -1694,7 +1649,7 @@ def section_scenarios_eleve(scenarios):
 def section_td_eleve(tds):
     st.markdown('<div class="section-title">📝 Travaux Dirigés</div>', unsafe_allow_html=True)
     if tds.empty:
-        st.info("Aucun TD disponible pour le moment.")
+        st.info("Aucun TD disponible.")
         return
     for _, td in tds.iterrows():
         with st.expander(f"📝 {td['titre']}", expanded=False):
@@ -1711,7 +1666,7 @@ def section_td_eleve(tds):
 def section_planning_eleve(db, seances, eleve_id, eleve_nom=""):
     st.markdown('<div class="section-title">📅 Mon Planning</div>', unsafe_allow_html=True)
     if seances.empty:
-        st.info("Aucune simulation planifiée pour le moment.")
+        st.info("Aucune simulation planifiée.")
         return
     for date_val in sorted(seances["date"].unique()):
         st.markdown(f"""
@@ -1733,7 +1688,7 @@ def section_groupe_eleve(db, eleve_id):
     st.markdown('<div class="section-title">👥 Mon Groupe</div>', unsafe_allow_html=True)
     groupe = db.get_groupe_de_eleve(eleve_id)
     if not groupe:
-        st.info("Vous n'êtes pas encore affecté(e) à un groupe. Le planning n'a peut-être pas encore été généré par votre instructeur.")
+        st.info("Vous n'êtes pas encore affecté(e) à un groupe.")
         return
 
     membres = db.get_groupe_eleves(groupe["id"])
@@ -1759,22 +1714,20 @@ def section_groupe_eleve(db, eleve_id):
                 👨‍🎓 {len(membres)} élève(s)
             </span>
         </div>
-        <div>{chips if chips else '<span style="color:rgba(180,200,220,0.3);font-size:0.85em;">Aucun élève dans ce groupe</span>'}</div>
+        <div>{chips if chips else '<span style="color:rgba(180,200,220,0.3);font-size:0.85em;">Aucun élève</span>'}</div>
     </div>
     """, unsafe_allow_html=True)
 
 def section_notes_eleve(notes):
     st.markdown('<div class="section-title">📊 Mes Notes</div>', unsafe_allow_html=True)
     if notes.empty:
-        st.info("Aucune note disponible pour le moment.")
+        st.info("Aucune note disponible.")
         return
     moyenne = notes["note"].mean()
     st.markdown(f"""
     <div style="text-align:center;margin-bottom:16px;">
-        <span style="font-size:2em;font-weight:700;color:#7affb0;font-family:'JetBrains Mono',monospace;">
-            {moyenne:.1f}/20
-        </span>
-        <span style="display:block;color:rgba(180,200,220,0.3);font-size:0.75em;font-family:'JetBrains Mono',monospace;">
+        <span style="font-size:2em;font-weight:700;color:#7affb0;">{moyenne:.1f}/20</span>
+        <span style="display:block;color:rgba(180,200,220,0.3);font-size:0.75em;">
             Moyenne sur {len(notes)} évaluation(s)
         </span>
     </div>
@@ -1789,7 +1742,7 @@ def section_notes_eleve(notes):
                     <span style="margin-left:10px;color:rgba(180,200,220,0.4);font-size:0.75em;">{esc(n['date_note'])}</span>
                 </div>
                 <div>
-                    <span style="font-size:1.1em;font-weight:700;color:#7affb0;font-family:'JetBrains Mono',monospace;">
+                    <span style="font-size:1.1em;font-weight:700;color:#7affb0;">
                         {n['note']:.1f}/20
                     </span>
                     <span style="margin-left:10px;font-size:0.75em;color:rgba(180,200,220,0.3);">{esc(n['appreciation'])}</span>
@@ -1812,9 +1765,8 @@ def section_notes_eleve(notes):
         fig.update_yaxes(gridcolor="rgba(0,255,100,0.04)", zeroline=False)
         st.plotly_chart(fig, use_container_width=True)
 
-
 # ============================================
-# SECTIONS INSTRUCTEUR (une fonction par page de la sidebar)
+# SECTIONS INSTRUCTEUR
 # ============================================
 
 def _groupe_name_to_id(db):
@@ -1852,7 +1804,7 @@ def section_cours_instr(db, instr_id):
                     st.success("✅ Cours ajouté")
                     st.rerun()
                 else:
-                    st.error("Titre et contenu (fichier, lien ou texte) sont requis.")
+                    st.error("Titre et contenu requis.")
 
     cours_df = db.get_cours()
     for _, c in cours_df.iterrows():
@@ -1885,18 +1837,16 @@ def section_scenarios_instr(db, instr_id):
             niveau = st.selectbox("Niveau", ["debutant", "intermediaire", "avance"])
             sim_requis = st.checkbox("Simulateur requis")
             instructions = st.text_area("Instructions")
-            uploaded_file = st.file_uploader("📎 Fichier joint au scénario (optionnel)",
-                                            type=["pdf", "docx", "txt", "md", "pptx", "xlsx"], key="upload_scenario")
+            uploaded_file = st.file_uploader("📎 Fichier joint", type=["pdf", "docx", "txt", "md", "pptx", "xlsx"], key="upload_scenario")
             col1, col2 = st.columns(2)
             with col1:
                 type_scenario = st.selectbox("Type de fichier", ["document", "pdf", "video", "lien"])
             with col2:
                 if uploaded_file:
-                    st.success(f"✅ {uploaded_file.name} ({uploaded_file.size // 1024} KB)")
                     contenu = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
                 else:
-                    contenu = st.text_input("URL ou contenu (si pas de fichier)")
-            tags = st.text_input("Tags (séparés par des virgules)")
+                    contenu = st.text_input("URL ou contenu")
+            tags = st.text_input("Tags")
             g_map = _groupe_name_to_id(db)
             groupe_cible = st.selectbox("Groupe cible", ["Tous"] + list(g_map.keys()))
             if st.form_submit_button("➕ Ajouter"):
@@ -1950,11 +1900,10 @@ def section_td_instr(db, instr_id):
                 type_td = st.selectbox("Type", ["exercice", "corrige", "serie", "devoir"])
             with col2:
                 if uploaded_file:
-                    st.success(f"✅ {uploaded_file.name} ({uploaded_file.size // 1024} KB)")
                     contenu = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
                 else:
-                    contenu = st.text_input("URL ou contenu (si pas de fichier)")
-            tags = st.text_input("Tags (séparés par des virgules)")
+                    contenu = st.text_input("URL ou contenu")
+            tags = st.text_input("Tags")
             g_map = _groupe_name_to_id(db)
             groupe_cible = st.selectbox("Groupe cible", ["Tous"] + list(g_map.keys()))
             if st.form_submit_button("➕ Ajouter"):
@@ -1968,7 +1917,7 @@ def section_td_instr(db, instr_id):
                     st.success("✅ TD ajouté")
                     st.rerun()
                 else:
-                    st.error("Titre et contenu (fichier, lien ou texte) sont requis.")
+                    st.error("Titre et contenu requis.")
 
     tds_df = db.get_td()
     for _, td in tds_df.iterrows():
@@ -2004,7 +1953,7 @@ def section_evals_instr(db, instr_id):
                 try:
                     bareme_list = [float(b) for b in bareme_list_raw]
                 except ValueError:
-                    st.error("❌ Le barème doit contenir uniquement des nombres, un par ligne.")
+                    st.error("❌ Le barème doit contenir uniquement des nombres.")
                     bareme_list = None
                 if bareme_list is not None:
                     if len(criteres_list) == len(bareme_list) and nom:
@@ -2016,9 +1965,9 @@ def section_evals_instr(db, instr_id):
                         st.success("✅ Grille créée")
                         st.rerun()
                     else:
-                        st.error("❌ Le nom est requis et le nombre de critères doit correspondre au nombre de barèmes")
+                        st.error("❌ Le nombre de critères doit correspondre au nombre de barèmes")
 
-    st.markdown('<div style="margin-top:12px;color:#7affb0;font-family:JetBrains Mono;font-size:0.9em;">✏️ Noter un élève</div>', unsafe_allow_html=True)
+    st.markdown('<div style="margin-top:12px;color:#7affb0;font-size:0.9em;">✏️ Noter un élève</div>', unsafe_allow_html=True)
     eleves_df = db.get_eleves()
     if eleves_df.empty:
         st.info("Aucun élève inscrit.")
@@ -2054,7 +2003,7 @@ def section_evals_instr(db, instr_id):
                 note_total = sum(scores)
                 db.add_note({
                     "eleve_id": eleve_id, "instructeur_id": instr_id, "grille_id": grille_id,
-                    "simulation_id": sim_name_to_id[simulation],  # <-- CORRIGÉ (était figé à 1)
+                    "simulation_id": sim_name_to_id[simulation],
                     "seance_id": None, "date_note": date.today().strftime("%Y-%m-%d"),
                     "note": note_total, "appreciation": appreciation,
                     "scores_criteres": json.dumps(scores), "commentaires": commentaires
@@ -2072,10 +2021,10 @@ def section_evals_instr(db, instr_id):
             with col2:
                 st.write(f"Note: {n['note']:.1f}/20 - {n['appreciation']}")
             with col3:
-                if st.button("🗑️", key=f"del_note_{n['id']}", help="Supprimer cette note"):
+                if st.button("🗑️", key=f"del_note_{n['id']}"):
                     db.delete_note(n['id'])
                     st.rerun()
-        if st.button("🗑️ Supprimer toutes les notes de cet élève", key=f"del_all_notes_{eleve_id}", use_container_width=True):
+        if st.button("🗑️ Supprimer toutes les notes", key=f"del_all_notes_{eleve_id}", use_container_width=True):
             db.delete_notes_eleve(eleve_id)
             st.rerun()
 
@@ -2083,7 +2032,7 @@ def section_planning_instr(db):
     st.markdown('<div class="section-title">📅 Planning Général</div>', unsafe_allow_html=True)
     seances = db.get_seances()
     if seances.empty:
-        st.info("Aucun planning généré pour le moment. Rendez-vous dans l'onglet « 🚀 Générateur ».")
+        st.info("Aucun planning généré.")
         return
 
     groupes_df = db.get_groupes()
@@ -2115,7 +2064,7 @@ def section_groupes_instr(db):
     st.markdown('<div class="section-title">🏷️ Groupes</div>', unsafe_allow_html=True)
     groupes = db.get_groupes()
     if groupes.empty:
-        st.info("Aucun groupe généré. Allez dans l'onglet 'Générateur'.")
+        st.info("Aucun groupe généré.")
         return
     for _, g in groupes.iterrows():
         membres = db.get_groupe_eleves(g["id"])
@@ -2134,10 +2083,9 @@ def section_groupes_instr(db):
                     👨‍🎓 {len(membres)} élève(s)
                 </span>
             </div>
-            <div>{chips if chips else '<span style="color:rgba(180,200,220,0.3);font-size:0.85em;">Aucun élève dans ce groupe</span>'}</div>
+            <div>{chips if chips else '<span style="color:rgba(180,200,220,0.3);">Aucun élève</span>'}</div>
         </div>
         """, unsafe_allow_html=True)
-
 
 # ============================================
 # PAGE GÉNÉRATEUR
@@ -2151,25 +2099,23 @@ def page_generateur():
     instructeurs = db.get_instructeurs()
 
     if not config:
-        st.warning("⚠️ Configurez d'abord l'application dans l'onglet 'Configuration'")
+        st.warning("⚠️ Configurez d'abord l'application")
         return
     if eleves.empty:
-        st.warning("⚠️ Ajoutez des élèves dans l'onglet 'Personnes'")
+        st.warning("⚠️ Ajoutez des élèves")
         return
     if instructeurs.empty:
-        st.warning("⚠️ Ajoutez des instructeurs dans l'onglet 'Personnes'")
+        st.warning("⚠️ Ajoutez des instructeurs")
         return
     if len(instructeurs) < 2:
-        st.warning("⚠️ Il faut au moins 2 instructeurs (substitut requis pour la Simulation Test)")
+        st.warning("⚠️ Il faut au moins 2 instructeurs")
         return
 
-    # Afficher les informations
     date_debut = config['date_debut']
     date_fin_souhaitee = config['date_fin_souhaitee']
     
     st.info(f"👨‍🎓 {len(eleves)} élèves | 👨‍🏫 {len(instructeurs)} instructeurs | 📅 {date_debut} → {date_fin_souhaitee}")
 
-    # Bouton de génération
     if st.button("🚀 Générer le planning", type="primary"):
         with st.spinner("🔄 Génération..."):
             try:
@@ -2192,20 +2138,17 @@ def page_generateur():
                 date_fin_souhaitee_obj = datetime.strptime(config["date_fin_souhaitee"], "%Y-%m-%d").date()
                 nb_sim = len([s for s in seances if s["type"] == "simulation"])
                 
-                # ✅ VÉRIFICATION DU DÉPASSEMENT
                 if date_fin_reelle <= date_fin_souhaitee_obj:
                     st.success(f"✅ Planning généré ! Fin: {date_fin_reelle.strftime('%d/%m/%Y')}")
                     st.success(f"✅ {nb_sim} simulations planifiées")
                     st.balloons()
                 else:
-                    # ⚠️ DÉPASSEMENT - PROPOSER DES SOLUTIONS
                     jours_depassement = (date_fin_reelle - date_fin_souhaitee_obj).days
                     
                     st.warning(f"⚠️ Dépassement de {jours_depassement} jour(s) !")
                     st.warning(f"📅 Fin réelle : {date_fin_reelle.strftime('%d/%m/%Y')} (vs {date_fin_souhaitee_obj.strftime('%d/%m/%Y')})")
                     st.success(f"✅ {nb_sim} simulations planifiées")
                     
-                    # 💡 PROPOSER DES SOLUTIONS
                     st.markdown("### 💡 Solutions possibles :")
                     
                     col1, col2 = st.columns(2)
@@ -2224,17 +2167,15 @@ def page_generateur():
                         nouvelle_date = date_fin_souhaitee_obj + timedelta(days=jours_depassement + 1)
                         st.markdown(f"- Proposer : **{nouvelle_date.strftime('%d/%m/%Y')}**")
                         if st.button("📅 Proposer cette date", key="extend_date"):
-                            # Mettre à jour la configuration
                             config_update = config.copy()
                             config_update["date_fin_souhaitee"] = nouvelle_date.strftime("%Y-%m-%d")
                             db.save_config(config_update)
                             st.success(f"✅ Date de fin étendue au {nouvelle_date.strftime('%d/%m/%Y')}")
                             st.rerun()
                     
-                    # Option 3 : Ajouter des jours de travail
                     with st.expander("🔧 Options avancées"):
                         st.markdown("**📆 Ajouter des jours supplémentaires**")
-                        jours_supp = st.number_input("Jours supplémentaires à ajouter", min_value=1, max_value=30, value=jours_depassement + 1)
+                        jours_supp = st.number_input("Jours supplémentaires", min_value=1, max_value=30, value=jours_depassement + 1)
                         if st.button("➕ Ajouter ces jours"):
                             nouvelle_date = date_fin_souhaitee_obj + timedelta(days=jours_supp)
                             config_update = config.copy()
@@ -2246,9 +2187,9 @@ def page_generateur():
                         st.markdown("---")
                         st.markdown("**⏱️ Compresser le planning**")
                         if st.button("🔨 Compresser (réduire les durées)", key="compress"):
-                            # Réduire les durées des simulations
-                            for sim_id in durees_input.keys():
-                                db.update_simulation_duree(sim_id, 50)  # 50 min au lieu de 65
+                            simulations_all = db.get_simulations()
+                            for _, sim in simulations_all.iterrows():
+                                db.update_simulation_duree(sim['id'], 50)
                             st.success("✅ Durées des simulations réduites à 50 min")
                             st.info("🔄 Régénérez le planning pour voir l'effet")
                     
@@ -2256,7 +2197,6 @@ def page_generateur():
                     
             except Exception as e:
                 st.error(f"❌ Erreur : {str(e)}")
-
 
 # ============================================
 # MAIN
@@ -2278,8 +2218,8 @@ def main():
     with st.sidebar:
         st.markdown("""
         <div style="text-align:center;padding:10px 0;border-bottom:1px solid rgba(0,255,100,0.04);margin-bottom:16px;">
-            <div style="font-size:1.6em;font-weight:700;color:#7affb0;font-family:'JetBrains Mono',monospace;letter-spacing:2px;">📡 ATC</div>
-            <div style="font-size:0.6em;color:rgba(180,200,220,0.2);letter-spacing:2px;font-family:'JetBrains Mono',monospace;">ICNA · AIAC</div>
+            <div style="font-size:1.6em;font-weight:700;color:#7affb0;letter-spacing:2px;">📡 ATC</div>
+            <div style="font-size:0.6em;color:rgba(180,200,220,0.2);letter-spacing:2px;">ICNA · AIAC</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -2328,10 +2268,7 @@ def main():
         tab1, tab2 = st.tabs(["👨‍🎓 Élèves", "👨‍🏫 Instructeurs"])
         with tab1:
             if st.session_state.get("temp_pwd_eleve"):
-                st.info(
-                    f"🔑 Compte créé. Mot de passe temporaire : **{st.session_state['temp_pwd_eleve']}** "
-                    "— communiquez-le à l'élève et invitez-le à le changer dans « 🔑 Mon Mot de Passe »."
-                )
+                st.info(f"🔑 Compte créé. Mot de passe temporaire : **{st.session_state['temp_pwd_eleve']}**")
                 del st.session_state["temp_pwd_eleve"]
             if st.session_state.get("reset_pwd_eleve"):
                 st.info(f"🔄 Mot de passe réinitialisé : **{st.session_state['reset_pwd_eleve']}**")
@@ -2361,7 +2298,7 @@ def main():
                     with col1:
                         st.write(f"👤 {row['prenom']} {row['nom']}")
                     with col2:
-                        if st.button("🔄", key=f"reset_eleve_{row['id']}", help="Réinitialiser le mot de passe"):
+                        if st.button("🔄", key=f"reset_eleve_{row['id']}"):
                             new_temp = generate_temp_password()
                             db.set_password_eleve(row['id'], new_temp)
                             st.session_state["reset_pwd_eleve"] = new_temp
@@ -2372,10 +2309,7 @@ def main():
                             st.rerun()
         with tab2:
             if st.session_state.get("temp_pwd_instr"):
-                st.info(
-                    f"🔑 Compte créé. Mot de passe temporaire : **{st.session_state['temp_pwd_instr']}** "
-                    "— communiquez-le à l'instructeur et invitez-le à le changer dans « 🔑 Mon Mot de Passe »."
-                )
+                st.info(f"🔑 Compte créé. Mot de passe temporaire : **{st.session_state['temp_pwd_instr']}**")
                 del st.session_state["temp_pwd_instr"]
             if st.session_state.get("reset_pwd_instr"):
                 st.info(f"🔄 Mot de passe réinitialisé : **{st.session_state['reset_pwd_instr']}**")
@@ -2405,7 +2339,7 @@ def main():
                     with col1:
                         st.write(f"👤 {row['prenom']} {row['nom']}")
                     with col2:
-                        if st.button("🔄", key=f"reset_instr_{row['id']}", help="Réinitialiser le mot de passe"):
+                        if st.button("🔄", key=f"reset_instr_{row['id']}"):
                             new_temp = generate_temp_password()
                             db.set_password_instructeur(row['id'], new_temp)
                             st.session_state["reset_pwd_instr"] = new_temp
@@ -2500,7 +2434,6 @@ def main():
     elif page == "MotDePasse_Instr":
         header_instructeur(user)
         section_mon_mot_de_passe(db, "instructeur", instr_id)
-
 
 if __name__ == "__main__":
     main()

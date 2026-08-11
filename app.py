@@ -40,6 +40,218 @@ st.set_page_config(
 )
 
 # ============================================
+# CONFIGURATION DES PHASES PRATIQUES ICNA
+# ============================================
+
+PHASES_ICNA = {
+    "AERODROME": {
+        "id": "AER",
+        "nom": "Aérodrome",
+        "nom_en": "Aerodrome",
+        "nom_ar": "المطار",
+        "semestre": "S1/S2",
+        "simulations": 8,
+        "duree_simulation": 65,
+        "couleur": "#2a7a4a",
+        "niveau": "1ère année",
+        "promotion": "P1"
+    },
+    "APPROCHE_NON_RADAR": {
+        "id": "ANR",
+        "nom": "Approche Non Radar",
+        "nom_en": "Non-Radar Approach",
+        "nom_ar": "المقاربة غير الرادارية",
+        "semestre": "S3",
+        "simulations": 8,
+        "duree_simulation": 70,
+        "couleur": "#4444cc",
+        "niveau": "2ème année",
+        "promotion": "P2"
+    },
+    "APPROCHE_RADAR": {
+        "id": "ARD",
+        "nom": "Approche Radar",
+        "nom_en": "Radar Approach",
+        "nom_ar": "المقاربة الرادارية",
+        "semestre": "S4",
+        "simulations": 8,
+        "duree_simulation": 75,
+        "couleur": "#cc8844",
+        "niveau": "2ème année",
+        "promotion": "P2"
+    },
+    "ENROUTE_NON_RADAR": {
+        "id": "ENR",
+        "nom": "En-route Non Radar",
+        "nom_en": "Non-Radar En-route",
+        "nom_ar": "الطريق غير الراداري",
+        "semestre": "S4/S5",
+        "simulations": 8,
+        "duree_simulation": 80,
+        "couleur": "#cc4444",
+        "niveau": "2ème/3ème année",
+        "promotion": "P2/P3"
+    },
+    "ENROUTE_RADAR": {
+        "id": "ERR",
+        "nom": "En-route Radar",
+        "nom_en": "Radar En-route",
+        "nom_ar": "الطريق الراداري",
+        "semestre": "S5/S6",
+        "simulations": 8,
+        "duree_simulation": 85,
+        "couleur": "#8844cc",
+        "niveau": "3ème année",
+        "promotion": "P3"
+    }
+}
+
+# ============================================
+# CONFIGURATION DES PROMOTIONS ET ÉLÈVES
+# ============================================
+
+PROMOTIONS = {
+    "P1": {
+        "nom": "1ère Année",
+        "nom_en": "1st Year",
+        "nom_ar": "السنة الأولى",
+        "phases": ["AERODROME"],
+        "eleves": [
+            ("KOUBAA", "AYOUB"), ("BAMIDA", "AYMANE"), ("CHADDANI", "MOHAMED")
+        ]
+    },
+    "P2": {
+        "nom": "2ème Année",
+        "nom_en": "2nd Year",
+        "nom_ar": "السنة الثانية",
+        "phases": ["APPROCHE_NON_RADAR", "APPROCHE_RADAR", "ENROUTE_NON_RADAR"],
+        "eleves": [
+            ("KHOULANE", "ILYAS"), ("AKNOUZE", "RACHID"), ("MIFDAL", "IMANE")
+        ]
+    },
+    "P3": {
+        "nom": "3ème Année",
+        "nom_en": "3rd Year",
+        "nom_ar": "السنة الثالثة",
+        "phases": ["ENROUTE_NON_RADAR", "ENROUTE_RADAR"],
+        "eleves": [
+            ("KOUMI", "KHADIJA"), ("GUENNOUN", "CHAIMAE"), ("ICHOU", "ABDELLATIF")
+        ]
+    }
+}
+
+# ============================================
+# INSTRUCTEURS PAR PHASE
+# ============================================
+
+INSTRUCTEURS_PAR_PHASE = {
+    "AERODROME": {
+        "instructeurs": [
+            {"nom": "RIFAI", "prenom": "Mr"},
+            {"nom": "TAHERI", "prenom": "Mr"}
+        ]
+    },
+    "APPROCHE_NON_RADAR": {
+        "instructeurs": [
+            {"nom": "JBARA", "prenom": "Mr"},
+            {"nom": "ELALAOUI", "prenom": "Mr"}
+        ]
+    },
+    "APPROCHE_RADAR": {
+        "instructeurs": [
+            {"nom": "BENNANI", "prenom": "Mr"},
+            {"nom": "FASSI", "prenom": "Mr"}
+        ]
+    },
+    "ENROUTE_NON_RADAR": {
+        "instructeurs": [
+            {"nom": "CHERKAOUI", "prenom": "Mr"},
+            {"nom": "OULAD", "prenom": "Mr"}
+        ]
+    },
+    "ENROUTE_RADAR": {
+        "instructeurs": [
+            {"nom": "NAJI", "prenom": "Mr"},
+            {"nom": "SEKKAL", "prenom": "Mr"}
+        ]
+    }
+}
+
+# ============================================
+# SIMULATEURS - 7 POSTES
+# ============================================
+
+SIMULATEURS_ICNA = {
+    1: {"nom": "Simulateur AER-1", "type": "AERODROME", "dedie": True, 
+        "phases_autorisees": ["AERODROME"]},
+    2: {"nom": "Simulateur AER-2", "type": "AERODROME", "dedie": True, 
+        "phases_autorisees": ["AERODROME"]},
+    3: {"nom": "Simulateur ANR-1", "type": "APPROCHE_NON_RADAR", "dedie": True, 
+        "phases_autorisees": ["APPROCHE_NON_RADAR"]},
+    4: {"nom": "Simulateur ANR-2", "type": "APPROCHE_NON_RADAR", "dedie": True, 
+        "phases_autorisees": ["APPROCHE_NON_RADAR"]},
+    5: {"nom": "Simulateur MIXTE-1", "type": "MIXTE", "dedie": False, 
+        "phases_autorisees": ["APPROCHE_NON_RADAR", "APPROCHE_RADAR", "ENROUTE_NON_RADAR", "ENROUTE_RADAR"]},
+    6: {"nom": "Simulateur MIXTE-2", "type": "MIXTE", "dedie": False,
+        "phases_autorisees": ["APPROCHE_NON_RADAR", "APPROCHE_RADAR", "ENROUTE_NON_RADAR", "ENROUTE_RADAR"]},
+    7: {"nom": "Simulateur MIXTE-3", "type": "MIXTE", "dedie": False,
+        "phases_autorisees": ["ENROUTE_NON_RADAR", "ENROUTE_RADAR"]}
+}
+
+# ============================================
+# FONCTIONS DE DÉTECTION DES SIMULATEURS
+# ============================================
+
+def get_type_simulateur(simulateur_id):
+    """Retourne le type d'un simulateur : DEDIE ou PARTAGE."""
+    sim_info = SIMULATEURS_ICNA.get(simulateur_id)
+    if not sim_info:
+        return "INCONNU"
+    
+    if sim_info.get("dedie", False):
+        return "DEDIE"
+    else:
+        return "PARTAGE"
+
+def get_phases_simulateur(simulateur_id):
+    """Retourne la liste des phases autorisées pour un simulateur."""
+    sim_info = SIMULATEURS_ICNA.get(simulateur_id, {})
+    return sim_info.get("phases_autorisees", [])
+
+def generer_matrice_sharing_automatique():
+    """Génère automatiquement la matrice de partage en fonction de la configuration."""
+    matrice = {}
+    
+    for phase_id in PHASES_ICNA:
+        sim_dedies = []
+        sim_partages = []
+        
+        for sim_id, sim_info in SIMULATEURS_ICNA.items():
+            if phase_id in sim_info.get("phases_autorisees", []):
+                if sim_info.get("dedie", False):
+                    sim_dedies.append(sim_id)
+                else:
+                    sim_partages.append(sim_id)
+        
+        phases_partagees = []
+        for sim_id in sim_partages:
+            sim_info = SIMULATEURS_ICNA.get(sim_id, {})
+            for phase in sim_info.get("phases_autorisees", []):
+                if phase != phase_id and phase not in phases_partagees:
+                    phases_partagees.append(phase)
+        
+        matrice[phase_id] = {
+            "simulateurs_dedies": sim_dedies,
+            "simulateurs_partages": sim_partages,
+            "phases_partagees": phases_partagees,
+            "tous_simulateurs": sim_dedies + sim_partages
+        }
+    
+    return matrice
+
+MATRICE_SHARING = generer_matrice_sharing_automatique()
+
+# ============================================
 # GESTION DES LANGUES
 # ============================================
 
@@ -67,6 +279,10 @@ LANGUAGES = {
         "people": "👥 Personnes",
         "config": "⚙️ Configuration",
         "generator": "🚀 Générateur",
+        "multi_phases": "✈️ Multi-Phases",
+        "gantt": "📊 Gantt Simulateurs",
+        "simulateurs": "💻 Simulateurs",
+        "config_simulateurs": "⚙️ Config Simulateurs",
         "planning": "📅 Planning",
         "evaluations": "📊 Évaluations",
         "groups": "🏷️ Groupes",
@@ -184,6 +400,10 @@ LANGUAGES = {
         "people": "👥 People",
         "config": "⚙️ Configuration",
         "generator": "🚀 Generator",
+        "multi_phases": "✈️ Multi-Phases",
+        "gantt": "📊 Simulator Gantt",
+        "simulateurs": "💻 Simulators",
+        "config_simulateurs": "⚙️ Simulator Config",
         "planning": "📅 Planning",
         "evaluations": "📊 Evaluations",
         "groups": "🏷️ Groups",
@@ -301,6 +521,10 @@ LANGUAGES = {
         "people": "👥 الأشخاص",
         "config": "⚙️ الإعدادات",
         "generator": "🚀 المولد",
+        "multi_phases": "✈️ المراحل المتعددة",
+        "gantt": "📊 مخطط غانت",
+        "simulateurs": "💻 المحاكيات",
+        "config_simulateurs": "⚙️ إعداد المحاكيات",
         "planning": "📅 الجدول",
         "evaluations": "📊 التقييمات",
         "groups": "🏷️ المجموعات",
@@ -443,7 +667,7 @@ def generate_temp_password() -> str:
     return secrets.token_urlsafe(6)
 
 # ============================================
-# STYLE CSS - IDENTITÉ ATC + RESPONSIVE MOBILE
+# STYLE CSS
 # ============================================
 
 st.markdown("""
@@ -451,89 +675,6 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@300;400;600;700&display=swap');
     * { font-family: 'Inter', 'JetBrains Mono', sans-serif; }
     .stApp { background: #0a0e17; }
-    
-    /* ============================================
-       STYLES RESPONSIVE POUR MOBILE
-    ============================================ */
-    
-    @media only screen and (max-width: 768px) {
-        .section-title {
-            font-size: 0.9em !important;
-        }
-        * {
-            font-size: 14px !important;
-        }
-        .doc-viewer {
-            padding: 8px !important;
-        }
-        .groupe-card {
-            padding: 10px 12px !important;
-        }
-        .flight-strip {
-            padding: 8px 10px !important;
-            font-size: 0.8em !important;
-        }
-        .pdf-viewer-container {
-            height: 500px !important;
-        }
-        div[data-testid="column"] {
-            width: 100% !important;
-            flex: 1 1 100% !important;
-            min-width: 100% !important;
-        }
-        .radar-screen {
-            width: 280px !important;
-            height: 280px !important;
-        }
-        .login-card {
-            min-width: 90% !important;
-            padding: 16px 20px !important;
-            bottom: 40px !important;
-        }
-        .stat-number {
-            font-size: 1.5em !important;
-        }
-        .badge-success, .badge-warning, .badge-info, .badge-danger, .badge-td {
-            font-size: 0.55em !important;
-            padding: 1px 8px !important;
-        }
-        [data-testid="stSidebar"] {
-            width: 280px !important;
-        }
-    }
-    
-    @media only screen and (max-width: 480px) {
-        .radar-screen {
-            width: 200px !important;
-            height: 200px !important;
-        }
-        .login-card {
-            min-width: 95% !important;
-            padding: 12px 16px !important;
-        }
-        .login-card h2 {
-            font-size: 0.7em !important;
-        }
-        .section-title {
-            font-size: 0.8em !important;
-        }
-        .flight-strip .strip-callsign {
-            font-size: 0.85em !important;
-        }
-        .flight-strip .strip-info {
-            font-size: 0.65em !important;
-        }
-        .flight-strip .strip-time {
-            font-size: 0.75em !important;
-        }
-        .hide-on-mobile {
-            display: none !important;
-        }
-    }
-    
-    /* ============================================
-       STYLES PRINCIPAUX
-    ============================================ */
     
     .radar-container {
         position: relative;
@@ -908,16 +1049,19 @@ class Database:
             """CREATE TABLE IF NOT EXISTS eleves (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL, prenom TEXT NOT NULL, email TEXT, groupe_id INTEGER,
+                promotion TEXT DEFAULT 'P1',
                 password_hash TEXT, password_salt TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS instructeurs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL, prenom TEXT NOT NULL, actif BOOLEAN DEFAULT 1,
+                phase TEXT,
                 password_hash TEXT, password_salt TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS groupes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nom TEXT NOT NULL, instructeur_id INTEGER, simulateur_id INTEGER
+                nom TEXT NOT NULL, instructeur_id INTEGER, simulateur_id INTEGER,
+                phase TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS groupe_eleves (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -925,7 +1069,8 @@ class Database:
             )""",
             """CREATE TABLE IF NOT EXISTS simulations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nom TEXT NOT NULL, duree INTEGER DEFAULT 65, est_test BOOLEAN DEFAULT 0, ordre INTEGER
+                nom TEXT NOT NULL, duree INTEGER DEFAULT 65, est_test BOOLEAN DEFAULT 0, ordre INTEGER,
+                phase TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS seances (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -934,7 +1079,8 @@ class Database:
                 simulation_id INTEGER, groupe_id INTEGER, instructeur_id INTEGER,
                 instructeur_evaluateur_id INTEGER, simulateur_id INTEGER,
                 controle_eleve_id INTEGER, pseudo_eleve_id INTEGER,
-                observateurs TEXT, statut TEXT DEFAULT 'planifiee', notes TEXT
+                observateurs TEXT, statut TEXT DEFAULT 'planifiee', notes TEXT,
+                phase TEXT, promotion TEXT
             )""",
             """CREATE TABLE IF NOT EXISTS cours (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -973,49 +1119,42 @@ class Database:
                 id INTEGER PRIMARY KEY CHECK (id = 1),
                 code_hash TEXT, code_salt TEXT
             )""",
+            """CREATE TABLE IF NOT EXISTS simulateurs (
+                id INTEGER PRIMARY KEY,
+                nom TEXT NOT NULL,
+                type TEXT NOT NULL,
+                disponible BOOLEAN DEFAULT 1,
+                phase_actuelle TEXT,
+                promotion_actuelle TEXT,
+                date_occupation DATE,
+                heure_debut_occupation TEXT,
+                heure_fin_occupation TEXT,
+                est_dedie BOOLEAN DEFAULT 0,
+                phases_autorisees TEXT
+            )"""
         ]
         for ddl in ddl_statements:
             self._exec(ddl)
 
-        try:
-            nb_sims = self._query("SELECT COUNT(*) AS n FROM simulations").iloc[0]["n"]
-        except:
-            nb_sims = 0
-            
-        if nb_sims == 0:
-            sims = [
-                {"nom": "Synthese Dynamique", "duree": 65, "est_test": 0, "ordre": 1},
-                {"nom": "Simulation 1", "duree": 65, "est_test": 0, "ordre": 2},
-                {"nom": "Simulation 2", "duree": 65, "est_test": 0, "ordre": 3},
-                {"nom": "Simulation 3", "duree": 65, "est_test": 0, "ordre": 4},
-                {"nom": "Simulation 4", "duree": 65, "est_test": 0, "ordre": 5},
-                {"nom": "Simulation 5", "duree": 65, "est_test": 0, "ordre": 6},
-                {"nom": "Simulation 6", "duree": 65, "est_test": 0, "ordre": 7},
-                {"nom": "Simulation Test", "duree": 65, "est_test": 1, "ordre": 8},
-            ]
-            self._exec_many(
-                "INSERT INTO simulations (nom, duree, est_test, ordre) VALUES (:nom, :duree, :est_test, :ordre)",
-                sims
-            )
+        # Initialiser les simulateurs
+        cursor = self.get_connection().cursor()
+        cursor.execute("SELECT COUNT(*) FROM simulateurs")
+        if cursor.fetchone()[0] == 0:
+            for sim_id, sim_info in SIMULATEURS_ICNA.items():
+                cursor.execute("""
+                    INSERT INTO simulateurs (id, nom, type, est_dedie, phases_autorisees)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (
+                    sim_id,
+                    sim_info["nom"],
+                    sim_info["type"],
+                    1 if sim_info["dedie"] else 0,
+                    json.dumps(sim_info.get("phases_autorisees", []))
+                ))
+        cursor.connection.commit()
+        cursor.connection.close()
 
-        try:
-            nb_grilles = self._query("SELECT COUNT(*) AS n FROM grilles_evaluation").iloc[0]["n"]
-        except:
-            nb_grilles = 0
-            
-        if nb_grilles == 0:
-            self._exec(
-                "INSERT INTO grilles_evaluation (nom, description, criteres, bareme, date_creation) "
-                "VALUES (:nom, :description, :criteres, :bareme, :date_creation)",
-                {
-                    "nom": "Grille ATC Standard",
-                    "description": "Grille d'évaluation standard",
-                    "criteres": json.dumps(["Phraséologie", "Anticipation", "Gestion du trafic", "Communication", "Réactivité"]),
-                    "bareme": json.dumps([4, 4, 4, 4, 4]),
-                    "date_creation": date.today().strftime("%Y-%m-%d"),
-                }
-            )
-
+        # Seed des données de démonstration
         try:
             nb_instr = self._query("SELECT COUNT(*) AS n FROM instructeurs").iloc[0]["n"]
             nb_eleves = self._query("SELECT COUNT(*) AS n FROM eleves").iloc[0]["n"]
@@ -1024,15 +1163,27 @@ class Database:
             nb_eleves = 0
             
         if nb_instr == 0 and nb_eleves == 0:
-            for nom, prenom in [("RIFAI", "Mr"), ("TAHERI", "Mr"), ("JBARA", "Mr")]:
-                self.add_instructeur(nom, prenom, password=DEFAULT_PASSWORD)
-            for nom, prenom in [
-                ("KOUBAA", "AYOUB"), ("BAMIDA", "AYMANE"), ("CHADDANI", "MOHAMED"),
-                ("KHOULANE", "ILYAS"), ("AKNOUZE", "RACHID"), ("MIFDAL", "IMANE"),
-                ("KOUMI", "KHADIJA"), ("GUENNOUN", "CHAIMAE"), ("ICHOU", "ABDELLATIF"),
-            ]:
-                self.add_eleve(nom, prenom, password=DEFAULT_PASSWORD)
+            # Ajouter les instructeurs par phase
+            for phase_id, phase_instr in INSTRUCTEURS_PAR_PHASE.items():
+                for instr in phase_instr["instructeurs"]:
+                    self.add_instructeur_phase(
+                        instr["nom"], 
+                        instr["prenom"], 
+                        phase_id,
+                        password=DEFAULT_PASSWORD
+                    )
+            
+            # Ajouter les élèves par promotion
+            for promo_id, promo_info in PROMOTIONS.items():
+                for nom, prenom in promo_info["eleves"]:
+                    self.add_eleve(
+                        nom, 
+                        prenom, 
+                        password=DEFAULT_PASSWORD, 
+                        promotion=promo_id
+                    )
 
+        # Backfill des mots de passe
         for table in ("eleves", "instructeurs"):
             try:
                 sans_mdp = self._query(f"SELECT id FROM {table} WHERE password_hash IS NULL OR password_salt IS NULL")
@@ -1044,6 +1195,68 @@ class Database:
                     )
             except:
                 pass
+
+    def add_eleve(self, nom, prenom, email=None, password=None, promotion="P1"):
+        temp_password = None
+        if not password:
+            temp_password = generate_temp_password()
+            password = temp_password
+        pwd_hash, salt = hash_password(password)
+        new_id = self._exec_returning_id(
+            "INSERT INTO eleves (nom, prenom, email, promotion, password_hash, password_salt) "
+            "VALUES (:nom, :prenom, :email, :promotion, :h, :s) RETURNING id",
+            {"nom": nom, "prenom": prenom, "email": email, "promotion": promotion, "h": pwd_hash, "s": salt}
+        )
+        return new_id, temp_password
+
+    def add_instructeur_phase(self, nom, prenom, phase_id, password=None):
+        temp_password = None
+        if not password:
+            temp_password = generate_temp_password()
+            password = temp_password
+        pwd_hash, salt = hash_password(password)
+        new_id = self._exec_returning_id(
+            "INSERT INTO instructeurs (nom, prenom, actif, phase, password_hash, password_salt) "
+            "VALUES (:nom, :prenom, 1, :phase, :h, :s) RETURNING id",
+            {"nom": nom, "prenom": prenom, "phase": phase_id, "h": pwd_hash, "s": salt}
+        )
+        return new_id, temp_password
+
+    def get_instructeurs_par_phase(self, phase_id):
+        return self._query(
+            "SELECT * FROM instructeurs WHERE phase = :phase AND actif = 1 ORDER BY nom, prenom",
+            {"phase": phase_id}
+        )
+
+    def get_eleves(self, groupe_id=None):
+        if groupe_id:
+            return self._query("SELECT * FROM eleves WHERE groupe_id = :gid ORDER BY nom, prenom", {"gid": groupe_id})
+        return self._query("SELECT * FROM eleves ORDER BY nom, prenom")
+
+    def get_eleve_by_id(self, eleve_id):
+        df = self._query("SELECT id, nom, prenom, email, groupe_id, promotion FROM eleves WHERE id = :id", {"id": eleve_id})
+        if df.empty:
+            return None
+        row = df.iloc[0]
+        return (int(row["id"]), row["nom"], row["prenom"], row["email"], row["groupe_id"], row["promotion"])
+
+    def delete_eleve(self, eleve_id):
+        self._exec("DELETE FROM groupe_eleves WHERE eleve_id = :id", {"id": eleve_id})
+        self._exec("DELETE FROM notes WHERE eleve_id = :id", {"id": eleve_id})
+        self._exec("DELETE FROM eleves WHERE id = :id", {"id": eleve_id})
+
+    def get_instructeurs(self):
+        return self._query("SELECT * FROM instructeurs WHERE actif = 1 ORDER BY nom, prenom")
+
+    def get_instructeur_by_id(self, instr_id):
+        df = self._query("SELECT id, nom, prenom, actif, phase FROM instructeurs WHERE id = :id", {"id": instr_id})
+        if df.empty:
+            return None
+        row = df.iloc[0]
+        return (int(row["id"]), row["nom"], row["prenom"], row["actif"], row["phase"])
+
+    def delete_instructeur(self, instr_id):
+        self._exec("DELETE FROM instructeurs WHERE id = :id", {"id": instr_id})
 
     def verify_password_eleve(self, eleve_id, password):
         df = self._query("SELECT password_hash, password_salt FROM eleves WHERE id = :id", {"id": eleve_id})
@@ -1057,18 +1270,6 @@ class Database:
             return False
         return verify_password(password, df.iloc[0]["password_salt"], df.iloc[0]["password_hash"])
 
-    def admin_code_configured(self):
-        df = self._query("SELECT code_hash, code_salt FROM admin_config WHERE id = 1")
-        if df.empty:
-            return False
-        return bool(df.iloc[0]["code_hash"] and df.iloc[0]["code_salt"])
-
-    def verify_admin_code(self, code):
-        df = self._query("SELECT code_hash, code_salt FROM admin_config WHERE id = 1")
-        if df.empty:
-            return False
-        return verify_password(code, df.iloc[0]["code_salt"], df.iloc[0]["code_hash"])
-
     def set_password_eleve(self, eleve_id, new_password):
         pwd_hash, salt = hash_password(new_password)
         self._exec("UPDATE eleves SET password_hash = :h, password_salt = :s WHERE id = :id",
@@ -1078,62 +1279,6 @@ class Database:
         pwd_hash, salt = hash_password(new_password)
         self._exec("UPDATE instructeurs SET password_hash = :h, password_salt = :s WHERE id = :id",
                     {"h": pwd_hash, "s": salt, "id": instr_id})
-
-    def get_eleves(self, groupe_id=None):
-        if groupe_id:
-            return self._query("SELECT * FROM eleves WHERE groupe_id = :gid ORDER BY nom, prenom", {"gid": groupe_id})
-        return self._query("SELECT * FROM eleves ORDER BY nom, prenom")
-
-    def get_eleve_by_id(self, eleve_id):
-        df = self._query("SELECT id, nom, prenom, email, groupe_id FROM eleves WHERE id = :id", {"id": eleve_id})
-        if df.empty:
-            return None
-        row = df.iloc[0]
-        return (int(row["id"]), row["nom"], row["prenom"], row["email"], row["groupe_id"])
-
-    def add_eleve(self, nom, prenom, email=None, password=None):
-        temp_password = None
-        if not password:
-            temp_password = generate_temp_password()
-            password = temp_password
-        pwd_hash, salt = hash_password(password)
-        new_id = self._exec_returning_id(
-            "INSERT INTO eleves (nom, prenom, email, password_hash, password_salt) "
-            "VALUES (:nom, :prenom, :email, :h, :s) RETURNING id",
-            {"nom": nom, "prenom": prenom, "email": email, "h": pwd_hash, "s": salt}
-        )
-        return new_id, temp_password
-
-    def delete_eleve(self, eleve_id):
-        self._exec("DELETE FROM groupe_eleves WHERE eleve_id = :id", {"id": eleve_id})
-        self._exec("DELETE FROM notes WHERE eleve_id = :id", {"id": eleve_id})
-        self._exec("DELETE FROM eleves WHERE id = :id", {"id": eleve_id})
-
-    def get_instructeurs(self):
-        return self._query("SELECT * FROM instructeurs WHERE actif = 1 ORDER BY nom, prenom")
-
-    def get_instructeur_by_id(self, instr_id):
-        df = self._query("SELECT id, nom, prenom, actif FROM instructeurs WHERE id = :id", {"id": instr_id})
-        if df.empty:
-            return None
-        row = df.iloc[0]
-        return (int(row["id"]), row["nom"], row["prenom"], row["actif"])
-
-    def add_instructeur(self, nom, prenom, password=None):
-        temp_password = None
-        if not password:
-            temp_password = generate_temp_password()
-            password = temp_password
-        pwd_hash, salt = hash_password(password)
-        new_id = self._exec_returning_id(
-            "INSERT INTO instructeurs (nom, prenom, actif, password_hash, password_salt) "
-            "VALUES (:nom, :prenom, 1, :h, :s) RETURNING id",
-            {"nom": nom, "prenom": prenom, "h": pwd_hash, "s": salt}
-        )
-        return new_id, temp_password
-
-    def delete_instructeur(self, instr_id):
-        self._exec("DELETE FROM instructeurs WHERE id = :id", {"id": instr_id})
 
     def get_groupes(self):
         return self._query("""
@@ -1162,9 +1307,9 @@ class Database:
         id_map = {}
         for g in groupes:
             new_id = self._exec_returning_id(
-                "INSERT INTO groupes (nom, instructeur_id, simulateur_id) "
-                "VALUES (:nom, :instr, :sim) RETURNING id",
-                {"nom": g["nom"], "instr": g["instructeur_id"], "sim": g["simulateur_id"]}
+                "INSERT INTO groupes (nom, instructeur_id, simulateur_id, phase) "
+                "VALUES (:nom, :instr, :sim, :phase) RETURNING id",
+                {"nom": g["nom"], "instr": g["instructeur_id"], "sim": g["simulateur_id"], "phase": g.get("phase", "AERODROME")}
             )
             id_map[g["id"]] = new_id
             for eid in g["eleves"]:
@@ -1212,17 +1357,19 @@ class Database:
             "instr_id": s.get("instructeur_id"), "instr_eval_id": s.get("instructeur_evaluateur_id"),
             "sim_engin": s.get("simulateur_id"), "controle_id": s.get("controle_eleve_id"),
             "pseudo_id": s.get("pseudo_eleve_id"), "observateurs": json.dumps(s.get("observateurs", [])),
-            "notes": s.get("notes", ""),
+            "notes": s.get("notes", ""), "phase": s.get("phase"), "promotion": s.get("promotion")
         } for s in seances]
         self._exec_many("""
             INSERT INTO seances (
                 date, heure_debut, duree, type, simulation_id, groupe_id,
                 instructeur_id, instructeur_evaluateur_id, simulateur_id,
-                controle_eleve_id, pseudo_eleve_id, observateurs, notes
+                controle_eleve_id, pseudo_eleve_id, observateurs, notes,
+                phase, promotion
             ) VALUES (
                 :date, :heure, :duree, :type, :sim_id, :groupe_id,
                 :instr_id, :instr_eval_id, :sim_engin,
-                :controle_id, :pseudo_id, :observateurs, :notes
+                :controle_id, :pseudo_id, :observateurs, :notes,
+                :phase, :promotion
             )
         """, rows)
 
@@ -1376,15 +1523,119 @@ class Database:
 
     def delete_all_data(self):
         for table in ("seances", "groupe_eleves", "groupes", "eleves", "instructeurs",
-                      "cours", "scenarios", "td", "notes", "grilles_evaluation"):
+                      "cours", "scenarios", "td", "notes", "grilles_evaluation", "simulateurs"):
             self._exec(f"DELETE FROM {table}")
 
 # ============================================
-# FONCTION DE VISUALISATION DE DOCUMENTS
+# GESTIONNAIRE DE SIMULATEURS
+# ============================================
+
+class GestionnaireSimulateursICNA:
+    def __init__(self, db):
+        self.db = db
+    
+    def get_simulateurs_disponibles(self, phase_id, date=None, heure_debut=None, heure_fin=None):
+        """Retourne les simulateurs disponibles pour une phase donnée."""
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+        
+        sim_autorises = []
+        for sim_id, sim_info in SIMULATEURS_ICNA.items():
+            if phase_id in sim_info.get("phases_autorisees", []):
+                sim_autorises.append(sim_id)
+        
+        if not sim_autorises:
+            conn.close()
+            return []
+        
+        query = """
+            SELECT s.* FROM simulateurs s
+            WHERE s.id IN ({})
+            AND s.disponible = 1
+        """.format(','.join('?' * len(sim_autorises)))
+        params = sim_autorises.copy()
+        
+        if date and heure_debut and heure_fin:
+            query += """
+                AND NOT EXISTS (
+                    SELECT 1 FROM seances se
+                    WHERE se.simulateur_id = s.id
+                    AND se.date = ?
+                    AND (
+                        (se.heure_debut < ? AND datetime(se.date || ' ' || se.heure_debut, '+' || se.duree || ' minutes') > datetime(?))
+                        OR (se.heure_debut >= ? AND se.heure_debut < ?)
+                    )
+                )
+            """
+            params.extend([date, heure_fin, heure_debut, heure_debut, heure_fin])
+        
+        cursor.execute(query, params)
+        result = cursor.fetchall()
+        conn.close()
+        
+        return [dict(zip([col[0] for col in cursor.description], row)) for row in result]
+    
+    def get_occupation_simulateurs(self, date=None):
+        """Retourne l'occupation de tous les simulateurs."""
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+        
+        query = """
+            SELECT s.id, s.nom, s.type, s.disponible, s.phase_actuelle, 
+                   s.promotion_actuelle, s.date_occupation, 
+                   s.heure_debut_occupation, s.heure_fin_occupation,
+                   s.est_dedie, s.phases_autorisees
+            FROM simulateurs s
+        """
+        
+        if date:
+            query += " WHERE s.date_occupation = ? OR s.disponible = 1"
+            cursor.execute(query, (date,))
+        else:
+            cursor.execute(query)
+        
+        result = cursor.fetchall()
+        conn.close()
+        
+        return [dict(zip([col[0] for col in cursor.description], row)) for row in result]
+    
+    def get_stats_occupation(self):
+        """Retourne les statistiques d'occupation des simulateurs."""
+        simulateurs = self.get_occupation_simulateurs()
+        
+        stats = {
+            "total": len(simulateurs),
+            "disponibles": sum(1 for s in simulateurs if s['disponible']),
+            "occupes": sum(1 for s in simulateurs if not s['disponible']),
+            "par_phase": {},
+            "par_type": {"DEDIE": 0, "PARTAGE": 0}
+        }
+        
+        for sim in simulateurs:
+            if sim['est_dedie']:
+                stats["par_type"]["DEDIE"] += 1
+            else:
+                stats["par_type"]["PARTAGE"] += 1
+            
+            if not sim['disponible'] and sim['phase_actuelle']:
+                phase = sim['phase_actuelle']
+                if phase not in stats["par_phase"]:
+                    stats["par_phase"][phase] = {"occupes": 0, "total": 0}
+                stats["par_phase"][phase]["occupes"] += 1
+            
+            phases_autorisees = json.loads(sim['phases_autorisees']) if sim['phases_autorisees'] else []
+            for phase in phases_autorisees:
+                if phase not in stats["par_phase"]:
+                    stats["par_phase"][phase] = {"occupes": 0, "total": 0}
+                stats["par_phase"][phase]["total"] += 1
+        
+        return stats
+
+# ============================================
+# FONCTIONS DE VISUALISATION DE DOCUMENTS
 # ============================================
 
 def detect_file_type(decoded):
-    """Renvoie (extension, icone, label, mime_type) à partir des octets."""
     if decoded[:4] == b'%PDF':
         return "pdf", "📄", "Document PDF", "application/pdf"
     if len(decoded) > 4 and decoded[:4] == b'PK\x03\x04':
@@ -1413,8 +1664,6 @@ def detect_file_type(decoded):
         return "bin", "📎", "Fichier", "application/octet-stream"
 
 def render_document_view(contenu, type_doc, titre, doc_index=None):
-    """Affiche un document - Version avec streamlit-pdf-viewer"""
-    
     if not contenu:
         st.info(t("no_content"))
         return
@@ -1424,7 +1673,6 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     if doc_index is None:
         doc_index = random.randint(1000, 9999)
 
-    # --- Gestion des liens externes ---
     if contenu.startswith(("http://", "https://")):
         st.markdown(f"""
         <div class="doc-viewer">
@@ -1442,7 +1690,6 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         """, unsafe_allow_html=True)
         return
 
-    # --- DÉCODAGE BASE64 ROBUSTE ---
     decoded = None
     
     try:
@@ -1473,12 +1720,10 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         st.code(contenu[:200])
         return
 
-    # --- DÉTECTION DU TYPE ---
     file_ext, icon, label, mime_type = detect_file_type(decoded)
     taille_kb = len(decoded) // 1024
     taille_mo = len(decoded) / (1024 * 1024)
 
-    # --- AFFICHAGE DES INFOS ---
     st.markdown(f"""
     <div class="doc-viewer">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -1492,14 +1737,11 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     </div>
     """, unsafe_allow_html=True)
 
-    # --- AFFICHAGE DU PDF ---
     if mime_type == "application/pdf":
         st.markdown(f"### {t('preview')}")
         
-        # Détecter si on est sur mobile
         is_mobile = st.session_state.get("is_mobile", False)
         
-        # Ajuster les dimensions en fonction de l'écran
         if is_mobile:
             viewer_width = "100%"
             viewer_height = 500
@@ -1507,7 +1749,6 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
             viewer_width = 1200
             viewer_height = 800
         
-        # Utiliser le composant streamlit-pdf-viewer
         try:
             from streamlit_pdf_viewer import pdf_viewer
             pdf_viewer(
@@ -1519,7 +1760,6 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
             st.error("❌ La bibliothèque streamlit-pdf-viewer n'est pas installée.")
             st.info("💡 Installez-la avec : pip install streamlit-pdf-viewer")
             
-            # Fallback : lien de téléchargement
             pdf_b64 = base64.b64encode(decoded).decode("utf-8")
             data_url = f"data:application/pdf;base64,{pdf_b64}"
             st.markdown(f"""
@@ -1535,7 +1775,6 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
         except Exception as e:
             st.error(f"❌ Erreur d'affichage du PDF : {str(e)}")
             
-            # Fallback : lien de téléchargement
             pdf_b64 = base64.b64encode(decoded).decode("utf-8")
             data_url = f"data:application/pdf;base64,{pdf_b64}"
             st.markdown(f"""
@@ -1563,7 +1802,6 @@ def render_document_view(contenu, type_doc, titre, doc_index=None):
     else:
         st.info(f"📎 Type de document: {label}")
     
-    # --- BOUTON DE TÉLÉCHARGEMENT ---
     st.download_button(
         label=f"{t('download')} {titre}.{file_ext}",
         data=decoded,
@@ -1648,7 +1886,8 @@ class DayScheduler:
     def state(self):
         return (self.date, self.window_idx, self.cur_time)
 
-def generer_groupes(eleves_df, instructeurs_df):
+def generer_groupes_phase(eleves_df, instructeurs_df, phase_id):
+    """Génère des groupes pour une phase spécifique."""
     nb_instr = len(instructeurs_df)
     if nb_instr == 0 or eleves_df.empty:
         return []
@@ -1665,281 +1904,155 @@ def generer_groupes(eleves_df, instructeurs_df):
         idx += nb
         groupes.append({
             "id": i + 1,
-            "nom": f"Groupe de {instr_row.prenom} {instr_row.nom}",
+            "nom": f"Groupe {phase_id} - {instr_row.prenom} {instr_row.nom}",
             "instructeur_id": instr_row.id,
             "simulateur_id": i + 1,
-            "eleves": membres
+            "eleves": membres,
+            "phase": phase_id
         })
     return groupes
 
-def generer_runs_groupe_pour_sim(groupe, ds, tous_instructeurs_ids, sim, suivi, rotation_counter):
-    seances = []
+def generer_runs_pour_groupe(groupe, instructeurs_ids, sim):
+    """Génère les runs pour un groupe."""
     eleves = groupe["eleves"]
     instr_id = groupe["instructeur_id"]
-    sim_engin = groupe["simulateur_id"]
-    autres_instructeurs = [i for i in tous_instructeurs_ids if i != instr_id]
-    est_test = sim["est_test"] == 1
-
+    autres_instructeurs = [i for i in instructeurs_ids if i != instr_id]
+    est_test = sim.get('est_test', False)
+    
+    runs = []
     if est_test:
-        runs = []
-        eleves_ordre = sorted(eleves, key=lambda e: suivi[e]["controleur"])
-        for k, eleve in enumerate(eleves_ordre):
+        for k, eleve in enumerate(eleves):
             instr_sub = autres_instructeurs[k % len(autres_instructeurs)] if autres_instructeurs else instr_id
-            runs.append({"controleur": eleve, "pseudo": None, "instructeur_id": instr_sub, "instructeur_evaluateur_id": instr_id})
-    else:
-        n = len(eleves)
-        runs = []
-        if n >= 2:
-            offset = rotation_counter % n
-            ordre = eleves[offset:] + eleves[:offset]
-            for i in range(n):
-                runs.append({"controleur": ordre[i], "pseudo": ordre[(i + 1) % n], "instructeur_id": instr_id, "instructeur_evaluateur_id": None})
-            rotation_counter += 1
-
-    for run in runs:
-        d, t, dur = ds.get_slot(sim["duree"])
-        actifs = {run["controleur"]}
-        if run["pseudo"] is not None:
-            actifs.add(run["pseudo"])
-        observateurs = [e for e in eleves if e not in actifs]
-        seances.append({
-            "date": d, "heure_debut": t, "duree": dur, "type": "simulation",
-            "simulation_id": sim["id"], "groupe_id": groupe["local_id"],
-            "instructeur_id": run["instructeur_id"], "instructeur_evaluateur_id": run["instructeur_evaluateur_id"],
-            "simulateur_id": sim_engin, "controle_eleve_id": run["controleur"], "pseudo_eleve_id": run["pseudo"],
-            "observateurs": observateurs, "notes": "Simulation Test" if est_test else ""
-        })
-        suivi[run["controleur"]]["controleur"] += 1
-        if run["pseudo"] is not None:
-            suivi[run["pseudo"]]["pseudo"] += 1
-
-    return seances, rotation_counter
-
-def generer_planning_complet(groupes, instructeurs_df, simulations_df, config):
-    windows = build_windows(config)
-    tous_instr_ids = instructeurs_df["id"].tolist()
-    master_ds = DayScheduler(config["_date_debut_obj"], windows)
-    toutes_seances = []
-    suivis = {g["local_id"]: {e: {"controleur": 0, "pseudo": 0} for e in g["eleves"]} for g in groupes}
-    rotation_counters = {g["local_id"]: 0 for g in groupes}
-
-    for _, sim in simulations_df.iterrows():
-        d, t, dur = master_ds.get_slot(config["duree_briefing"])
-        toutes_seances.append({
-            "date": d, "heure_debut": t, "duree": dur, "type": "briefing",
-            "simulation_id": sim["id"], "groupe_id": None,
-            "instructeur_id": None, "instructeur_evaluateur_id": None, "simulateur_id": None,
-            "controle_eleve_id": None, "pseudo_eleve_id": None, "observateurs": [],
-            "notes": f"Briefing collectif - {sim['nom']}"
-        })
-        finish_states = []
-        for groupe in groupes:
-            group_ds = DayScheduler(master_ds.date, windows)
-            group_ds.window_idx = master_ds.window_idx
-            group_ds.cur_time = master_ds.cur_time
-            seances_g, rotation_counters[groupe["local_id"]] = generer_runs_groupe_pour_sim(
-                groupe, group_ds, tous_instr_ids, sim,
-                suivis[groupe["local_id"]], rotation_counters[groupe["local_id"]]
-            )
-            toutes_seances.extend(seances_g)
-            finish_states.append(group_ds.state())
-        if finish_states:
-            master_ds.date, master_ds.window_idx, master_ds.cur_time = max(finish_states)
-        d, t, dur = master_ds.get_slot(config["duree_debriefing"])
-        toutes_seances.append({
-            "date": d, "heure_debut": t, "duree": dur, "type": "debriefing",
-            "simulation_id": sim["id"], "groupe_id": None,
-            "instructeur_id": None, "instructeur_evaluateur_id": None, "simulateur_id": None,
-            "controle_eleve_id": None, "pseudo_eleve_id": None, "observateurs": [],
-            "notes": f"Debriefing collectif - {sim['nom']}"
-        })
-
-    date_fin = master_ds.date
-    sim_dates = [datetime.strptime(s["date"], "%Y-%m-%d").date() for s in toutes_seances if s["type"] == "simulation"]
-    if sim_dates:
-        date_fin = max(date_fin, max(sim_dates))
-    return toutes_seances, date_fin
-
-# ============================================
-# SCÉNARIOS D'EXTENSION HORAIRE
-# ============================================
-
-def generer_scenarios_extension(config, eleves_df, instructeurs_df, simulations_df, jours_depassement):
-    """
-    Génère des scénarios d'extension horaire pour compenser le dépassement.
-    """
-    scenarios = []
-    
-    # Scénarios d'extension
-    extensions = [
-        {"nom": "Matin +30min (début)", "modif": {"heure_debut_matin": "08:30"}, "gain": 30},
-        {"nom": "Matin +30min (fin)", "modif": {"heure_fin_matin": "12:45"}, "gain": 30},
-        {"nom": "Après-midi +30min (début)", "modif": {"heure_debut_apres_midi": "13:45"}, "gain": 30},
-        {"nom": "Après-midi +30min (fin)", "modif": {"heure_fin_apres_midi": "18:00"}, "gain": 30},
-    ]
-    
-    # Combinaisons de deux extensions
-    combinaisons = []
-    for i in range(len(extensions)):
-        for j in range(i+1, len(extensions)):
-            combinaisons.append({
-                "nom": f"{extensions[i]['nom']} + {extensions[j]['nom']}",
-                "modif": {**extensions[i]['modif'], **extensions[j]['modif']},
-                "gain": extensions[i]['gain'] + extensions[j]['gain']
+            runs.append({
+                "controleur": eleve,
+                "pseudo": None,
+                "instructeur_id": instr_sub,
+                "instructeur_evaluateur_id": instr_id,
+                "observateurs": [e for e in eleves if e != eleve]
             })
-    
-    # Scénario : extension complète (4 extensions)
-    combinaisons.append({
-        "nom": "Extension complète (4x +30min)",
-        "modif": {
-            "heure_debut_matin": "08:30",
-            "heure_fin_matin": "12:45",
-            "heure_debut_apres_midi": "13:45",
-            "heure_fin_apres_midi": "18:00"
-        },
-        "gain": 120
-    })
-    
-    # Tous les scénarios
-    tous_scenarios = extensions + combinaisons
-    
-    for sc in tous_scenarios:
-        # Appliquer les modifications à la configuration
-        config_test = config.copy()
-        for key, value in sc['modif'].items():
-            config_test[key] = value
-        
-        try:
-            # Tester le planning avec cette configuration
-            config_test["_date_debut_obj"] = datetime.strptime(config["date_debut"], "%Y-%m-%d").date()
-            groupes_raw = generer_groupes(eleves_df, instructeurs_df)
-            for i, g in enumerate(groupes_raw):
-                g["local_id"] = i + 1
-            
-            seances, date_fin_reelle = generer_planning_complet(
-                groupes_raw, 
-                instructeurs_df, 
-                simulations_df, 
-                config_test
-            )
-            
-            date_fin_souhaitee = datetime.strptime(config["date_fin_souhaitee"], "%Y-%m-%d").date()
-            
-            # Calculer les horaires modifiés
-            nouveaux_horaires = {}
-            for key, value in sc['modif'].items():
-                if key == "heure_debut_matin":
-                    nouveaux_horaires["Début matin"] = value
-                elif key == "heure_fin_matin":
-                    nouveaux_horaires["Fin matin"] = value
-                elif key == "heure_debut_apres_midi":
-                    nouveaux_horaires["Début après-midi"] = value
-                elif key == "heure_fin_apres_midi":
-                    nouveaux_horaires["Fin après-midi"] = value
-            
-            # Calcul du gain
-            gain_jours = (date_fin_souhaitee - date_fin_reelle).days if date_fin_reelle <= date_fin_souhaitee else 0
-            
-            # Si le planning tient, on garde le scénario
-            if date_fin_reelle <= date_fin_souhaitee or gain_jours > 0:
-                scenarios.append({
-                    "nom": sc['nom'],
-                    "horaires": nouveaux_horaires,
-                    "date_fin": date_fin_reelle.strftime("%d/%m/%Y"),
-                    "gain_jours": gain_jours,
-                    "gain_minutes": sc['gain'],
-                    "config": config_test,
-                    "seances": seances
+    else:
+        if len(eleves) >= 2:
+            offset = random.randint(0, len(eleves) - 1)
+            ordre = eleves[offset:] + eleves[:offset]
+            for i in range(len(eleves)):
+                runs.append({
+                    "controleur": ordre[i],
+                    "pseudo": ordre[(i + 1) % len(eleves)],
+                    "instructeur_id": instr_id,
+                    "instructeur_evaluateur_id": None,
+                    "observateurs": [e for e in eleves if e not in [ordre[i], ordre[(i + 1) % len(eleves)]]]
                 })
-        except Exception as e:
-            # Ignorer les scénarios qui échouent
-            continue
     
-    # Trier les scénarios par gain (du meilleur au moins bon)
-    scenarios.sort(key=lambda x: x['gain_minutes'], reverse=True)
-    
-    return scenarios
+    return runs
 
-def afficher_scenarios_extension(scenarios, config_originale):
-    """Affiche les scénarios d'extension dans une interface comparative."""
-    st.markdown(f"### {t('extension_scenarios')}")
-    st.caption(t('extension_desc'))
+def generer_planning_multiphases(config, eleves_df, instructeurs_df):
+    """Génère le planning pour toutes les phases."""
+    toutes_seances = []
+    gestionnaire_sim = GestionnaireSimulateursICNA(Database())
     
-    if not scenarios:
-        st.warning(t('no_extension'))
-        return
-    
-    # Afficher le calendrier comparatif
-    st.markdown(f"#### {t('comparative_calendar')}")
-    
-    # Créer un DataFrame pour l'affichage
-    data = []
-    for i, sc in enumerate(scenarios[:10]):
-        data.append({
-            "Scénario": sc['nom'],
-            t('new_end_date'): sc['date_fin'],
-            t('days_gain'): sc['gain_jours'],
-            t('time_gain'): f"+{sc['gain_minutes']} min",
-            t('new_schedule'): ", ".join([f"{k}: {v}" for k, v in sc['horaires'].items()])
-        })
-    
-    df_scenarios = pd.DataFrame(data)
-    st.dataframe(df_scenarios, use_container_width=True, hide_index=True)
-    
-    # Affichage détaillé des scénarios
-    st.markdown(f"#### {t('scenario_detail')}")
-    
-    for i, sc in enumerate(scenarios[:5]):
-        with st.expander(f"📌 Scénario {i+1}: {sc['nom']} ({t('time_gain')}: {sc['gain_minutes']} min)", expanded=i==0):
-            col1, col2 = st.columns(2)
+    for promo_id, promo_info in PROMOTIONS.items():
+        eleves_promo = eleves_df[eleves_df['promotion'] == promo_id]
+        if eleves_promo.empty:
+            continue
+        
+        for phase_id in promo_info['phases']:
+            phase_info = PHASES_ICNA.get(phase_id)
+            if not phase_info:
+                continue
             
-            with col1:
-                st.markdown(f"**{t('new_schedule')}:**")
-                for horaire, valeur in sc['horaires'].items():
-                    st.write(f"- {horaire}: **{valeur}**")
+            instructeurs_phase = instructeurs_df[instructeurs_df['phase'] == phase_id]
+            if instructeurs_phase.empty:
+                continue
+            
+            groupes = generer_groupes_phase(eleves_promo, instructeurs_phase, phase_id)
+            
+            windows = build_windows(config)
+            config_phase = config.copy()
+            config_phase['_date_debut_obj'] = datetime.strptime(config['date_debut'], "%Y-%m-%d").date()
+            
+            jours_decalage = list(PHASES_ICNA.keys()).index(phase_id) * 3
+            date_debut_phase = config_phase['_date_debut_obj'] + timedelta(days=jours_decalage)
+            config_phase['_date_debut_obj'] = date_debut_phase
+            
+            ds_phase = DayScheduler(date_debut_phase, windows)
+            
+            sims_phase = []
+            for i in range(phase_info['simulations']):
+                sims_phase.append({
+                    "id": i + 1,
+                    "nom": f"{phase_info['nom']} - Sim {i+1}",
+                    "duree": phase_info['duree_simulation'],
+                    "est_test": 0,
+                    "phase": phase_id
+                })
+            sims_phase.append({
+                "id": len(sims_phase) + 1,
+                "nom": f"{phase_info['nom']} - Test",
+                "duree": phase_info['duree_simulation'] + 15,
+                "est_test": 1,
+                "phase": phase_id
+            })
+            
+            for sim in sims_phase:
+                d, t, dur = ds_phase.get_slot(config['duree_briefing'])
+                toutes_seances.append({
+                    "date": d, "heure_debut": t, "duree": dur, "type": "briefing",
+                    "simulation_id": sim['id'], "phase": phase_id,
+                    "promotion": promo_id,
+                    "groupe_id": None, "instructeur_id": None,
+                    "simulateur_id": None,
+                    "controle_eleve_id": None, "pseudo_eleve_id": None,
+                    "observateurs": [],
+                    "notes": f"Briefing - {sim['nom']} ({promo_info['nom']})"
+                })
                 
-                st.markdown(f"**{t('new_end_date')}:** {sc['date_fin']}")
-                st.markdown(f"**{t('time_gain')}:** +{sc['gain_minutes']} minutes")
-                st.markdown(f"**{t('days_gain')}:** {sc['gain_jours']} jour(s)")
-            
-            with col2:
-                st.markdown(f"**{t('planning_preview')}:**")
-                nb_sim = len([s for s in sc['seances'] if s['type'] == 'simulation'])
-                nb_brief = len([s for s in sc['seances'] if s['type'] == 'briefing'])
-                nb_debrief = len([s for s in sc['seances'] if s['type'] == 'debriefing'])
-                st.write(f"- {nb_sim} {t('simulation').lower()}s")
-                st.write(f"- {nb_brief} {t('briefing').lower()}s")
-                st.write(f"- {nb_debrief} {t('debriefing').lower()}s")
-            
-            # Bouton pour appliquer ce scénario
-            if st.button(f"{t('apply_scenario')}", key=f"apply_scenario_{i}"):
-                db = Database()
-                db.save_config(sc['config'])
-                st.session_state["page"] = "Generateur"
-                st.success(f"✅ {t('apply_scenario')} '{sc['nom']}' !")
-                st.rerun()
+                for groupe in groupes:
+                    instructeurs_phase_list = instructeurs_phase['id'].tolist()
+                    runs = generer_runs_pour_groupe(groupe, instructeurs_phase_list, sim)
+                    
+                    for run in runs:
+                        d_run, t_run, dur_run = ds_phase.get_slot(sim['duree'])
+                        
+                        sim_dispo = gestionnaire_sim.get_simulateurs_disponibles(
+                            phase_id, d_run, t_run,
+                            (datetime.strptime(t_run, "%H:%M") + timedelta(minutes=dur_run)).strftime("%H:%M")
+                        )
+                        sim_utilise = sim_dispo[0]['id'] if sim_dispo else None
+                        
+                        seance = {
+                            "date": d_run, "heure_debut": t_run, "duree": dur_run, "type": "simulation",
+                            "simulation_id": sim['id'], "phase": phase_id,
+                            "promotion": promo_id,
+                            "groupe_id": groupe['id'],
+                            "instructeur_id": run.get('instructeur_id'),
+                            "instructeur_evaluateur_id": run.get('instructeur_evaluateur_id'),
+                            "simulateur_id": sim_utilise,
+                            "controle_eleve_id": run['controleur'],
+                            "pseudo_eleve_id": run.get('pseudo'),
+                            "observateurs": run.get('observateurs', []),
+                            "notes": f"{phase_info['nom']} - {sim['nom']} ({promo_info['nom']})" + (" (Test)" if sim['est_test'] else "")
+                        }
+                        toutes_seances.append(seance)
+                
+                d, t, dur = ds_phase.get_slot(config['duree_debriefing'])
+                toutes_seances.append({
+                    "date": d, "heure_debut": t, "duree": dur, "type": "debriefing",
+                    "simulation_id": sim['id'], "phase": phase_id,
+                    "promotion": promo_id,
+                    "groupe_id": None, "instructeur_id": None,
+                    "simulateur_id": None,
+                    "controle_eleve_id": None, "pseudo_eleve_id": None,
+                    "observateurs": [],
+                    "notes": f"Debriefing - {sim['nom']} ({promo_info['nom']})"
+                })
     
-    # Option pour appliquer automatiquement le meilleur scénario
-    if len(scenarios) > 0:
-        st.markdown("---")
-        st.markdown("#### ⚡ Action rapide")
-        
-        meilleur = scenarios[0]
-        st.info(f"💡 {t('best_scenario')} **'{meilleur['nom']}'** ({t('time_gain')}: {meilleur['gain_minutes']} min).")
-        
-        if st.button(f"{t('apply_best')}", use_container_width=True):
-            db = Database()
-            db.save_config(meilleur['config'])
-            st.session_state["page"] = "Generateur"
-            st.success(f"✅ {t('apply_best')} !")
-            st.rerun()
+    return toutes_seances
 
 # ============================================
-# FONCTIONS DE GÉNÉRATION DU PLANNING (suite)
+# FONCTIONS D'EXPORT
 # ============================================
 
 def _type_label(type_value):
-    """Traduit le type de séance pour l'export."""
     type_map = {
         "briefing": t("briefing"),
         "simulation": t("simulation"),
@@ -1948,7 +2061,6 @@ def _type_label(type_value):
     return type_map.get(type_value, type_value)
 
 def build_export_dataframe(seances_df, eleves_df=None):
-    """Transforme le DataFrame interne des séances en tableau propre et lisible pour l'export."""
     colonnes = ["Date", "Heure", "Durée (min)", "Type", "Simulation", "Groupe",
                 "Instructeur", "Contrôleur", "Pseudo-pilote", "Observateurs", "Notes"]
     if seances_df is None or seances_df.empty:
@@ -2016,6 +2128,51 @@ def render_export_buttons(export_df, filename_prefix, key_prefix):
             use_container_width=True,
             key=f"export_csv_{key_prefix}_{unique_id}"
         )
+
+# ============================================
+# FONCTIONS UTILITAIRES
+# ============================================
+
+def get_avatar(nom, prenom):
+    initials = (prenom[0] + nom[0]).upper() if prenom and nom else "E"
+    return f"""
+    <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0d1a2b,#2a5298);
+                display:flex;align-items:center;justify-content:center;color:#7affb0;font-size:1.1em;
+                font-weight:700;font-family:'JetBrains Mono',monospace;border:1px solid rgba(0,255,100,0.1);">
+        {esc(initials)}
+    </div>
+    """
+
+def render_flight_strip(seance, eleve_id):
+    role_text = t("observer")
+    role_class = "strip-role-observer"
+    if seance.get("controle_eleve_id") == eleve_id:
+        role_text = t("controller")
+        role_class = "strip-role-controller"
+    elif seance.get("pseudo_eleve_id") == eleve_id:
+        role_text = t("pseudopilot")
+        role_class = "strip-role-pseudo"
+
+    return f"""
+    <div class="flight-strip">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+            <div>
+                <span class="strip-callsign">📡 {esc(seance.get('simulation_nom', t('simulation')))}</span>
+                <span style="margin-left:10px;">
+                    <span class="{role_class}" style="padding:2px 10px;border-radius:10px;font-size:0.7em;font-weight:600;">{role_text}</span>
+                </span>
+            </div>
+            <div>
+                <span class="strip-time">🕐 {esc(seance.get('heure_debut', ''))}</span>
+                <span style="margin-left:10px;color:rgba(180,200,220,0.3);font-size:0.75em;">⏱️ {seance.get('duree', 0)}min</span>
+            </div>
+        </div>
+        <div class="strip-info">
+            🏷️ {esc(seance.get('groupe_nom', ''))}
+            {f" | 👤 {esc(seance.get('instructeur_nom',''))}" if seance.get("instructeur_nom") else ''}
+        </div>
+    </div>
+    """
 
 # ============================================
 # CHANGEMENT DE MOT DE PASSE
@@ -2104,7 +2261,7 @@ def radar_login():
             eleve_id = eleve_options[selected]
             if db.verify_password_eleve(eleve_id, password_input):
                 eleve = db.get_eleve_by_id(eleve_id)
-                st.session_state["user"] = dict(zip(["id", "nom", "prenom", "email", "groupe_id"], eleve))
+                st.session_state["user"] = dict(zip(["id", "nom", "prenom", "email", "groupe_id", "promotion"], eleve))
                 st.session_state["role"] = "eleve"
                 st.session_state["logged_in"] = True
                 st.rerun()
@@ -2130,7 +2287,7 @@ def radar_login():
             instr_id = instr_options[selected]
             if db.verify_password_instructeur(instr_id, password_input):
                 instr = db.get_instructeur_by_id(instr_id)
-                st.session_state["user"] = dict(zip(["id", "nom", "prenom", "email", "actif"], instr))
+                st.session_state["user"] = dict(zip(["id", "nom", "prenom", "email", "actif", "phase"], instr))
                 st.session_state["role"] = "instructeur"
                 st.session_state["logged_in"] = True
                 st.rerun()
@@ -2170,6 +2327,9 @@ def radar_login():
 # ============================================
 
 def header_eleve(user):
+    promo = user.get('promotion', 'P1')
+    promo_nom = PROMOTIONS.get(promo, {}).get('nom', promo)
+    
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,#060a12 0%,#0d1a2b 50%,#162a3f 100%);
                 padding:16px 20px;border-radius:12px;margin-bottom:20px;
@@ -2183,7 +2343,7 @@ def header_eleve(user):
                 </h1>
                 <p style="color:rgba(180,200,220,0.3);font-family:'JetBrains Mono',monospace;font-size:0.75em;
                           margin:0;letter-spacing:0.3px;">
-                    {t("title")} · {t("subtitle")}
+                    {t("title")} · {t("subtitle")} · {promo_nom}
                 </p>
             </div>
         </div>
@@ -2191,6 +2351,9 @@ def header_eleve(user):
     """, unsafe_allow_html=True)
 
 def header_instructeur(user):
+    phase = user.get('phase', '')
+    phase_nom = PHASES_ICNA.get(phase, {}).get('nom', phase)
+    
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,#060a12 0%,#0d1a2b 50%,#162a3f 100%);
                 padding:16px 20px;border-radius:12px;margin-bottom:20px;
@@ -2204,57 +2367,12 @@ def header_instructeur(user):
                 </h1>
                 <p style="color:rgba(180,200,220,0.3);font-family:'JetBrains Mono',monospace;font-size:0.75em;
                           margin:0;letter-spacing:0.3px;">
-                    {t("title")} · {t("subtitle")}
+                    {t("title")} · {t("subtitle")} · {phase_nom}
                 </p>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
-
-# ============================================
-# FONCTIONS UTILITAIRES
-# ============================================
-
-def get_avatar(nom, prenom):
-    initials = (prenom[0] + nom[0]).upper() if prenom and nom else "E"
-    return f"""
-    <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0d1a2b,#2a5298);
-                display:flex;align-items:center;justify-content:center;color:#7affb0;font-size:1.1em;
-                font-weight:700;font-family:'JetBrains Mono',monospace;border:1px solid rgba(0,255,100,0.1);">
-        {esc(initials)}
-    </div>
-    """
-
-def render_flight_strip(seance, eleve_id):
-    role_text = t("observer")
-    role_class = "strip-role-observer"
-    if seance.get("controle_eleve_id") == eleve_id:
-        role_text = t("controller")
-        role_class = "strip-role-controller"
-    elif seance.get("pseudo_eleve_id") == eleve_id:
-        role_text = t("pseudopilot")
-        role_class = "strip-role-pseudo"
-
-    return f"""
-    <div class="flight-strip">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-            <div>
-                <span class="strip-callsign">📡 {esc(seance.get('simulation_nom', t('simulation')))}</span>
-                <span style="margin-left:10px;">
-                    <span class="{role_class}" style="padding:2px 10px;border-radius:10px;font-size:0.7em;font-weight:600;">{role_text}</span>
-                </span>
-            </div>
-            <div>
-                <span class="strip-time">🕐 {esc(seance.get('heure_debut', ''))}</span>
-                <span style="margin-left:10px;color:rgba(180,200,220,0.3);font-size:0.75em;">⏱️ {seance.get('duree', 0)}min</span>
-            </div>
-        </div>
-        <div class="strip-info">
-            🏷️ {esc(seance.get('groupe_nom', ''))}
-            {f" | 👤 {esc(seance.get('instructeur_nom',''))}" if seance.get("instructeur_nom") else ''}
-        </div>
-    </div>
-    """
 
 # ============================================
 # SECTIONS ÉLÈVE
@@ -2357,6 +2475,8 @@ def section_groupe_eleve(db, eleve_id):
     instr_nom = groupe.get("instructeur_nom") or "Non assigné"
     sim_id = groupe.get("simulateur_id")
     sim_label = f"{t('simulator_label')} {sim_id}" if sim_id is not None else "Simulateur non assigné"
+    phase = groupe.get("phase", "")
+    phase_nom = PHASES_ICNA.get(phase, {}).get('nom', phase)
 
     st.markdown(f"""
     <div class="groupe-card">
@@ -2366,6 +2486,10 @@ def section_groupe_eleve(db, eleve_id):
             <span style="display:inline-block;background:rgba(0,255,100,0.03);border:1px solid rgba(0,255,100,0.04);
                         border-radius:16px;padding:4px 12px;font-size:0.8em;color:rgba(180,200,220,0.4);">
                 💻 {esc(sim_label)}
+            </span>
+            <span style="display:inline-block;background:rgba(0,255,100,0.03);border:1px solid rgba(0,255,100,0.04);
+                        border-radius:16px;padding:4px 12px;font-size:0.8em;color:rgba(180,200,220,0.4);">
+                🛫 {phase_nom}
             </span>
             <span style="display:inline-block;background:rgba(0,255,100,0.03);border:1px solid rgba(0,255,100,0.04);
                         border-radius:16px;padding:4px 12px;font-size:0.8em;color:rgba(180,200,220,0.4);">
@@ -2424,7 +2548,287 @@ def section_notes_eleve(notes):
         st.plotly_chart(fig, use_container_width=True)
 
 # ============================================
-# SECTIONS INSTRUCTEUR
+# SECTIONS INSTRUCTEUR - NOUVELLES PAGES
+# ============================================
+
+def section_visualisation_phases(db):
+    """Affiche le planning de toutes les phases avec instructeurs."""
+    st.markdown(f"## ✈️ {t('multi_phases')}")
+    st.caption("Visualisation des 5 phases pratiques avec leurs instructeurs et simulateurs")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        date_debut = st.date_input("Date de début", value=date.today())
+    with col2:
+        nb_jours = st.slider("Nombre de jours à afficher", 7, 30, 14)
+    
+    seances = db.get_seances()
+    if seances.empty:
+        st.info("Aucune séance planifiée.")
+        return
+    
+    date_fin = date_debut + timedelta(days=nb_jours)
+    seances['date'] = pd.to_datetime(seances['date'])
+    seances = seances[(seances['date'] >= pd.Timestamp(date_debut)) & 
+                       (seances['date'] <= pd.Timestamp(date_fin))]
+    
+    if seances.empty:
+        st.info("Aucune séance dans cette période.")
+        return
+    
+    for phase_id, phase_info in PHASES_ICNA.items():
+        seances_phase = seances[seances['phase'] == phase_id]
+        if seances_phase.empty:
+            continue
+        
+        instructeurs_phase = db.get_instructeurs_par_phase(phase_id)
+        
+        with st.expander(f"🛫 {phase_info['nom']} ({phase_info['niveau']})", expanded=True):
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Promotion", PROMOTIONS.get(phase_info['promotion'], {}).get('nom', 'N/A'))
+            with col2:
+                st.metric("Instructeurs", len(instructeurs_phase))
+            with col3:
+                sim_count = len(seances_phase['simulateur_id'].dropna().unique())
+                st.metric("Simulateurs", sim_count)
+            with col4:
+                st.metric("Simulations", len(seances_phase[seances_phase['type'] == 'simulation']))
+            
+            if not instructeurs_phase.empty:
+                st.markdown("**👨‍🏫 Instructeurs de la phase:**")
+                instr_names = ", ".join([f"{row['prenom']} {row['nom']}" for _, row in instructeurs_phase.iterrows()])
+                st.caption(instr_names)
+            
+            st.markdown("**📅 Séances:**")
+            for _, seance in seances_phase.sort_values(['date', 'heure_debut']).iterrows():
+                type_emoji = "📋" if seance['type'] == 'briefing' else "🛫" if seance['type'] == 'simulation' else "📝"
+                statut = "✅" if seance['simulateur_id'] else "⏳"
+                st.markdown(f"""
+                <div style="display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <span>{type_emoji}</span>
+                    <span style="font-size:0.85em;color:#7affb0;">{seance['date'].strftime('%d/%m')}</span>
+                    <span style="font-size:0.85em;color:#ffcc44;">{seance['heure_debut']}</span>
+                    <span style="font-size:0.85em;color:rgba(180,200,220,0.5);">{seance.get('notes', '')[:40]}</span>
+                    <span style="margin-left:auto;font-size:0.75em;color:rgba(180,200,220,0.3);">{statut}</span>
+                </div>
+                """, unsafe_allow_html=True)
+    
+    st.markdown("### 📊 Matrice de Partage des Simulateurs")
+    
+    data = []
+    for phase_id, phase_info in PHASES_ICNA.items():
+        sim_ids = MATRICE_SHARING.get(phase_id, {}).get("tous_simulateurs", [])
+        sim_dedies = MATRICE_SHARING.get(phase_id, {}).get("simulateurs_dedies", [])
+        sim_partages = MATRICE_SHARING.get(phase_id, {}).get("simulateurs_partages", [])
+        partage = MATRICE_SHARING.get(phase_id, {}).get("phases_partagees", [])
+        instr_count = len(db.get_instructeurs_par_phase(phase_id))
+        
+        data.append({
+            "Phase": phase_info['nom'],
+            "Promotion": PROMOTIONS.get(phase_info['promotion'], {}).get('nom', 'N/A'),
+            "Instructeurs": instr_count,
+            "Simulateurs": len(sim_ids),
+            "Dédiés": ", ".join([f"S{id}" for id in sim_dedies]) or "-",
+            "Partagés": ", ".join([f"S{id}" for id in sim_partages]) or "-",
+            "Partage avec": ", ".join([PHASES_ICNA.get(p, {}).get('nom', p) for p in partage]) or "Aucun"
+        })
+    
+    df = pd.DataFrame(data)
+    st.dataframe(df, use_container_width=True, hide_index=True)
+
+def afficher_gantt_simulateurs(db):
+    """Affiche un diagramme de Gantt pour les simulateurs."""
+    st.markdown(f"### 📊 {t('gantt')}")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        date_debut = st.date_input("Date de début Gantt", value=date.today())
+    with col2:
+        nb_jours = st.slider("Nombre de jours Gantt", 3, 21, 7)
+    
+    seances = db.get_seances()
+    if seances.empty:
+        st.info("Aucune séance planifiée.")
+        return
+    
+    date_fin = date_debut + timedelta(days=nb_jours)
+    seances['date'] = pd.to_datetime(seances['date'])
+    seances = seances[(seances['date'] >= pd.Timestamp(date_debut)) & 
+                       (seances['date'] <= pd.Timestamp(date_fin))]
+    
+    if seances.empty:
+        st.info("Aucune séance dans cette période.")
+        return
+    
+    data = []
+    simulateurs_ids = seances['simulateur_id'].dropna().unique()
+    
+    for sim_id in simulateurs_ids:
+        seances_sim = seances[seances['simulateur_id'] == sim_id]
+        for _, seance in seances_sim.iterrows():
+            if seance['type'] == 'simulation':
+                phase_info = PHASES_ICNA.get(seance.get('phase', ''), {})
+                data.append({
+                    "Simulateur": f"S{int(sim_id)} - {SIMULATEURS_ICNA.get(sim_id, {}).get('nom', '')}",
+                    "Phase": phase_info.get('nom', 'Inconnue'),
+                    "Promotion": seance.get('promotion', ''),
+                    "Début": f"{seance['date'].strftime('%Y-%m-%d')} {seance['heure_debut']}",
+                    "Fin": (seance['date'] + pd.Timedelta(minutes=seance['duree'])).strftime("%Y-%m-%d %H:%M"),
+                    "Durée": seance['duree']
+                })
+    
+    if not data:
+        st.info("Aucune simulation avec simulateur assigné.")
+        return
+    
+    df_gantt = pd.DataFrame(data)
+    
+    fig = px.timeline(df_gantt, x_start="Début", x_end="Fin", y="Simulateur", 
+                      color="Phase", title="Occupation des Simulateurs",
+                      labels={"Simulateur": "Simulateur", "Phase": "Phase"})
+    
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(10,20,30,0.3)",
+        font=dict(color="rgba(180,200,220,0.5)", family="JetBrains Mono"),
+        title_font=dict(color="#7affb0", size=14),
+        height=400
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+
+def section_statut_simulateurs(db):
+    """Affiche le statut des simulateurs."""
+    st.markdown(f"### 💻 {t('simulateurs')}")
+    
+    gestionnaire = GestionnaireSimulateursICNA(db)
+    stats = gestionnaire.get_stats_occupation()
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total", stats['total'])
+    with col2:
+        st.metric("🟢 Disponibles", stats['disponibles'])
+    with col3:
+        st.metric("🔴 Occupés", stats['occupes'])
+    with col4:
+        st.metric("📊 Occupation", f"{stats['occupes']/stats['total']*100:.0f}%" if stats['total'] > 0 else "0%")
+    
+    simulateurs = gestionnaire.get_occupation_simulateurs()
+    
+    cols = st.columns(2)
+    
+    for idx, sim in enumerate(simulateurs):
+        with cols[idx % 2]:
+            sim_type = get_type_simulateur(sim['id'])
+            phases = get_phases_simulateur(sim['id'])
+            
+            type_color = "#2a7a4a" if sim_type == "DEDIE" else "#cc8844"
+            type_emoji = "🔒" if sim_type == "DEDIE" else "🔄"
+            
+            if sim['disponible']:
+                status_emoji = "🟢"
+                status_text = "Libre"
+                bg_color = "rgba(42,122,74,0.1)"
+            else:
+                status_emoji = "🔴"
+                status_text = "Occupé"
+                bg_color = "rgba(204,68,68,0.1)"
+                phase_info = PHASES_ICNA.get(sim['phase_actuelle'], {})
+                phase_nom = phase_info.get('nom', sim['phase_actuelle'])
+            
+            st.markdown(f"""
+            <div style="background:{bg_color};border-radius:8px;padding:12px;margin:6px 0;
+                        border-left:3px solid {type_color};">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <span style="font-weight:700;color:#7affb0;">{sim['nom']}</span>
+                        <span style="font-size:0.75em;color:{type_color};margin-left:8px;">
+                            {type_emoji} {sim_type}
+                        </span>
+                    </div>
+                    <span>{status_emoji} {status_text}</span>
+                </div>
+                <div style="font-size:0.8em;color:rgba(180,200,220,0.5);margin-top:4px;">
+                    Type: {sim['type']} | Phases: {', '.join([PHASES_ICNA.get(p, {}).get('nom', p) for p in phases])}
+                </div>
+                {f'<div style="font-size:0.75em;color:#ffcc44;margin-top:2px;">📅 {sim["date_occupation"]} {sim["heure_debut_occupation"]} - {sim["heure_fin_occupation"]}</div>' if not sim['disponible'] else ''}
+                {f'<div style="font-size:0.75em;color:rgba(180,200,220,0.4);">👤 {phase_nom} | {sim["promotion_actuelle"]}</div>' if not sim['disponible'] and sim.get('phase_actuelle') else ''}
+            </div>
+            """, unsafe_allow_html=True)
+
+def section_configuration_simulateurs(db):
+    """Interface de configuration des simulateurs par phase."""
+    st.markdown("### ⚙️ Configuration des Simulateurs par Phase")
+    
+    phase_selected = st.selectbox(
+        "Choisir une phase",
+        list(PHASES_ICNA.keys()),
+        format_func=lambda x: PHASES_ICNA[x]['nom']
+    )
+    
+    if phase_selected:
+        phase_info = PHASES_ICNA[phase_selected]
+        matrice = MATRICE_SHARING.get(phase_selected, {})
+        
+        st.markdown(f"#### {phase_info['nom']} ({phase_info['niveau']})")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**🔒 Simulateurs DÉDIÉS :**")
+            if matrice.get("simulateurs_dedies"):
+                for sim_id in matrice.get("simulateurs_dedies", []):
+                    sim_info = SIMULATEURS_ICNA.get(sim_id, {})
+                    st.markdown(f"- {sim_info.get('nom', f'Simulateur {sim_id}')}")
+            else:
+                st.caption("Aucun simulateur dédié")
+        
+        with col2:
+            st.markdown("**🔄 Simulateurs PARTAGÉS :**")
+            if matrice.get("simulateurs_partages"):
+                for sim_id in matrice.get("simulateurs_partages", []):
+                    sim_info = SIMULATEURS_ICNA.get(sim_id, {})
+                    phases_partagees = get_phases_simulateur(sim_id)
+                    phases_noms = [PHASES_ICNA.get(p, {}).get('nom', p) for p in phases_partagees if p != phase_selected]
+                    st.markdown(f"- {sim_info.get('nom', f'Simulateur {sim_id}')} (partagé avec: {', '.join(phases_noms)})")
+            else:
+                st.caption("Aucun simulateur partagé")
+        
+        st.markdown("**📊 Résumé :**")
+        tous_sim = matrice.get("tous_simulateurs", [])
+        st.markdown(f"Total simulateurs pour cette phase: **{len(tous_sim)}**")
+        st.markdown(f"- Dédiés: **{len(matrice.get('simulateurs_dedies', []))}**")
+        st.markdown(f"- Partagés: **{len(matrice.get('simulateurs_partages', []))}**")
+        
+        st.markdown("**📋 Matrice de partage :**")
+        data = []
+        for phase_id in PHASES_ICNA:
+            if phase_id == phase_selected:
+                continue
+            m = MATRICE_SHARING.get(phase_id, {})
+            sims = m.get("tous_simulateurs", [])
+            sims_noms = [SIMULATEURS_ICNA.get(s, {}).get('nom', f'S{s}') for s in sims]
+            
+            sims_communs = set(matrice.get("tous_simulateurs", [])) & set(sims)
+            if sims_communs:
+                communs = [SIMULATEURS_ICNA.get(s, {}).get('nom', f'S{s}') for s in sims_communs]
+                partage = "✅ Oui - " + ", ".join(communs)
+            else:
+                partage = "❌ Non"
+            
+            data.append({
+                "Phase": PHASES_ICNA[phase_id]['nom'],
+                "Simulateurs": len(sims),
+                "Partage avec": partage
+            })
+        
+        df = pd.DataFrame(data)
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+# ============================================
+# SECTIONS INSTRUCTEUR - EXISTANTES
 # ============================================
 
 def _groupe_name_to_id(db):
@@ -2727,6 +3131,9 @@ def section_groupes_instr(db):
     for _, g in groupes.iterrows():
         membres = db.get_groupe_eleves(g["id"])
         chips = "".join([f'<span class="eleve-chip">📌 {esc(m["prenom"])} {esc(m["nom"])}</span>' for _, m in membres.iterrows()])
+        phase = g.get("phase", "")
+        phase_nom = PHASES_ICNA.get(phase, {}).get('nom', phase)
+        
         st.markdown(f"""
         <div class="groupe-card">
             <h4>🏷️ {esc(g['nom'])}</h4>
@@ -2738,12 +3145,20 @@ def section_groupes_instr(db):
                 </span>
                 <span style="display:inline-block;background:rgba(0,255,100,0.03);border:1px solid rgba(0,255,100,0.04);
                             border-radius:16px;padding:4px 12px;font-size:0.8em;color:rgba(180,200,220,0.4);">
+                    🛫 {phase_nom}
+                </span>
+                <span style="display:inline-block;background:rgba(0,255,100,0.03);border:1px solid rgba(0,255,100,0.04);
+                            border-radius:16px;padding:4px 12px;font-size:0.8em;color:rgba(180,200,220,0.4);">
                     👨‍🎓 {len(membres)} {t('students_count')}
                 </span>
             </div>
             <div>{chips if chips else f'<span style="color:rgba(180,200,220,0.3);">{t("no_students_in_group")}</span>'}</div>
         </div>
         """, unsafe_allow_html=True)
+
+# ============================================
+# PAGE GÉNÉRATEUR AVEC MULTI-PHASES
+# ============================================
 
 def page_generateur():
     st.markdown(f'<div class="section-title">{t("generator")}</div>', unsafe_allow_html=True)
@@ -2768,84 +3183,172 @@ def page_generateur():
     date_debut = config['date_debut']
     date_fin_souhaitee = config['date_fin_souhaitee']
     
-    st.info(f"👨‍🎓 {len(eleves)} {t('students')} | 👨‍🏫 {len(instructeurs)} {t('instructors')} | 📅 {date_debut} → {date_fin_souhaitee}")
-
+    # Afficher les promotions
+    promo_counts = eleves.groupby('promotion').size().to_dict()
+    promo_text = " | ".join([f"{PROMOTIONS.get(p, {}).get('nom', p)}: {c}" for p, c in promo_counts.items()])
+    
+    st.info(f"👨‍🎓 {len(eleves)} {t('students')} ({promo_text}) | 👨‍🏫 {len(instructeurs)} {t('instructors')} | 📅 {date_debut} → {date_fin_souhaitee}")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        generer_multiphases = st.checkbox("📊 Générer planning multi-phases (5 phases)", value=True)
+    
     if st.button(t("generate_planning"), type="primary"):
-        with st.spinner("🔄 Génération..."):
+        with st.spinner("🔄 Génération du planning multi-phases..."):
             try:
                 db.reset_planning()
-                groupes_raw = generer_groupes(eleves, instructeurs)
-                for i, g in enumerate(groupes_raw):
-                    g["local_id"] = i + 1
-                simulations = db.get_simulations()
-                config_run = dict(config)
-                config_run["_date_debut_obj"] = datetime.strptime(config["date_debut"], "%Y-%m-%d").date()
-                seances, date_fin_reelle = generer_planning_complet(groupes_raw, instructeurs, simulations, config_run)
-                groupes_to_save = [{"id": g["local_id"], "nom": g["nom"], "instructeur_id": g["instructeur_id"],
-                                     "simulateur_id": g["simulateur_id"], "eleves": g["eleves"]} for g in groupes_raw]
-                id_map = db.save_groupes(groupes_to_save)
-                for s in seances:
-                    if s["groupe_id"] is not None:
-                        s["groupe_id"] = id_map.get(s["groupe_id"], s["groupe_id"])
+                
+                if generer_multiphases:
+                    seances = generer_planning_multiphases(config, eleves, instructeurs)
+                else:
+                    from datetime import datetime as dt
+                    import random as rd
+                    # Génération simple (fallback)
+                    groupes_raw = generer_groupes(eleves, instructeurs)
+                    for i, g in enumerate(groupes_raw):
+                        g["local_id"] = i + 1
+                    simulations = db.get_simulations()
+                    config_run = dict(config)
+                    config_run["_date_debut_obj"] = datetime.strptime(config["date_debut"], "%Y-%m-%d").date()
+                    seances, date_fin_reelle = generer_planning_complet(groupes_raw, instructeurs, simulations, config_run)
+                    groupes_to_save = [{"id": g["local_id"], "nom": g["nom"], "instructeur_id": g["instructeur_id"],
+                                         "simulateur_id": g["simulateur_id"], "eleves": g["eleves"]} for g in groupes_raw]
+                    id_map = db.save_groupes(groupes_to_save)
+                    for s in seances:
+                        if s["groupe_id"] is not None:
+                            s["groupe_id"] = id_map.get(s["groupe_id"], s["groupe_id"])
+                
                 db.save_seances(seances)
                 
-                date_fin_souhaitee_obj = datetime.strptime(config["date_fin_souhaitee"], "%Y-%m-%d").date()
                 nb_sim = len([s for s in seances if s["type"] == "simulation"])
+                st.success(f"✅ {t('planning_generated')} - {nb_sim} simulations planifiées")
+                st.balloons()
                 
-                if date_fin_reelle <= date_fin_souhaitee_obj:
-                    st.success(f"✅ {t('planning_generated')} Fin: {date_fin_reelle.strftime('%d/%m/%Y')}")
-                    st.success(f"✅ {nb_sim} simulations planifiées")
-                    st.balloons()
-                else:
-                    jours_depassement = (date_fin_reelle - date_fin_souhaitee_obj).days
-                    st.warning(f"⚠️ Dépassement de {jours_depassement} jour(s) !")
-                    st.warning(f"📅 Fin réelle : {date_fin_reelle.strftime('%d/%m/%Y')} (vs {date_fin_souhaitee_obj.strftime('%d/%m/%Y')})")
-                    st.success(f"✅ {nb_sim} simulations planifiées")
-                    
-                    # === SCÉNARIOS D'EXTENSION ===
-                    st.markdown("---")
-                    
-                    with st.spinner("🔄 Analyse des scénarios d'extension..."):
-                        scenarios = generer_scenarios_extension(
-                            config, 
-                            eleves, 
-                            instructeurs, 
-                            simulations, 
-                            jours_depassement
-                        )
-                    
-                    if scenarios:
-                        afficher_scenarios_extension(scenarios, config)
-                    else:
-                        st.info("💡 Aucun scénario d'extension n'est nécessaire. Le planning peut être ajusté manuellement.")
-                    
-                    st.markdown("---")
-                    st.markdown(f"### {t('manual_solutions')}")
-                    
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.markdown(f"**{t('option_adjust_hours')}**")
-                        st.markdown("- Réduire la durée des briefings")
-                        st.markdown("- Réduire la durée des débriefings")
-                        st.markdown("- Réduire la durée des simulations")
-                        if st.button("⚙️ Aller à la configuration", key="go_config"):
-                            st.session_state["page"] = "Config"
-                            st.rerun()
-                    
-                    with col2:
-                        st.markdown(f"**{t('option_extend_date')}**")
-                        nouvelle_date = date_fin_souhaitee_obj + timedelta(days=jours_depassement + 1)
-                        st.markdown(f"- {t('propose_date')} : **{nouvelle_date.strftime('%d/%m/%Y')}**")
-                        if st.button(f"📅 {t('propose_date')}", key="extend_date"):
-                            config_update = config.copy()
-                            config_update["date_fin_souhaitee"] = nouvelle_date.strftime("%Y-%m-%d")
-                            db.save_config(config_update)
-                            st.success(f"✅ Date de fin étendue au {nouvelle_date.strftime('%d/%m/%Y')}")
-                            st.rerun()
-                    
-                    st.balloons()
             except Exception as e:
                 st.error(f"❌ Erreur : {str(e)}")
+
+# ============================================
+# PAGE PERSONNES - VERSION AVEC PROMOTIONS ET PHASES
+# ============================================
+
+def section_personnes_instr(db):
+    st.markdown(f'<div class="section-title">{t("people")}</div>', unsafe_allow_html=True)
+    
+    tab1, tab2 = st.tabs([t("students"), t("instructors")])
+    
+    with tab1:
+        st.markdown("### 👨‍🎓 Gestion des Élèves")
+        
+        if st.session_state.get("temp_pwd_eleve"):
+            st.info(f"🔑 Compte créé. Mot de passe temporaire : **{st.session_state['temp_pwd_eleve']}**")
+            del st.session_state["temp_pwd_eleve"]
+        if st.session_state.get("reset_pwd_eleve"):
+            st.info(f"🔄 Mot de passe réinitialisé : **{st.session_state['reset_pwd_eleve']}**")
+            del st.session_state["reset_pwd_eleve"]
+        
+        with st.form("add_eleve_form"):
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                nom = st.text_input("Nom")
+            with col2:
+                prenom = st.text_input("Prénom")
+            with col3:
+                promotion = st.selectbox("Promotion", list(PROMOTIONS.keys()), format_func=lambda x: PROMOTIONS[x]['nom'])
+            mot_de_passe_initial = st.text_input(
+                "Mot de passe initial (laisser vide pour génération automatique)",
+                type="password", key="pwd_new_eleve"
+            )
+            if st.form_submit_button("➕ Ajouter"):
+                if nom and prenom:
+                    new_id, temp_pwd = db.add_eleve(nom, prenom, password=mot_de_passe_initial or None, promotion=promotion)
+                    if temp_pwd:
+                        st.session_state["temp_pwd_eleve"] = temp_pwd
+                    st.success("✅ Élève ajouté")
+                    st.rerun()
+        
+        eleves = db.get_eleves()
+        if not eleves.empty:
+            # Afficher par promotion
+            for promo_id in PROMOTIONS:
+                eleves_promo = eleves[eleves['promotion'] == promo_id]
+                if not eleves_promo.empty:
+                    st.markdown(f"**{PROMOTIONS[promo_id]['nom']}**")
+                    for _, row in eleves_promo.iterrows():
+                        col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
+                        with col1:
+                            st.write(f"👤 {row['prenom']} {row['nom']}")
+                        with col2:
+                            st.caption(f"Phase: {', '.join(PROMOTIONS[promo_id]['phases'])}")
+                        with col3:
+                            if st.button("🔄", key=f"reset_eleve_{row['id']}"):
+                                new_temp = generate_temp_password()
+                                db.set_password_eleve(row['id'], new_temp)
+                                st.session_state["reset_pwd_eleve"] = new_temp
+                                st.rerun()
+                        with col4:
+                            if st.button("🗑️", key=f"del_eleve_{row['id']}"):
+                                db.delete_eleve(row['id'])
+                                st.rerun()
+    
+    with tab2:
+        st.markdown("### 👨‍🏫 Gestion des Instructeurs")
+        
+        if st.session_state.get("temp_pwd_instr"):
+            st.info(f"🔑 Compte créé. Mot de passe temporaire : **{st.session_state['temp_pwd_instr']}**")
+            del st.session_state["temp_pwd_instr"]
+        if st.session_state.get("reset_pwd_instr"):
+            st.info(f"🔄 Mot de passe réinitialisé : **{st.session_state['reset_pwd_instr']}**")
+            del st.session_state["reset_pwd_instr"]
+        
+        with st.form("add_instructeur_form"):
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                nom = st.text_input("Nom")
+            with col2:
+                prenom = st.text_input("Prénom")
+            with col3:
+                phase = st.selectbox("Phase", list(PHASES_ICNA.keys()), format_func=lambda x: PHASES_ICNA[x]['nom'])
+            mot_de_passe_initial = st.text_input(
+                "Mot de passe initial (laisser vide pour génération automatique)",
+                type="password", key="pwd_new_instr"
+            )
+            if st.form_submit_button("➕ Ajouter"):
+                if nom and prenom:
+                    new_id, temp_pwd = db.add_instructeur_phase(nom, prenom, phase, password=mot_de_passe_initial or None)
+                    if temp_pwd:
+                        st.session_state["temp_pwd_instr"] = temp_pwd
+                    st.success("✅ Instructeur ajouté")
+                    st.rerun()
+        
+        instrs = db.get_instructeurs()
+        if not instrs.empty:
+            # Afficher par phase
+            for phase_id in PHASES_ICNA:
+                instrs_phase = instrs[instrs['phase'] == phase_id]
+                if not instrs_phase.empty:
+                    st.markdown(f"**{PHASES_ICNA[phase_id]['nom']}**")
+                    for _, row in instrs_phase.iterrows():
+                        col1, col2, col3 = st.columns([3, 1, 1])
+                        with col1:
+                            st.write(f"👤 {row['prenom']} {row['nom']}")
+                        with col2:
+                            if st.button("🔄", key=f"reset_instr_{row['id']}"):
+                                new_temp = generate_temp_password()
+                                db.set_password_instructeur(row['id'], new_temp)
+                                st.session_state["reset_pwd_instr"] = new_temp
+                                st.rerun()
+                        with col3:
+                            if st.button("🗑️", key=f"del_instr_{row['id']}"):
+                                db.delete_instructeur(row['id'])
+                                st.rerun()
+    
+    st.markdown("---")
+    with st.expander(t("danger_zone")):
+        confirm = st.checkbox(t("confirm_delete"))
+        if st.button(t("delete_all"), disabled=not confirm):
+            db.delete_all_data()
+            st.success("✅ Toutes les données ont été supprimées")
+            st.rerun()
 
 # ============================================
 # MAIN
@@ -2860,7 +3363,7 @@ def main():
         st.session_state["mobile_mode"] = False
         st.session_state["is_mobile"] = is_mobile_device()
 
-    # Sélecteur de langue dans la sidebar avant la connexion
+    # Sélecteur de langue dans la sidebar
     with st.sidebar:
         st.markdown(f"### {t('language')}")
         lang = st.selectbox(
@@ -2903,6 +3406,10 @@ def main():
                 t("people"): "Personnes",
                 t("config"): "Config",
                 t("generator"): "Generateur",
+                t("multi_phases"): "MultiPhases",
+                t("gantt"): "Gantt",
+                t("simulateurs"): "Simulateurs",
+                t("config_simulateurs"): "ConfigSimulateurs",
                 t("planning"): "Planning_Instr",
                 t("courses"): "Cours_Instr",
                 t("scenarios"): "Scenarios_Instr",
@@ -2917,7 +3424,6 @@ def main():
 
         st.markdown("---")
         
-        # Mode mobile
         if st.button(t("mobile_mode"), use_container_width=True):
             st.session_state["mobile_mode"] = not st.session_state.get("mobile_mode", False)
             st.rerun()
@@ -2980,13 +3486,21 @@ def main():
         for tab, page_name in zip(tabs, tab_pages):
             with tab:
                 if page_name == "Personnes":
-                    st.markdown(f'<div class="section-title">{t("people")}</div>', unsafe_allow_html=True)
-                    st.info("📱 Version mobile - Gestion des personnes")
+                    section_personnes_instr(db)
                 elif page_name == "Config":
+                    # Configuration simplifiée pour mobile
                     st.markdown(f'<div class="section-title">{t("config")}</div>', unsafe_allow_html=True)
                     st.info("📱 Version mobile - Configuration")
                 elif page_name == "Generateur":
                     page_generateur()
+                elif page_name == "MultiPhases":
+                    section_visualisation_phases(db)
+                elif page_name == "Gantt":
+                    afficher_gantt_simulateurs(db)
+                elif page_name == "Simulateurs":
+                    section_statut_simulateurs(db)
+                elif page_name == "ConfigSimulateurs":
+                    section_configuration_simulateurs(db)
                 elif page_name == "Planning_Instr":
                     section_planning_instr(db)
                 elif page_name == "Cours_Instr":
@@ -3006,97 +3520,7 @@ def main():
     # Mode desktop normal - Instructeur
     if page == "Personnes":
         header_instructeur(user)
-        st.markdown(f'<div class="section-title">{t("people")}</div>', unsafe_allow_html=True)
-        tab1, tab2 = st.tabs([t("students"), t("instructors")])
-        with tab1:
-            if st.session_state.get("temp_pwd_eleve"):
-                st.info(f"🔑 Compte créé. Mot de passe temporaire : **{st.session_state['temp_pwd_eleve']}**")
-                del st.session_state["temp_pwd_eleve"]
-            if st.session_state.get("reset_pwd_eleve"):
-                st.info(f"🔄 Mot de passe réinitialisé : **{st.session_state['reset_pwd_eleve']}**")
-                del st.session_state["reset_pwd_eleve"]
-            with st.form("add_eleve_form"):
-                col1, col2 = st.columns(2)
-                with col1:
-                    nom = st.text_input("Nom")
-                with col2:
-                    prenom = st.text_input("Prénom")
-                mot_de_passe_initial = st.text_input(
-                    "Mot de passe initial (laisser vide pour génération automatique)",
-                    type="password", key="pwd_new_eleve"
-                )
-                if st.form_submit_button("➕ Ajouter"):
-                    if nom and prenom:
-                        new_id, temp_pwd = db.add_eleve(nom, prenom, password=mot_de_passe_initial or None)
-                        if temp_pwd:
-                            st.session_state["temp_pwd_eleve"] = temp_pwd
-                        st.success("✅ Élève ajouté")
-                        st.rerun()
-            eleves = db.get_eleves()
-            if not eleves.empty:
-                st.dataframe(eleves[["nom", "prenom"]], use_container_width=True, hide_index=True)
-                for _, row in eleves.iterrows():
-                    col1, col2, col3 = st.columns([3, 1, 1])
-                    with col1:
-                        st.write(f"👤 {row['prenom']} {row['nom']}")
-                    with col2:
-                        if st.button("🔄", key=f"reset_eleve_{row['id']}"):
-                            new_temp = generate_temp_password()
-                            db.set_password_eleve(row['id'], new_temp)
-                            st.session_state["reset_pwd_eleve"] = new_temp
-                            st.rerun()
-                    with col3:
-                        if st.button(t("delete"), key=f"del_eleve_{row['id']}"):
-                            db.delete_eleve(row['id'])
-                            st.rerun()
-        with tab2:
-            if st.session_state.get("temp_pwd_instr"):
-                st.info(f"🔑 Compte créé. Mot de passe temporaire : **{st.session_state['temp_pwd_instr']}**")
-                del st.session_state["temp_pwd_instr"]
-            if st.session_state.get("reset_pwd_instr"):
-                st.info(f"🔄 Mot de passe réinitialisé : **{st.session_state['reset_pwd_instr']}**")
-                del st.session_state["reset_pwd_instr"]
-            with st.form("add_instructeur_form"):
-                col1, col2 = st.columns(2)
-                with col1:
-                    nom = st.text_input("Nom")
-                with col2:
-                    prenom = st.text_input("Prénom")
-                mot_de_passe_initial = st.text_input(
-                    "Mot de passe initial (laisser vide pour génération automatique)",
-                    type="password", key="pwd_new_instr"
-                )
-                if st.form_submit_button("➕ Ajouter"):
-                    if nom and prenom:
-                        new_id, temp_pwd = db.add_instructeur(nom, prenom, password=mot_de_passe_initial or None)
-                        if temp_pwd:
-                            st.session_state["temp_pwd_instr"] = temp_pwd
-                        st.success("✅ Instructeur ajouté")
-                        st.rerun()
-            instrs = db.get_instructeurs()
-            if not instrs.empty:
-                st.dataframe(instrs[["nom", "prenom"]], use_container_width=True, hide_index=True)
-                for _, row in instrs.iterrows():
-                    col1, col2, col3 = st.columns([3, 1, 1])
-                    with col1:
-                        st.write(f"👤 {row['prenom']} {row['nom']}")
-                    with col2:
-                        if st.button("🔄", key=f"reset_instr_{row['id']}"):
-                            new_temp = generate_temp_password()
-                            db.set_password_instructeur(row['id'], new_temp)
-                            st.session_state["reset_pwd_instr"] = new_temp
-                            st.rerun()
-                    with col3:
-                        if st.button(t("delete"), key=f"del_instr_{row['id']}"):
-                            db.delete_instructeur(row['id'])
-                            st.rerun()
-        st.markdown("---")
-        with st.expander(t("danger_zone")):
-            confirm = st.checkbox(t("confirm_delete"))
-            if st.button(t("delete_all"), disabled=not confirm):
-                db.delete_all_data()
-                st.success("✅ Toutes les données ont été supprimées")
-                st.rerun()
+        section_personnes_instr(db)
 
     elif page == "Config":
         header_instructeur(user)
@@ -3155,24 +3579,47 @@ def main():
     elif page == "Generateur":
         header_instructeur(user)
         page_generateur()
+    
+    elif page == "MultiPhases":
+        header_instructeur(user)
+        section_visualisation_phases(db)
+    
+    elif page == "Gantt":
+        header_instructeur(user)
+        afficher_gantt_simulateurs(db)
+    
+    elif page == "Simulateurs":
+        header_instructeur(user)
+        section_statut_simulateurs(db)
+    
+    elif page == "ConfigSimulateurs":
+        header_instructeur(user)
+        section_configuration_simulateurs(db)
+    
     elif page == "Planning_Instr":
         header_instructeur(user)
         section_planning_instr(db)
+    
     elif page == "Cours_Instr":
         header_instructeur(user)
         section_cours_instr(db, instr_id)
+    
     elif page == "Scenarios_Instr":
         header_instructeur(user)
         section_scenarios_instr(db, instr_id)
+    
     elif page == "TD_Instr":
         header_instructeur(user)
         section_td_instr(db, instr_id)
+    
     elif page == "Evals":
         header_instructeur(user)
         section_evals_instr(db, instr_id)
+    
     elif page == "Groupes_Instr":
         header_instructeur(user)
         section_groupes_instr(db)
+    
     elif page == "MotDePasse_Instr":
         header_instructeur(user)
         section_mon_mot_de_passe(db, "instructeur", instr_id)

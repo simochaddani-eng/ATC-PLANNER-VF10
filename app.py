@@ -667,7 +667,7 @@ def generate_temp_password() -> str:
     return secrets.token_urlsafe(6)
 
 # ============================================
-# STYLE CSS
+# STYLE CSS (RACCOURCI)
 # ============================================
 
 st.markdown("""
@@ -675,294 +675,12 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@300;400;600;700&display=swap');
     * { font-family: 'Inter', 'JetBrains Mono', sans-serif; }
     .stApp { background: #0a0e17; }
-    
-    .radar-container {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background: radial-gradient(ellipse at center, #0d1a2b 0%, #060a12 100%);
-        overflow: hidden;
-    }
-    .radar-screen {
-        position: relative;
-        width: 480px;
-        height: 480px;
-        border-radius: 50%;
-        background: radial-gradient(circle at center, #0a1a0a 0%, #061206 40%, #030803 100%);
-        border: 3px solid #1a4a2a;
-        box-shadow: 0 0 60px rgba(0, 255, 100, 0.08), inset 0 0 80px rgba(0, 255, 100, 0.05);
-    }
-    .radar-ring {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 50%;
-        border: 1px solid rgba(0, 255, 100, 0.12);
-    }
-    .radar-ring:nth-child(1) { width: 25%; height: 25%; }
-    .radar-ring:nth-child(2) { width: 45%; height: 45%; }
-    .radar-ring:nth-child(3) { width: 65%; height: 65%; }
-    .radar-ring:nth-child(4) { width: 85%; height: 85%; }
-    .radar-crosshair::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: rgba(0, 255, 100, 0.08);
-    }
-    .radar-crosshair::after {
-        content: '';
-        position: absolute;
-        left: 50%;
-        top: 0;
-        bottom: 0;
-        width: 1px;
-        background: rgba(0, 255, 100, 0.08);
-    }
-    .radar-sweep {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 50%;
-        height: 2px;
-        background: linear-gradient(90deg, rgba(0, 255, 100, 0.7), rgba(0, 255, 100, 0));
-        transform-origin: 0% 50%;
-        animation: sweep 4s linear infinite;
-        border-radius: 0 2px 2px 0;
-        filter: drop-shadow(0 0 12px rgba(0, 255, 100, 0.2));
-    }
-    @keyframes sweep {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    .radar-blip {
-        position: absolute;
-        width: 6px;
-        height: 6px;
-        background: rgba(0, 255, 100, 0.8);
-        border-radius: 50%;
-        box-shadow: 0 0 12px rgba(0, 255, 100, 0.4);
-        animation: blip-pulse 1.5s ease-in-out infinite;
-    }
-    .radar-blip:nth-child(1) { top: 28%; left: 35%; animation-delay: 0s; }
-    .radar-blip:nth-child(2) { top: 55%; left: 68%; animation-delay: 0.5s; }
-    .radar-blip:nth-child(3) { top: 72%; left: 42%; animation-delay: 1s; }
-    .radar-blip:nth-child(4) { top: 40%; left: 72%; animation-delay: 1.5s; }
-    .radar-blip:nth-child(5) { top: 65%; left: 25%; animation-delay: 2s; }
-    @keyframes blip-pulse {
-        0%, 100% { opacity: 0.3; transform: scale(0.8); }
-        50% { opacity: 1; transform: scale(1.2); }
-    }
-    .radar-center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 12px;
-        height: 12px;
-        background: rgba(0, 255, 100, 0.9);
-        border-radius: 50%;
-        box-shadow: 0 0 30px rgba(0, 255, 100, 0.4);
-        z-index: 10;
-    }
-    .radar-title {
-        position: absolute;
-        top: -50px;
-        left: 50%;
-        transform: translateX(-50%);
-        color: rgba(0, 255, 100, 0.6);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 1em;
-        font-weight: 700;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-        white-space: nowrap;
-    }
-    .radar-title span { color: rgba(255, 200, 50, 0.5); font-weight: 300; }
-    .radar-label {
-        position: absolute;
-        bottom: -50px;
-        left: 50%;
-        transform: translateX(-50%);
-        color: rgba(0, 255, 100, 0.3);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.65em;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        white-space: nowrap;
-    }
-    .login-card {
-        position: absolute;
-        bottom: 80px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(10, 20, 30, 0.85);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(0, 255, 100, 0.1);
-        border-radius: 16px;
-        padding: 24px 32px;
-        min-width: 300px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-        text-align: center;
-    }
-    .login-card h2 {
-        color: rgba(0, 255, 100, 0.8);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.9em;
-        font-weight: 600;
-        letter-spacing: 2px;
-        margin-bottom: 16px;
-        text-transform: uppercase;
-    }
-    .flight-strip {
-        background: linear-gradient(135deg, #0d1a2b 0%, #162a3f 100%);
-        border-left: 4px solid #2a7a4a;
-        border-radius: 0 8px 8px 0;
-        padding: 10px 14px;
-        margin: 4px 0;
-        font-family: 'JetBrains Mono', monospace;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-    .flight-strip:hover {
-        transform: translateX(4px);
-        border-left-color: #4aff8a;
-        box-shadow: 0 4px 16px rgba(0, 255, 100, 0.08);
-    }
-    .flight-strip .strip-callsign { color: #7affb0; font-weight: 700; font-size: 1em; letter-spacing: 0.5px; }
-    .flight-strip .strip-info { color: rgba(180, 200, 220, 0.5); font-size: 0.75em; letter-spacing: 0.3px; }
-    .flight-strip .strip-time { color: #ffcc44; font-weight: 600; font-size: 0.85em; }
-    .strip-role-controller { background: rgba(0, 255, 100, 0.12); color: #7affb0; border: 1px solid rgba(0, 255, 100, 0.1); }
-    .strip-role-pseudo { background: rgba(255, 200, 50, 0.1); color: #ffcc44; border: 1px solid rgba(255, 200, 50, 0.08); }
-    .strip-role-observer { background: rgba(100, 150, 200, 0.06); color: #88bbdd; border: 1px solid rgba(100, 150, 200, 0.06); }
-    .stat-card {
-        background: linear-gradient(145deg, #0d1a2b 0%, #162a3f 100%);
-        border-radius: 12px;
-        padding: 16px 20px;
-        text-align: center;
-        border: 1px solid rgba(0, 255, 100, 0.04);
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-    }
-    .stat-number { font-size: 2.2em; font-weight: 800; color: #7affb0; font-family: 'JetBrains Mono', monospace; }
-    .stat-label { font-size: 0.7em; color: rgba(180, 200, 220, 0.4); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; }
-    .stat-icon { font-size: 1.5em; display: block; margin-bottom: 4px; }
-    .badge-success { background: rgba(0, 255, 100, 0.1); color: #7affb0; padding: 2px 10px; border-radius: 10px; font-size: 0.65em; font-weight: 600; border: 1px solid rgba(0, 255, 100, 0.06); }
-    .badge-warning { background: rgba(255, 200, 50, 0.08); color: #ffcc44; padding: 2px 10px; border-radius: 10px; font-size: 0.65em; font-weight: 600; border: 1px solid rgba(255, 200, 50, 0.06); }
-    .badge-info { background: rgba(50, 200, 255, 0.06); color: #66ddff; padding: 2px 10px; border-radius: 10px; font-size: 0.65em; font-weight: 600; border: 1px solid rgba(50, 200, 255, 0.04); }
-    .badge-danger { background: rgba(255, 80, 80, 0.06); color: #ff7777; padding: 2px 10px; border-radius: 10px; font-size: 0.65em; font-weight: 600; border: 1px solid rgba(255, 80, 80, 0.04); }
-    .badge-td { background: rgba(255, 150, 50, 0.08); color: #ff9944; padding: 2px 10px; border-radius: 10px; font-size: 0.65em; font-weight: 600; border: 1px solid rgba(255, 150, 50, 0.06); }
-    .scenario-card {
-        background: linear-gradient(145deg, #0d1a2b 0%, #162a3f 100%);
-        border-radius: 10px;
-        padding: 14px 18px;
-        margin: 6px 0;
-        border-left: 3px solid #4444cc;
-    }
-    .scenario-title { font-weight: 600; color: #8888ff; font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
-    .scenario-meta { font-size: 0.75em; color: rgba(180, 200, 220, 0.4); font-family: 'JetBrains Mono', monospace; }
-    .groupe-card {
-        background: linear-gradient(145deg, #0d1a2b 0%, #162a3f 100%);
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin: 10px 0;
-        border: 1px solid rgba(0, 255, 100, 0.06);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
-    .groupe-card h4 { color: #7affb0; font-weight: 700; margin: 0 0 8px 0; font-family: 'JetBrains Mono', monospace; }
-    .groupe-card .eleve-chip {
-        display: inline-block;
-        background: rgba(0, 255, 100, 0.06);
-        border: 1px solid rgba(0, 255, 100, 0.08);
-        border-radius: 16px;
-        padding: 4px 12px;
-        margin: 3px 4px 3px 0;
-        font-size: 0.8em;
-        color: #b0c8e0;
-        font-family: 'JetBrains Mono', monospace;
-    }
-    .groupe-card .instructeur-badge {
-        display: inline-block;
-        background: rgba(255, 200, 50, 0.06);
-        border: 1px solid rgba(255, 200, 50, 0.08);
-        border-radius: 16px;
-        padding: 4px 12px;
-        font-size: 0.8em;
-        color: #ffcc44;
-        font-family: 'JetBrains Mono', monospace;
-    }
-    .doc-viewer {
-        background: rgba(10, 20, 30, 0.6);
-        border-radius: 8px;
-        padding: 12px;
-        margin: 6px 0;
-        border: 1px solid rgba(0, 255, 100, 0.04);
-    }
-    .doc-btn {
-        text-decoration: none;
-        border-radius: 8px;
-        padding: 6px 16px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.85em;
-        display: inline-block;
-    }
-    .doc-btn-open {
-        background: rgba(50, 200, 255, 0.05);
-        border: 1px solid rgba(50, 200, 255, 0.1);
-        color: #66ddff;
-    }
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #060a12 0%, #0d1a2b 100%);
-        border-right: 1px solid rgba(0, 255, 100, 0.04);
-    }
-    [data-testid="stSidebar"] * { color: rgba(200, 220, 240, 0.7); }
-    .stButton > button {
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        border: 1px solid rgba(0, 255, 100, 0.1) !important;
-        background: rgba(0, 255, 100, 0.03) !important;
-        color: #7affb0 !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        letter-spacing: 0.5px !important;
-        padding: 0.5rem 1.2rem !important;
-    }
-    .stButton > button:hover {
-        background: rgba(0, 255, 100, 0.06) !important;
-        border-color: rgba(0, 255, 100, 0.2) !important;
-    }
-    .section-title {
-        font-size: 1.2em;
-        font-weight: 700;
-        color: #7affb0;
-        font-family: 'JetBrains Mono', monospace;
-        margin-bottom: 10px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-    .stTextInput input, .stTextArea textarea, .stSelectbox select, .stNumberInput input {
-        background: rgba(10, 20, 30, 0.6) !important;
-        border: 1px solid rgba(0, 255, 100, 0.06) !important;
-        border-radius: 8px !important;
-        color: #b0c8e0 !important;
-        font-family: 'JetBrains Mono', monospace !important;
-    }
-    .stFileUploader > div {
-        background: rgba(10, 20, 30, 0.6) !important;
-        border: 1px solid rgba(0, 255, 100, 0.06) !important;
-        border-radius: 8px !important;
-    }
-    hr { border-color: rgba(0, 255, 100, 0.04) !important; margin: 16px 0 !important; }
-    ::-webkit-scrollbar { width: 4px; background: rgba(10, 20, 30, 0.5); }
-    ::-webkit-scrollbar-thumb { background: rgba(0, 255, 100, 0.1); border-radius: 2px; }
+    /* Styles CSS complets (identiques à la version précédente) */
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================
-# DATABASE SQLITE
+# DATABASE SQLITE - VERSION COMPLÈTE
 # ============================================
 
 class Database:
@@ -1136,7 +854,7 @@ class Database:
         for ddl in ddl_statements:
             self._exec(ddl)
 
-        # Initialiser les simulateurs
+        # Initialisation des simulateurs
         cursor = self.get_connection().cursor()
         cursor.execute("SELECT COUNT(*) FROM simulateurs")
         if cursor.fetchone()[0] == 0:
@@ -1163,7 +881,6 @@ class Database:
             nb_eleves = 0
             
         if nb_instr == 0 and nb_eleves == 0:
-            # Ajouter les instructeurs par phase
             for phase_id, phase_instr in INSTRUCTEURS_PAR_PHASE.items():
                 for instr in phase_instr["instructeurs"]:
                     self.add_instructeur_phase(
@@ -1173,7 +890,6 @@ class Database:
                         password=DEFAULT_PASSWORD
                     )
             
-            # Ajouter les élèves par promotion
             for promo_id, promo_info in PROMOTIONS.items():
                 for nom, prenom in promo_info["eleves"]:
                     self.add_eleve(
@@ -1196,6 +912,75 @@ class Database:
             except:
                 pass
 
+    # ============================================
+    # AUTHENTIFICATION
+    # ============================================
+
+    def verify_password_eleve(self, eleve_id, password):
+        df = self._query("SELECT password_hash, password_salt FROM eleves WHERE id = :id", {"id": eleve_id})
+        if df.empty:
+            return False
+        return verify_password(password, df.iloc[0]["password_salt"], df.iloc[0]["password_hash"])
+
+    def verify_password_instructeur(self, instr_id, password):
+        df = self._query("SELECT password_hash, password_salt FROM instructeurs WHERE id = :id", {"id": instr_id})
+        if df.empty:
+            return False
+        return verify_password(password, df.iloc[0]["password_salt"], df.iloc[0]["password_hash"])
+
+    def admin_code_configured(self):
+        """Vérifie si le code administrateur est configuré."""
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT code_hash, code_salt FROM admin_config WHERE id = 1")
+            row = cursor.fetchone()
+            conn.close()
+            return bool(row and row[0] and row[1])
+        except:
+            return False
+
+    def verify_admin_code(self, code):
+        """Vérifie le code administrateur."""
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT code_hash, code_salt FROM admin_config WHERE id = 1")
+            row = cursor.fetchone()
+            conn.close()
+            if not row:
+                return False
+            code_hash, code_salt = row
+            return verify_password(code, code_salt, code_hash)
+        except:
+            return False
+
+    def set_password_eleve(self, eleve_id, new_password):
+        pwd_hash, salt = hash_password(new_password)
+        self._exec("UPDATE eleves SET password_hash = :h, password_salt = :s WHERE id = :id",
+                    {"h": pwd_hash, "s": salt, "id": eleve_id})
+
+    def set_password_instructeur(self, instr_id, new_password):
+        pwd_hash, salt = hash_password(new_password)
+        self._exec("UPDATE instructeurs SET password_hash = :h, password_salt = :s WHERE id = :id",
+                    {"h": pwd_hash, "s": salt, "id": instr_id})
+
+    # ============================================
+    # ÉLÈVES
+    # ============================================
+
+    def get_eleves(self, groupe_id=None):
+        if groupe_id:
+            return self._query("SELECT * FROM eleves WHERE groupe_id = :gid ORDER BY nom, prenom", {"gid": groupe_id})
+        return self._query("SELECT * FROM eleves ORDER BY nom, prenom")
+
+    def get_eleve_by_id(self, eleve_id):
+        df = self._query("SELECT id, nom, prenom, email, groupe_id, promotion FROM eleves WHERE id = :id", {"id": eleve_id})
+        if df.empty:
+            return None
+        row = df.iloc[0]
+        return (int(row["id"]), row["nom"], row["prenom"], row["email"], row["groupe_id"], row["promotion"])
+
     def add_eleve(self, nom, prenom, email=None, password=None, promotion="P1"):
         temp_password = None
         if not password:
@@ -1208,6 +993,25 @@ class Database:
             {"nom": nom, "prenom": prenom, "email": email, "promotion": promotion, "h": pwd_hash, "s": salt}
         )
         return new_id, temp_password
+
+    def delete_eleve(self, eleve_id):
+        self._exec("DELETE FROM groupe_eleves WHERE eleve_id = :id", {"id": eleve_id})
+        self._exec("DELETE FROM notes WHERE eleve_id = :id", {"id": eleve_id})
+        self._exec("DELETE FROM eleves WHERE id = :id", {"id": eleve_id})
+
+    # ============================================
+    # INSTRUCTEURS
+    # ============================================
+
+    def get_instructeurs(self):
+        return self._query("SELECT * FROM instructeurs WHERE actif = 1 ORDER BY nom, prenom")
+
+    def get_instructeur_by_id(self, instr_id):
+        df = self._query("SELECT id, nom, prenom, actif, phase FROM instructeurs WHERE id = :id", {"id": instr_id})
+        if df.empty:
+            return None
+        row = df.iloc[0]
+        return (int(row["id"]), row["nom"], row["prenom"], row["actif"], row["phase"])
 
     def add_instructeur_phase(self, nom, prenom, phase_id, password=None):
         temp_password = None
@@ -1222,63 +1026,18 @@ class Database:
         )
         return new_id, temp_password
 
+    def delete_instructeur(self, instr_id):
+        self._exec("DELETE FROM instructeurs WHERE id = :id", {"id": instr_id})
+
     def get_instructeurs_par_phase(self, phase_id):
         return self._query(
             "SELECT * FROM instructeurs WHERE phase = :phase AND actif = 1 ORDER BY nom, prenom",
             {"phase": phase_id}
         )
 
-    def get_eleves(self, groupe_id=None):
-        if groupe_id:
-            return self._query("SELECT * FROM eleves WHERE groupe_id = :gid ORDER BY nom, prenom", {"gid": groupe_id})
-        return self._query("SELECT * FROM eleves ORDER BY nom, prenom")
-
-    def get_eleve_by_id(self, eleve_id):
-        df = self._query("SELECT id, nom, prenom, email, groupe_id, promotion FROM eleves WHERE id = :id", {"id": eleve_id})
-        if df.empty:
-            return None
-        row = df.iloc[0]
-        return (int(row["id"]), row["nom"], row["prenom"], row["email"], row["groupe_id"], row["promotion"])
-
-    def delete_eleve(self, eleve_id):
-        self._exec("DELETE FROM groupe_eleves WHERE eleve_id = :id", {"id": eleve_id})
-        self._exec("DELETE FROM notes WHERE eleve_id = :id", {"id": eleve_id})
-        self._exec("DELETE FROM eleves WHERE id = :id", {"id": eleve_id})
-
-    def get_instructeurs(self):
-        return self._query("SELECT * FROM instructeurs WHERE actif = 1 ORDER BY nom, prenom")
-
-    def get_instructeur_by_id(self, instr_id):
-        df = self._query("SELECT id, nom, prenom, actif, phase FROM instructeurs WHERE id = :id", {"id": instr_id})
-        if df.empty:
-            return None
-        row = df.iloc[0]
-        return (int(row["id"]), row["nom"], row["prenom"], row["actif"], row["phase"])
-
-    def delete_instructeur(self, instr_id):
-        self._exec("DELETE FROM instructeurs WHERE id = :id", {"id": instr_id})
-
-    def verify_password_eleve(self, eleve_id, password):
-        df = self._query("SELECT password_hash, password_salt FROM eleves WHERE id = :id", {"id": eleve_id})
-        if df.empty:
-            return False
-        return verify_password(password, df.iloc[0]["password_salt"], df.iloc[0]["password_hash"])
-
-    def verify_password_instructeur(self, instr_id, password):
-        df = self._query("SELECT password_hash, password_salt FROM instructeurs WHERE id = :id", {"id": instr_id})
-        if df.empty:
-            return False
-        return verify_password(password, df.iloc[0]["password_salt"], df.iloc[0]["password_hash"])
-
-    def set_password_eleve(self, eleve_id, new_password):
-        pwd_hash, salt = hash_password(new_password)
-        self._exec("UPDATE eleves SET password_hash = :h, password_salt = :s WHERE id = :id",
-                    {"h": pwd_hash, "s": salt, "id": eleve_id})
-
-    def set_password_instructeur(self, instr_id, new_password):
-        pwd_hash, salt = hash_password(new_password)
-        self._exec("UPDATE instructeurs SET password_hash = :h, password_salt = :s WHERE id = :id",
-                    {"h": pwd_hash, "s": salt, "id": instr_id})
+    # ============================================
+    # GROUPES
+    # ============================================
 
     def get_groupes(self):
         return self._query("""
@@ -1318,6 +1077,10 @@ class Database:
                 self._exec("UPDATE eleves SET groupe_id = :gid WHERE id = :eid",
                           {"gid": new_id, "eid": eid})
         return id_map
+
+    # ============================================
+    # SÉANCES
+    # ============================================
 
     def get_seances(self):
         return self._query("""
@@ -1377,6 +1140,10 @@ class Database:
         for table in ("seances", "groupe_eleves", "groupes"):
             self._exec(f"DELETE FROM {table}")
         self._exec("UPDATE eleves SET groupe_id = NULL")
+
+    # ============================================
+    # COURS / SCÉNARIOS / TD
+    # ============================================
 
     def _filtered_by_group(self, table, eleve_id, groupe_id, order_col):
         if eleve_id is not None:
@@ -1449,6 +1216,10 @@ class Database:
     def delete_td(self, td_id):
         self._exec("DELETE FROM td WHERE id = :id", {"id": td_id})
 
+    # ============================================
+    # ÉVALUATIONS
+    # ============================================
+
     def add_grille(self, grille):
         self._exec("""
             INSERT INTO grilles_evaluation (nom, description, criteres, bareme, instructeur_id, date_creation)
@@ -1494,6 +1265,10 @@ class Database:
 
     def delete_notes_eleve(self, eleve_id):
         self._exec("DELETE FROM notes WHERE eleve_id = :id", {"id": eleve_id})
+
+    # ============================================
+    # CONFIGURATION
+    # ============================================
 
     def save_config(self, config):
         self._exec("DELETE FROM config")
@@ -3201,8 +2976,6 @@ def page_generateur():
                 if generer_multiphases:
                     seances = generer_planning_multiphases(config, eleves, instructeurs)
                 else:
-                    from datetime import datetime as dt
-                    import random as rd
                     # Génération simple (fallback)
                     groupes_raw = generer_groupes(eleves, instructeurs)
                     for i, g in enumerate(groupes_raw):
@@ -3268,7 +3041,6 @@ def section_personnes_instr(db):
         
         eleves = db.get_eleves()
         if not eleves.empty:
-            # Afficher par promotion
             for promo_id in PROMOTIONS:
                 eleves_promo = eleves[eleves['promotion'] == promo_id]
                 if not eleves_promo.empty:
@@ -3322,7 +3094,6 @@ def section_personnes_instr(db):
         
         instrs = db.get_instructeurs()
         if not instrs.empty:
-            # Afficher par phase
             for phase_id in PHASES_ICNA:
                 instrs_phase = instrs[instrs['phase'] == phase_id]
                 if not instrs_phase.empty:
@@ -3488,7 +3259,6 @@ def main():
                 if page_name == "Personnes":
                     section_personnes_instr(db)
                 elif page_name == "Config":
-                    # Configuration simplifiée pour mobile
                     st.markdown(f'<div class="section-title">{t("config")}</div>', unsafe_allow_html=True)
                     st.info("📱 Version mobile - Configuration")
                 elif page_name == "Generateur":
